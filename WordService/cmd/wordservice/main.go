@@ -62,7 +62,7 @@ func main() {
 }
 
 func loadEnv() {
-	switch os.Getenv("LEARN_ENGLISH_ENV") {
+	switch os.Getenv("WORD_SERVICE_ENV") {
 	case "PROD":
 		godotenv.Load(".env.production")
 	default:
