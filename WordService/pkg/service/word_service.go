@@ -55,6 +55,11 @@ func (wordService wordService) FindWordByDictionary(
 			return nil, fmt.Errorf("FindWordMeanings failed! %w", err)
 		}
 
+		// 如果線上辭典網站查無此單字的解釋，那就是查無資料
+		if len(wordMeanings) == 0 {
+			return nil, nil
+		}
+
 		// 新增到資料庫
 		err = wordService.insertIntoDB(wordMeanings)
 
