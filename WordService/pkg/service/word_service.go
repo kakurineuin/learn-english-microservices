@@ -26,9 +26,9 @@ type wordService struct {
 }
 
 func New(logger log.Logger) WordService {
-	var wordWervice WordService = wordService{logger, level.Error(logger)}
-	wordWervice = loggingMiddleware{logger, wordWervice}
-	return wordWervice
+	var wordService WordService = wordService{logger, level.Error(logger)}
+	wordService = loggingMiddleware{logger, wordService}
+	return wordService
 }
 
 func (wordService wordService) FindWordByDictionary(
