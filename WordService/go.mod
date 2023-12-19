@@ -1,4 +1,4 @@
-module github.com/kakurineuin/learn-english-word
+module github.com/kakurineuin/learn-english-microservices/word-service
 
 go 1.21.5
 

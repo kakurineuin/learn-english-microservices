@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kakurineuin/learn-english-word/pkg/config"
+	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/config"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

@@ -6,8 +6,8 @@ import (
 	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/log"
 
-	"github.com/kakurineuin/learn-english-word/pkg/model"
-	"github.com/kakurineuin/learn-english-word/pkg/service"
+	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/model"
+	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/service"
 )
 
 type Endpoints struct {

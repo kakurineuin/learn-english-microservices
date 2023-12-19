@@ -7,8 +7,8 @@ import (
 	gt "github.com/go-kit/kit/transport/grpc"
 	"github.com/go-kit/log"
 
-	"github.com/kakurineuin/learn-english-word/pb"
-	"github.com/kakurineuin/learn-english-word/pkg/endpoint"
+	"github.com/kakurineuin/learn-english-microservices/word-service/pb"
+	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/endpoint"
 )
 
 type GRPCServer struct {

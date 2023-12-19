@@ -12,8 +12,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/kakurineuin/learn-english-word/pkg/database"
-	"github.com/kakurineuin/learn-english-word/pkg/model"
+	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/database"
+	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/model"
 )
 
 type WordService interface {

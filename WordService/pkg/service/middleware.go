@@ -3,7 +3,7 @@ package service
 import (
 	"github.com/go-kit/log"
 
-	"github.com/kakurineuin/learn-english-word/pkg/model"
+	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/model"
 )
 
 type loggingMiddleware struct {

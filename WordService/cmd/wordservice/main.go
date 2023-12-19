@@ -10,11 +10,11 @@ import (
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 	"github.com/joho/godotenv"
-	"github.com/kakurineuin/learn-english-word/pb"
-	"github.com/kakurineuin/learn-english-word/pkg/database"
-	"github.com/kakurineuin/learn-english-word/pkg/endpoint"
-	"github.com/kakurineuin/learn-english-word/pkg/service"
-	"github.com/kakurineuin/learn-english-word/pkg/transport"
+	"github.com/kakurineuin/learn-english-microservices/word-service/pb"
+	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/database"
+	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/endpoint"
+	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/service"
+	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/transport"
 )
 
 const PORT = ":8090"
