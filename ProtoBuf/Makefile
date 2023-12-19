@@ -4,4 +4,4 @@ build: clean
 
 clean:
 	# Delete all .pb.go files
-	rm $(foreach D,.,$(wildcard *.pb.go))
+	find . -type f -name "*.pb.go" -delete
