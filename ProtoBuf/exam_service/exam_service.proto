@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "./;pb";
+
+message CreateExamRequest {
+  string topic = 1;
+  string description = 2;
+  bool is_public = 3;
+  string user_id = 4;
+}
+
+message CreateExamResponse { string exam_id = 1; }
+
+message UpdateExamRequest {
+  string exam_id = 1;
+  string topic = 2;
+  string description = 3;
+  bool is_public = 4;
+  string user_id = 5;
+}
+
+message UpdateExamResponse { string exam_id = 1; }
+
+message FindExamsRequest {
+  int32 page_index = 1;
+  int32 page_size = 2;
+  string user_id = 3;
+}
+
+message FindExamsResponse { repeated Exam exams = 1; }
+
+message Exam {
+  string id = 1;
+  string topic = 2;
+  string description = 3;
+  repeated string tags = 4;
+  bool is_public = 5;
+  string user_id = 6;
+}
+
+message DeleteExamRequest {
+  string exam_id = 1;
+  string user_id = 2;
+}
+
+message DeleteExamResponse {}
+
+service ExamService {
+  rpc CreateExam(CreateExamRequest) returns (CreateExamResponse);
+  rpc UpdateExam(UpdateExamRequest) returns (UpdateExamResponse);
+  rpc FindExams(FindExamsRequest) returns (FindExamsResponse);
+  rpc DeleteExam(DeleteExamRequest) returns (DeleteExamResponse);
+}
