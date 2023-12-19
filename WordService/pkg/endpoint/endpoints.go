@@ -39,8 +39,8 @@ func makeFindWordByDictionaryEndpoint(wordService service.WordService) endpoint.
 		req := request.(FindWordByDictionaryRequest)
 		wordMeangins, err := wordService.FindWordByDictionary(req.Word, req.UserId)
 		if err != nil {
-			return FindWordByDictionaryResponse{wordMeangins}, err
+			return nil, err
 		}
-		return FindWordByDictionaryResponse{wordMeangins}, nil
+		return FindWordByDictionaryResponse{WordMeanings: wordMeangins}, nil
 	}
 }
