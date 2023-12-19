@@ -6,7 +6,7 @@ option go_package = "./;pb";
 
 message FindWordByDictionaryRequest {
   string word = 1;
-  string userId = 2;
+  string user_id = 2;
 }
 
 message FindWordByDictionaryResponse { repeated WordMeaning word_meanings = 1; }
