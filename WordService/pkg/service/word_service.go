@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/go-kit/log"
@@ -303,8 +304,11 @@ func (wordService wordService) insertIntoDB(wordMeanings []model.WordMeaning) er
 
 	collection := database.GetCollection("wordmeanings")
 	documents := []interface{}{}
+	now := time.Now()
 
 	for _, v := range wordMeanings {
+		v.CreatedAt = now
+		v.UpdatedAt = now
 		documents = append(documents, v)
 	}
 
