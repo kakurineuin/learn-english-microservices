@@ -2,6 +2,8 @@ package service
 
 import (
 	"github.com/go-kit/log"
+
+	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/model"
 )
 
 type loggingMiddleware struct {
@@ -39,4 +41,18 @@ func (mw loggingMiddleware) UpdateExam(
 			"err", err)
 	}()
 	return mw.next.UpdateExam(examId, topic, description, isPublic, userId)
+}
+
+func (mw loggingMiddleware) FindExams(
+	pageIndex, pageSize int64, userId string,
+) (total, pageCount int64, exams []model.Exam, err error) {
+	defer func() {
+		mw.logger.Log(
+			"method", "FindExams",
+			"pageIndex", pageIndex,
+			"pageSize", pageSize,
+			"userId", userId,
+			"err", err)
+	}()
+	return mw.next.FindExams(pageIndex, pageSize, userId)
 }

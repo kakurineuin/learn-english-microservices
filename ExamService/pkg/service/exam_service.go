@@ -3,18 +3,25 @@ package service
 import (
 	"context"
 	"fmt"
+	"math"
 
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
-	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/database"
-	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/database"
+	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/model"
 )
 
 type ExamService interface {
 	CreateExam(topic, description string, isPublic bool, userId string) (string, error)
 	UpdateExam(examId, topic, description string, isPublic bool, userId string) (string, error)
+	FindExams(
+		pageIndex, pageSize int64,
+		userId string,
+	) (total, pageCount int64, exams []model.Exam, err error)
 }
 
 type examService struct {
@@ -29,7 +36,8 @@ func New(logger log.Logger) ExamService {
 }
 
 func (examService examService) CreateExam(
-	topic, description string, isPublic bool, userId string) (string, error) {
+	topic, description string, isPublic bool, userId string,
+) (string, error) {
 	logger := examService.logger
 	errorLogger := examService.errorLogger
 
@@ -42,7 +50,6 @@ func (examService examService) CreateExam(
 		UserId:      userId,
 	}
 	result, err := collection.InsertOne(context.TODO(), exam)
-
 	if err != nil {
 		errorLogger.Log("err", err)
 		return "", fmt.Errorf("CreateExam fail! error: %w", err)
@@ -71,7 +78,6 @@ func (examService examService) UpdateExam(
 		{"isPublic", isPublic},
 	}}}
 	result, err := collection.UpdateOne(context.TODO(), filter, update)
-
 	if err != nil {
 		errorLogger.Log("err", err)
 		return "", err
@@ -86,4 +92,39 @@ func (examService examService) UpdateExam(
 
 	logger.Log("examId", examId)
 	return examId, nil
+}
+
+func (examService examService) FindExams(
+	pageIndex, pageSize int64,
+	userId string,
+) (total, pageCount int64, exams []model.Exam, err error) {
+	logger := examService.logger
+	errorLogger := examService.errorLogger
+
+	collection := database.GetCollection("exams")
+	filter := bson.D{{"userId", userId}}
+	sort := bson.D{{"updatedAt", 1}}
+	opts := options.Find().SetSort(sort).SetSkip(pageSize * pageIndex).SetLimit(pageSize)
+	cursor, err := collection.Find(context.TODO(), filter, opts)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return 0, 0, nil, err
+	}
+
+	if err = cursor.All(context.TODO(), &exams); err != nil {
+		errorLogger.Log("err", err)
+		return 0, 0, nil, err
+	}
+
+	// Total
+	total, err = collection.CountDocuments(context.TODO(), filter)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return 0, 0, nil, err
+	}
+
+	// PageCount
+	pageCount = int64(math.Ceil(float64(total) / float64(pageSize)))
+	logger.Log("total", total, "pageCount", pageCount, "exams size", len(exams))
+	return
 }
