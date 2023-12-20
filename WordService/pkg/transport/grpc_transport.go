@@ -39,7 +39,10 @@ func (s GRPCServer) FindWordByDictionary(
 	return resp.(*pb.FindWordByDictionaryResponse), nil
 }
 
-func decodeFindWordByDictionaryRequest(_ context.Context, request interface{}) (interface{}, error) {
+func decodeFindWordByDictionaryRequest(
+	_ context.Context,
+	request interface{},
+) (interface{}, error) {
 	req, ok := request.(*pb.FindWordByDictionaryRequest)
 	if !ok {
 		return nil, errors.New("invalid request body")
@@ -51,7 +54,10 @@ func decodeFindWordByDictionaryRequest(_ context.Context, request interface{}) (
 	}, nil
 }
 
-func encodeFindWordByDictionaryResponse(_ context.Context, response interface{}) (interface{}, error) {
+func encodeFindWordByDictionaryResponse(
+	_ context.Context,
+	response interface{},
+) (interface{}, error) {
 	resp, ok := response.(endpoint.FindWordByDictionaryResponse)
 	if !ok {
 		return nil, errors.New("invalid response body")

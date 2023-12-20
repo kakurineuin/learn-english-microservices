@@ -32,7 +32,7 @@ type WordMeaning struct {
 	DefGram               string             `json:"defGram"               bson:"defGram"`
 	Definition            string             `json:"definition"            bson:"definition"`
 	Examples              []Example          `json:"examples"              bson:"examples"`
-	OrderByNo             int32              `json:"orderByNo"             bson:"orderByNo"`
+	OrderByNo             int64              `json:"orderByNo"             bson:"orderByNo"`
 	QueryByWords          []string           `json:"queryByWords"          bson:"queryByWords"`
 	FavoriteWordMeaningId primitive.ObjectID `json:"favoriteWordMeaningId" bson:"-"` // 只有前端會用此屬性，不用保存到 DB
 	CreatedAt             time.Time          `json:"createdAt"             bson:"createdAt"`
