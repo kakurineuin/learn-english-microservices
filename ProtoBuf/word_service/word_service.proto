@@ -36,7 +36,7 @@ message WordMeaning {
   string def_gram = 6;
   string definition = 7;
   repeated Example examples = 8;
-  int32 order_by_no = 9;
+  int64 order_by_no = 9;
   repeated string query_by_words = 10;
   string favorite_word_meaning_id = 11;
 }
