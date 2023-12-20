@@ -14,6 +14,7 @@ type Endpoints struct {
 	CreateExam endpoint.Endpoint
 	UpdateExam endpoint.Endpoint
 	FindExams  endpoint.Endpoint
+	DeleteExam endpoint.Endpoint
 }
 
 type CreateExamRequest struct {
@@ -51,6 +52,13 @@ type FindExamsResponse struct {
 	Exams     []model.Exam
 }
 
+type DeleteExamRequest struct {
+	ExamId string
+	UserId string
+}
+
+type DeleteExamResponse struct{}
+
 func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints {
 	createExamEndpoint := makeCreateExamEndpoint(examService)
 	createExamEndpoint = LoggingMiddleware(
@@ -64,10 +72,15 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	findExamsEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "FindExams"))(findExamsEndpoint)
 
+	deleteExamEndpoint := makeDeleteExamEndpoint(examService)
+	deleteExamEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "DeleteExam"))(deleteExamEndpoint)
+
 	return Endpoints{
 		CreateExam: createExamEndpoint,
 		UpdateExam: updateExamEndpoint,
 		FindExams:  findExamsEndpoint,
+		DeleteExam: deleteExamEndpoint,
 	}
 }
 
@@ -111,5 +124,16 @@ func makeFindExamsEndpoint(examService service.ExamService) endpoint.Endpoint {
 			PageCount: pageCount,
 			Exams:     exams,
 		}, nil
+	}
+}
+
+func makeDeleteExamEndpoint(examService service.ExamService) endpoint.Endpoint {
+	return func(_ context.Context, request interface{}) (interface{}, error) {
+		req := request.(DeleteExamRequest)
+		err := examService.DeleteExam(req.ExamId, req.UserId)
+		if err != nil {
+			return nil, err
+		}
+		return DeleteExamResponse{}, nil
 	}
 }

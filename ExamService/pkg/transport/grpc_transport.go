@@ -15,6 +15,7 @@ type GRPCServer struct {
 	createExam gt.Handler
 	updateExam gt.Handler
 	findExams  gt.Handler
+	deleteExam gt.Handler
 	pb.UnimplementedExamServiceServer
 }
 
@@ -35,6 +36,11 @@ func NewGRPCServer(endpointds endpoint.Endpoints, logger log.Logger) pb.ExamServ
 			endpointds.FindExams,
 			decodeFindExamsRequest,
 			encodeFindExamsResponse,
+		),
+		deleteExam: gt.NewServer(
+			endpointds.DeleteExam,
+			decodeDeleteExamRequest,
+			encodeDeleteExamResponse,
 		),
 	}
 }
@@ -163,4 +169,37 @@ func encodeFindExamsResponse(_ context.Context, response interface{}) (interface
 		PageCount: resp.PageCount,
 		Exams:     exams,
 	}, nil
+}
+
+func (s GRPCServer) DeleteExam(
+	ctx context.Context,
+	req *pb.DeleteExamRequest,
+) (*pb.DeleteExamResponse, error) {
+	_, resp, err := s.deleteExam.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb.DeleteExamResponse), nil
+}
+
+func decodeDeleteExamRequest(_ context.Context, request interface{}) (interface{}, error) {
+	req, ok := request.(*pb.DeleteExamRequest)
+	if !ok {
+		return nil, errors.New("invalid request body")
+	}
+
+	return endpoint.DeleteExamRequest{
+		ExamId: req.ExamId,
+		UserId: req.UserId,
+	}, nil
+}
+
+func encodeDeleteExamResponse(_ context.Context, response interface{}) (interface{}, error) {
+	_, ok := response.(endpoint.DeleteExamResponse)
+	if !ok {
+		return nil, errors.New("invalid response body")
+	}
+
+	return &pb.DeleteExamResponse{}, nil
 }

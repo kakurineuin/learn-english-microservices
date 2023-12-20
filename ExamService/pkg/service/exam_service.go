@@ -23,6 +23,7 @@ type ExamService interface {
 		pageIndex, pageSize int64,
 		userId string,
 	) (total, pageCount int64, exams []model.Exam, err error)
+	DeleteExam(examId, userId string) error
 }
 
 type examService struct {
@@ -132,4 +133,29 @@ func (examService examService) FindExams(
 	pageCount = int64(math.Ceil(float64(total) / float64(pageSize)))
 	logger.Log("total", total, "pageCount", pageCount, "exams size", len(exams))
 	return
+}
+
+func (examService examService) DeleteExam(examId, userId string) error {
+	errorLogger := examService.errorLogger
+
+	// TODO: 改用交易的方式同時刪除 Exam, Question, AnswerWrong, ExamRecord
+	// https://www.mongodb.com/docs/drivers/go/current/fundamentals/transactions/
+
+	collection := database.GetCollection("exams")
+	id, _ := primitive.ObjectIDFromHex(examId)
+	filter := bson.D{{"_id", id}, {"userId", userId}}
+	result, err := collection.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return err
+	}
+
+	// 查無符合條件的測驗可供刪除
+	if result.DeletedCount == 0 {
+		err = fmt.Errorf("Exam not found by examId: %s, userId: %s", examId, userId)
+		errorLogger.Log("err", err)
+		return err
+	}
+
+	return nil
 }

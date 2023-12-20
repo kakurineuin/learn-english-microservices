@@ -56,3 +56,16 @@ func (mw loggingMiddleware) FindExams(
 	}()
 	return mw.next.FindExams(pageIndex, pageSize, userId)
 }
+
+func (mw loggingMiddleware) DeleteExam(
+	examId, userId string,
+) (err error) {
+	defer func() {
+		mw.logger.Log(
+			"method", "DeleteExam",
+			"examId", examId,
+			"userId", userId,
+			"err", err)
+	}()
+	return mw.next.DeleteExam(examId, userId)
+}
