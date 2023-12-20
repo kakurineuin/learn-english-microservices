@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"time"
 
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
@@ -41,6 +42,7 @@ func (examService examService) CreateExam(
 	logger := examService.logger
 	errorLogger := examService.errorLogger
 
+	now := time.Now()
 	collection := database.GetCollection("exams")
 	exam := model.Exam{
 		Topic:       topic,
@@ -48,6 +50,8 @@ func (examService examService) CreateExam(
 		IsPublic:    isPublic,
 		Tags:        []string{},
 		UserId:      userId,
+		CreatedAt:   now,
+		UpdatedAt:   now,
 	}
 	result, err := collection.InsertOne(context.TODO(), exam)
 	if err != nil {
@@ -76,6 +80,7 @@ func (examService examService) UpdateExam(
 		{"topic", topic},
 		{"description", description},
 		{"isPublic", isPublic},
+		{"updatedAt", time.Now()},
 	}}}
 	result, err := collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
@@ -103,7 +108,7 @@ func (examService examService) FindExams(
 
 	collection := database.GetCollection("exams")
 	filter := bson.D{{"userId", userId}}
-	sort := bson.D{{"updatedAt", 1}}
+	sort := bson.D{{"updatedAt", -1}} // descending
 	opts := options.Find().SetSort(sort).SetSkip(pageSize * pageIndex).SetLimit(pageSize)
 	cursor, err := collection.Find(context.TODO(), filter, opts)
 	if err != nil {
