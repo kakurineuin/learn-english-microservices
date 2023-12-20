@@ -4,6 +4,15 @@ package pb;
 
 option go_package = "./;pb";
 
+message Exam {
+  string id = 1;
+  string topic = 2;
+  string description = 3;
+  repeated string tags = 4;
+  bool is_public = 5;
+  string user_id = 6;
+}
+
 message CreateExamRequest {
   string topic = 1;
   string description = 2;
@@ -35,15 +44,6 @@ message FindExamsResponse {
   repeated Exam exams = 3;
 }
 
-message Exam {
-  string id = 1;
-  string topic = 2;
-  string description = 3;
-  repeated string tags = 4;
-  bool is_public = 5;
-  string user_id = 6;
-}
-
 message DeleteExamRequest {
   string exam_id = 1;
   string user_id = 2;
@@ -51,9 +51,38 @@ message DeleteExamRequest {
 
 message DeleteExamResponse {}
 
+message Question {
+  string id = 1;
+  string exam_id = 2;
+  string ask = 3;
+  repeated string answers = 4;
+  string user_id = 5;
+}
+
+message CreateQuestionRequest {
+  string exam_id = 1;
+  string ask = 2;
+  repeated string answers = 3;
+  string user_id = 4;
+}
+
+message CreateQuestionResponse { string question_id = 1; }
+
+message UpdateQuestionRequest {
+  string question_id = 1;
+  string ask = 2;
+  repeated string answers = 3;
+  string user_id = 4;
+}
+
+message UpdateQuestionResponse { string question_id = 1; }
+
 service ExamService {
   rpc CreateExam(CreateExamRequest) returns (CreateExamResponse);
   rpc UpdateExam(UpdateExamRequest) returns (UpdateExamResponse);
   rpc FindExams(FindExamsRequest) returns (FindExamsResponse);
   rpc DeleteExam(DeleteExamRequest) returns (DeleteExamResponse);
+
+  rpc CreateQuestion(CreateQuestionRequest) returns (CreateQuestionResponse);
+  rpc UpdateQuestion(UpdateQuestionRequest) returns (UpdateQuestionResponse);
 }

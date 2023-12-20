@@ -26,6 +26,8 @@ type ExamServiceClient interface {
 	UpdateExam(ctx context.Context, in *UpdateExamRequest, opts ...grpc.CallOption) (*UpdateExamResponse, error)
 	FindExams(ctx context.Context, in *FindExamsRequest, opts ...grpc.CallOption) (*FindExamsResponse, error)
 	DeleteExam(ctx context.Context, in *DeleteExamRequest, opts ...grpc.CallOption) (*DeleteExamResponse, error)
+	CreateQuestion(ctx context.Context, in *CreateQuestionRequest, opts ...grpc.CallOption) (*CreateQuestionResponse, error)
+	UpdateQuestion(ctx context.Context, in *UpdateQuestionRequest, opts ...grpc.CallOption) (*UpdateQuestionResponse, error)
 }
 
 type examServiceClient struct {
@@ -72,6 +74,24 @@ func (c *examServiceClient) DeleteExam(ctx context.Context, in *DeleteExamReques
 	return out, nil
 }
 
+func (c *examServiceClient) CreateQuestion(ctx context.Context, in *CreateQuestionRequest, opts ...grpc.CallOption) (*CreateQuestionResponse, error) {
+	out := new(CreateQuestionResponse)
+	err := c.cc.Invoke(ctx, "/pb.ExamService/CreateQuestion", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *examServiceClient) UpdateQuestion(ctx context.Context, in *UpdateQuestionRequest, opts ...grpc.CallOption) (*UpdateQuestionResponse, error) {
+	out := new(UpdateQuestionResponse)
+	err := c.cc.Invoke(ctx, "/pb.ExamService/UpdateQuestion", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ExamServiceServer is the server API for ExamService service.
 // All implementations must embed UnimplementedExamServiceServer
 // for forward compatibility
@@ -80,6 +100,8 @@ type ExamServiceServer interface {
 	UpdateExam(context.Context, *UpdateExamRequest) (*UpdateExamResponse, error)
 	FindExams(context.Context, *FindExamsRequest) (*FindExamsResponse, error)
 	DeleteExam(context.Context, *DeleteExamRequest) (*DeleteExamResponse, error)
+	CreateQuestion(context.Context, *CreateQuestionRequest) (*CreateQuestionResponse, error)
+	UpdateQuestion(context.Context, *UpdateQuestionRequest) (*UpdateQuestionResponse, error)
 	mustEmbedUnimplementedExamServiceServer()
 }
 
@@ -98,6 +120,12 @@ func (UnimplementedExamServiceServer) FindExams(context.Context, *FindExamsReque
 }
 func (UnimplementedExamServiceServer) DeleteExam(context.Context, *DeleteExamRequest) (*DeleteExamResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteExam not implemented")
+}
+func (UnimplementedExamServiceServer) CreateQuestion(context.Context, *CreateQuestionRequest) (*CreateQuestionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateQuestion not implemented")
+}
+func (UnimplementedExamServiceServer) UpdateQuestion(context.Context, *UpdateQuestionRequest) (*UpdateQuestionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateQuestion not implemented")
 }
 func (UnimplementedExamServiceServer) mustEmbedUnimplementedExamServiceServer() {}
 
@@ -184,6 +212,42 @@ func _ExamService_DeleteExam_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExamService_CreateQuestion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateQuestionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExamServiceServer).CreateQuestion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.ExamService/CreateQuestion",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExamServiceServer).CreateQuestion(ctx, req.(*CreateQuestionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ExamService_UpdateQuestion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateQuestionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExamServiceServer).UpdateQuestion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.ExamService/UpdateQuestion",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExamServiceServer).UpdateQuestion(ctx, req.(*UpdateQuestionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ExamService_ServiceDesc is the grpc.ServiceDesc for ExamService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -206,6 +270,14 @@ var ExamService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteExam",
 			Handler:    _ExamService_DeleteExam_Handler,
+		},
+		{
+			MethodName: "CreateQuestion",
+			Handler:    _ExamService_CreateQuestion_Handler,
+		},
+		{
+			MethodName: "UpdateQuestion",
+			Handler:    _ExamService_UpdateQuestion_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

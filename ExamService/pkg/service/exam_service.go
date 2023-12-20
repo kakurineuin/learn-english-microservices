@@ -24,6 +24,8 @@ type ExamService interface {
 		userId string,
 	) (total, pageCount int64, exams []model.Exam, err error)
 	DeleteExam(examId, userId string) error
+
+	CreateQuestion(examId, ask string, answers []string, userId string) (string, error)
 }
 
 type examService struct {
@@ -158,4 +160,31 @@ func (examService examService) DeleteExam(examId, userId string) error {
 	}
 
 	return nil
+}
+
+func (examService examService) CreateQuestion(
+	examId, ask string, answers []string, userId string,
+) (string, error) {
+	logger := examService.logger
+	errorLogger := examService.errorLogger
+
+	now := time.Now()
+	collection := database.GetCollection("questions")
+	question := model.Question{
+		ExamId:    examId,
+		Ask:       ask,
+		Answers:   answers,
+		UserId:    userId,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+	result, err := collection.InsertOne(context.TODO(), question)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return "", fmt.Errorf("CreateQuestion fail! error: %w", err)
+	}
+
+	questionId := result.InsertedID.(primitive.ObjectID).Hex()
+	logger.Log("questionId", questionId)
+	return questionId, nil
 }

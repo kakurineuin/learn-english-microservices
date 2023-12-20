@@ -69,3 +69,18 @@ func (mw loggingMiddleware) DeleteExam(
 	}()
 	return mw.next.DeleteExam(examId, userId)
 }
+
+func (mw loggingMiddleware) CreateQuestion(
+	examId, ask string, answers []string, userId string,
+) (questionId string, err error) {
+	defer func() {
+		mw.logger.Log(
+			"method", "CreateQuestion",
+			"examId", examId,
+			"ask", ask,
+			"answers", answers,
+			"userId", userId,
+			"err", err)
+	}()
+	return mw.next.CreateQuestion(examId, ask, answers, userId)
+}
