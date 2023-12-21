@@ -17,6 +17,7 @@ type Endpoints struct {
 	DeleteExam endpoint.Endpoint
 
 	CreateQuestion endpoint.Endpoint
+	UpdateQuestion endpoint.Endpoint
 }
 
 type CreateExamRequest struct {
@@ -72,6 +73,17 @@ type CreateQuestionResponse struct {
 	QuestionId string
 }
 
+type UpdateQuestionRequest struct {
+	QuestionId string
+	Ask        string
+	Answers    []string
+	UserId     string
+}
+
+type UpdateQuestionResponse struct {
+	QuestionId string
+}
+
 func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints {
 	createExamEndpoint := makeCreateExamEndpoint(examService)
 	createExamEndpoint = LoggingMiddleware(
@@ -93,6 +105,10 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	createQuestionEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "CreateQuestion"))(createQuestionEndpoint)
 
+	updateQuestionEndpoint := makeUpdateQuestionEndpoint(examService)
+	updateQuestionEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "UpdateQuestion"))(updateQuestionEndpoint)
+
 	return Endpoints{
 		CreateExam: createExamEndpoint,
 		UpdateExam: updateExamEndpoint,
@@ -100,6 +116,7 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 		DeleteExam: deleteExamEndpoint,
 
 		CreateQuestion: createQuestionEndpoint,
+		UpdateQuestion: updateQuestionEndpoint,
 	}
 }
 
@@ -166,5 +183,17 @@ func makeCreateQuestionEndpoint(examService service.ExamService) endpoint.Endpoi
 			return nil, err
 		}
 		return CreateQuestionResponse{QuestionId: questionId}, nil
+	}
+}
+
+func makeUpdateQuestionEndpoint(examService service.ExamService) endpoint.Endpoint {
+	return func(_ context.Context, request interface{}) (interface{}, error) {
+		req := request.(UpdateQuestionRequest)
+		questionId, err := examService.UpdateQuestion(
+			req.QuestionId, req.Ask, req.Answers, req.UserId)
+		if err != nil {
+			return nil, err
+		}
+		return UpdateQuestionResponse{QuestionId: questionId}, nil
 	}
 }

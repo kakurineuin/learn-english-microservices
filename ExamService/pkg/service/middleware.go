@@ -84,3 +84,18 @@ func (mw loggingMiddleware) CreateQuestion(
 	}()
 	return mw.next.CreateQuestion(examId, ask, answers, userId)
 }
+
+func (mw loggingMiddleware) UpdateQuestion(
+	questionId, ask string, answers []string, userId string,
+) (updatedQuestionId string, err error) {
+	defer func() {
+		mw.logger.Log(
+			"method", "UpdateQuestion",
+			"questionId", questionId,
+			"ask", ask,
+			"answers", answers,
+			"userId", userId,
+			"err", err)
+	}()
+	return mw.next.UpdateQuestion(questionId, ask, answers, userId)
+}

@@ -18,6 +18,7 @@ type GRPCServer struct {
 	deleteExam gt.Handler
 
 	createQuestion gt.Handler
+	updateQuestion gt.Handler
 
 	pb.UnimplementedExamServiceServer
 }
@@ -52,6 +53,11 @@ func NewGRPCServer(endpointds endpoint.Endpoints, logger log.Logger) pb.ExamServ
 			endpointds.CreateQuestion,
 			decodeCreateQuestionRequest,
 			encodeCreateQuestionResponse,
+		),
+		updateQuestion: gt.NewServer(
+			endpointds.UpdateQuestion,
+			decodeUpdateQuestionRequest,
+			encodeUpdateQuestionResponse,
 		),
 	}
 }
@@ -248,6 +254,43 @@ func encodeCreateQuestionResponse(_ context.Context, response interface{}) (inte
 	}
 
 	return &pb.CreateQuestionResponse{
+		QuestionId: resp.QuestionId,
+	}, nil
+}
+
+func (s GRPCServer) UpdateQuestion(
+	ctx context.Context,
+	req *pb.UpdateQuestionRequest,
+) (*pb.UpdateQuestionResponse, error) {
+	_, resp, err := s.updateQuestion.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb.UpdateQuestionResponse), nil
+}
+
+func decodeUpdateQuestionRequest(_ context.Context, request interface{}) (interface{}, error) {
+	req, ok := request.(*pb.UpdateQuestionRequest)
+	if !ok {
+		return nil, errors.New("invalid request body")
+	}
+
+	return endpoint.UpdateQuestionRequest{
+		QuestionId: req.QuestionId,
+		Ask:        req.Ask,
+		Answers:    req.Answers,
+		UserId:     req.UserId,
+	}, nil
+}
+
+func encodeUpdateQuestionResponse(_ context.Context, response interface{}) (interface{}, error) {
+	resp, ok := response.(endpoint.UpdateQuestionResponse)
+	if !ok {
+		return nil, errors.New("invalid response body")
+	}
+
+	return &pb.UpdateQuestionResponse{
 		QuestionId: resp.QuestionId,
 	}, nil
 }

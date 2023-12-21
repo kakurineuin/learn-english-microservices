@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/config"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/writeconcern"
+
+	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/config"
 )
 
 var client *mongo.Client
@@ -46,4 +48,25 @@ func DisconnectDB() error {
 func GetCollection(collectionName string) *mongo.Collection {
 	collection := client.Database("learnEnglish").Collection(collectionName)
 	return collection
+}
+
+type transactionFunc func(ctx mongo.SessionContext) (interface{}, error)
+
+func WithTransaction(transactoinFunc transactionFunc) (interface{}, error) {
+	// start-session
+	wc := writeconcern.Majority()
+	txnOptions := options.Transaction().SetWriteConcern(wc)
+
+	// Starts a session on the client
+	session, err := client.StartSession()
+	if err != nil {
+		return nil, fmt.Errorf("Start session failed! error: %w", err)
+	}
+
+	// Defers ending the session after the transaction is committed or ended
+	defer session.EndSession(context.TODO())
+
+	// Handle data within a transaction
+	result, err := session.WithTransaction(context.TODO(), transactoinFunc, txnOptions)
+	return result, err
 }

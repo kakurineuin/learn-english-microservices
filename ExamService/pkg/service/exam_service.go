@@ -10,6 +10,7 @@ import (
 	"github.com/go-kit/log/level"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/database"
@@ -26,6 +27,7 @@ type ExamService interface {
 	DeleteExam(examId, userId string) error
 
 	CreateQuestion(examId, ask string, answers []string, userId string) (string, error)
+	UpdateQuestion(questionId, ask string, answers []string, userId string) (string, error)
 }
 
 type examService struct {
@@ -91,7 +93,7 @@ func (examService examService) UpdateExam(
 		return "", err
 	}
 
-	// 查無符合條件的測驗可供修改
+	// 查無符合條件的資料可供修改
 	if result.MatchedCount == 0 {
 		err = fmt.Errorf("Exam not found by examId: %s, userId: %s", examId, userId)
 		errorLogger.Log("err", err)
@@ -152,7 +154,7 @@ func (examService examService) DeleteExam(examId, userId string) error {
 		return err
 	}
 
-	// 查無符合條件的測驗可供刪除
+	// 查無符合條件的資料可供刪除
 	if result.DeletedCount == 0 {
 		err = fmt.Errorf("Exam not found by examId: %s, userId: %s", examId, userId)
 		errorLogger.Log("err", err)
@@ -185,6 +187,55 @@ func (examService examService) CreateQuestion(
 	}
 
 	questionId := result.InsertedID.(primitive.ObjectID).Hex()
+	logger.Log("questionId", questionId)
+	return questionId, nil
+}
+
+func (examService examService) UpdateQuestion(
+	questionId, ask string, answers []string, userId string,
+) (string, error) {
+	logger := examService.logger
+	errorLogger := examService.errorLogger
+
+	_, err := database.WithTransaction(func(ctx mongo.SessionContext) (interface{}, error) {
+		// 修改 Question
+		collection := database.GetCollection("questions")
+		id, _ := primitive.ObjectIDFromHex(questionId)
+		filter := bson.D{
+			{"_id", id},
+			{"userId", userId},
+		}
+		update := bson.D{{"$set", bson.D{
+			{"ask", ask},
+			{"answers", answers},
+			{"updatedAt", time.Now()},
+		}}}
+		result, err := collection.UpdateOne(context.TODO(), filter, update)
+		if err != nil {
+			return nil, err
+		}
+
+		// 查無符合條件的資料可供修改
+		if result.MatchedCount == 0 {
+			err = fmt.Errorf("Question not found by questionId: %s, userId: %s", questionId, userId)
+			return nil, err
+		}
+
+		// 刪除相關的 AnswerWrong
+		collection = database.GetCollection("answerwrongs")
+		filter = bson.D{{"questionId", questionId}}
+		_, err = collection.DeleteMany(context.TODO(), filter)
+		if err != nil {
+			return nil, err
+		}
+
+		return result, nil
+	})
+	if err != nil {
+		errorLogger.Log("err", err)
+		return "", nil
+	}
+
 	logger.Log("questionId", questionId)
 	return questionId, nil
 }
