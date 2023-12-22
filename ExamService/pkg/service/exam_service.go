@@ -210,7 +210,7 @@ func (examService examService) UpdateQuestion(
 			{"answers", answers},
 			{"updatedAt", time.Now()},
 		}}}
-		result, err := collection.UpdateOne(context.TODO(), filter, update)
+		result, err := collection.UpdateOne(ctx, filter, update)
 		if err != nil {
 			return nil, err
 		}
@@ -224,7 +224,7 @@ func (examService examService) UpdateQuestion(
 		// 刪除相關的 AnswerWrong
 		collection = database.GetCollection("answerwrongs")
 		filter = bson.D{{"questionId", questionId}}
-		_, err = collection.DeleteMany(context.TODO(), filter)
+		_, err = collection.DeleteMany(ctx, filter)
 		if err != nil {
 			return nil, err
 		}
