@@ -25,6 +25,7 @@ type DatabaseRepository interface {
 		skip, limit int64,
 	) (exams []model.Exam, err error)
 	DeleteExam(ctx context.Context, examId string) error
+	CountExamsByUserId(ctx context.Context, userId string) (count int64, err error)
 
 	// Question
 	CreateQuestion(ctx context.Context, question model.Question) (questionId string, err error)
@@ -36,6 +37,8 @@ type DatabaseRepository interface {
 		skip, limit int64,
 	) (questions []model.Question, err error)
 	DeleteQuestion(ctx context.Context, questionId string) error
+	DeleteQuestionsByExamId(ctx context.Context, examId string) error
 
 	// TODO: AnswerWrong
+	DeleteAnswerWrongByQuestionId(ctx context.Context, questionId string) error
 }

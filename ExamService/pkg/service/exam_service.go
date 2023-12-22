@@ -4,17 +4,13 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"time"
 
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/database"
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/model"
+	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/repository"
 )
 
 // TODO 全部方法改用 repository 去對資料庫存取
@@ -33,12 +29,17 @@ type ExamService interface {
 }
 
 type examService struct {
-	logger      log.Logger
-	errorLogger log.Logger
+	logger             log.Logger
+	errorLogger        log.Logger
+	databaseRepository repository.DatabaseRepository
 }
 
-func New(logger log.Logger) ExamService {
-	var examService ExamService = examService{logger, level.Error(logger)}
+func New(logger log.Logger, databaseRepository repository.DatabaseRepository) ExamService {
+	var examService ExamService = examService{
+		logger:             logger,
+		errorLogger:        level.Error(logger),
+		databaseRepository: databaseRepository,
+	}
 	examService = loggingMiddleware{logger, examService}
 	return examService
 }
@@ -49,24 +50,19 @@ func (examService examService) CreateExam(
 	logger := examService.logger
 	errorLogger := examService.errorLogger
 
-	now := time.Now()
-	collection := database.GetCollection("exams")
 	exam := model.Exam{
 		Topic:       topic,
 		Description: description,
 		IsPublic:    isPublic,
 		Tags:        []string{},
 		UserId:      userId,
-		CreatedAt:   now,
-		UpdatedAt:   now,
 	}
-	result, err := collection.InsertOne(context.TODO(), exam)
+	examId, err := examService.databaseRepository.CreateExam(context.TODO(), exam)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return "", fmt.Errorf("CreateExam fail! error: %w", err)
 	}
 
-	examId := result.InsertedID.(primitive.ObjectID).Hex()
 	logger.Log("examId", examId)
 	return examId, nil
 }
@@ -77,29 +73,22 @@ func (examService examService) UpdateExam(
 	logger := examService.logger
 	errorLogger := examService.errorLogger
 
-	collection := database.GetCollection("exams")
-	id, _ := primitive.ObjectIDFromHex(examId)
-	filter := bson.D{
-		{"_id", id},
-		{"userId", userId},
-	}
-	update := bson.D{{"$set", bson.D{
-		{"topic", topic},
-		{"description", description},
-		{"isPublic", isPublic},
-		{"updatedAt", time.Now()},
-	}}}
-	result, err := collection.UpdateOne(context.TODO(), filter, update)
+	id, err := primitive.ObjectIDFromHex(examId)
 	if err != nil {
 		errorLogger.Log("err", err)
-		return "", err
+		return "", fmt.Errorf("UpdateExam fail! error: %w", err)
 	}
 
-	// 查無符合條件的資料可供修改
-	if result.MatchedCount == 0 {
-		err = fmt.Errorf("Exam not found by examId: %s, userId: %s", examId, userId)
+	err = examService.databaseRepository.UpdateExam(context.TODO(), model.Exam{
+		Id:          id,
+		Topic:       topic,
+		Description: description,
+		IsPublic:    isPublic,
+		UserId:      userId,
+	})
+	if err != nil {
 		errorLogger.Log("err", err)
-		return "", err
+		return "", fmt.Errorf("UpdateExam fail! error: %w", err)
 	}
 
 	logger.Log("examId", examId)
@@ -113,26 +102,19 @@ func (examService examService) FindExams(
 	logger := examService.logger
 	errorLogger := examService.errorLogger
 
-	collection := database.GetCollection("exams")
-	filter := bson.D{{"userId", userId}}
-	sort := bson.D{{"updatedAt", -1}} // descending
-	opts := options.Find().SetSort(sort).SetSkip(pageSize * pageIndex).SetLimit(pageSize)
-	cursor, err := collection.Find(context.TODO(), filter, opts)
+	skip := pageSize * pageIndex
+	exams, err = examService.databaseRepository.FindExamsOrderByUpdateAtDesc(
+		context.TODO(), userId, skip, pageSize)
 	if err != nil {
 		errorLogger.Log("err", err)
-		return 0, 0, nil, err
-	}
-
-	if err = cursor.All(context.TODO(), &exams); err != nil {
-		errorLogger.Log("err", err)
-		return 0, 0, nil, err
+		return 0, 0, nil, fmt.Errorf("FindExams fail! error: %w", err)
 	}
 
 	// Total
-	total, err = collection.CountDocuments(context.TODO(), filter)
+	total, err = examService.databaseRepository.CountExamsByUserId(context.TODO(), userId)
 	if err != nil {
 		errorLogger.Log("err", err)
-		return 0, 0, nil, err
+		return 0, 0, nil, fmt.Errorf("FindExams fail! error: %w", err)
 	}
 
 	// PageCount
@@ -143,24 +125,29 @@ func (examService examService) FindExams(
 
 func (examService examService) DeleteExam(examId, userId string) error {
 	errorLogger := examService.errorLogger
+	databaseRepository := examService.databaseRepository
 
-	// TODO: 改用交易的方式同時刪除 Exam, Question, AnswerWrong, ExamRecord
-	// https://www.mongodb.com/docs/drivers/go/current/fundamentals/transactions/
+	_, err := examService.databaseRepository.WithTransaction(
+		func(ctx context.Context) (interface{}, error) {
+			// Delete Exam
+			err := databaseRepository.DeleteExam(ctx, examId)
+			if err != nil {
+				return nil, err
+			}
 
-	collection := database.GetCollection("exams")
-	id, _ := primitive.ObjectIDFromHex(examId)
-	filter := bson.D{{"_id", id}, {"userId", userId}}
-	result, err := collection.DeleteOne(context.TODO(), filter)
+			// TODO: Delete Question
+			err = databaseRepository.DeleteQuestionsByExamId(ctx, examId)
+
+			// TODO: Delete AnswerWrong
+
+			// TODO: Delete ExamRecord
+
+			return nil, nil
+		},
+	)
 	if err != nil {
 		errorLogger.Log("err", err)
-		return err
-	}
-
-	// 查無符合條件的資料可供刪除
-	if result.DeletedCount == 0 {
-		err = fmt.Errorf("Exam not found by examId: %s, userId: %s", examId, userId)
-		errorLogger.Log("err", err)
-		return err
+		return fmt.Errorf("DeleteExam fail! error: %w", err)
 	}
 
 	return nil
@@ -172,23 +159,17 @@ func (examService examService) CreateQuestion(
 	logger := examService.logger
 	errorLogger := examService.errorLogger
 
-	now := time.Now()
-	collection := database.GetCollection("questions")
-	question := model.Question{
-		ExamId:    examId,
-		Ask:       ask,
-		Answers:   answers,
-		UserId:    userId,
-		CreatedAt: now,
-		UpdatedAt: now,
-	}
-	result, err := collection.InsertOne(context.TODO(), question)
+	questionId, err := examService.databaseRepository.CreateQuestion(context.TODO(), model.Question{
+		ExamId:  examId,
+		Ask:     ask,
+		Answers: answers,
+		UserId:  userId,
+	})
 	if err != nil {
 		errorLogger.Log("err", err)
 		return "", fmt.Errorf("CreateQuestion fail! error: %w", err)
 	}
 
-	questionId := result.InsertedID.(primitive.ObjectID).Hex()
 	logger.Log("questionId", questionId)
 	return questionId, nil
 }
@@ -199,43 +180,35 @@ func (examService examService) UpdateQuestion(
 	logger := examService.logger
 	errorLogger := examService.errorLogger
 
-	_, err := database.WithTransaction(func(ctx mongo.SessionContext) (interface{}, error) {
+	databaseRepository := examService.databaseRepository
+	_, err := databaseRepository.WithTransaction(func(ctx context.Context) (interface{}, error) {
 		// 修改 Question
-		collection := database.GetCollection("questions")
-		id, _ := primitive.ObjectIDFromHex(questionId)
-		filter := bson.D{
-			{"_id", id},
-			{"userId", userId},
-		}
-		update := bson.D{{"$set", bson.D{
-			{"ask", ask},
-			{"answers", answers},
-			{"updatedAt", time.Now()},
-		}}}
-		result, err := collection.UpdateOne(ctx, filter, update)
+		id, err := primitive.ObjectIDFromHex(questionId)
 		if err != nil {
 			return nil, err
 		}
 
-		// 查無符合條件的資料可供修改
-		if result.MatchedCount == 0 {
-			err = fmt.Errorf("Question not found by questionId: %s, userId: %s", questionId, userId)
+		err = databaseRepository.UpdateQuestion(ctx, model.Question{
+			Id:      id,
+			Ask:     ask,
+			Answers: answers,
+			UserId:  userId,
+		})
+		if err != nil {
 			return nil, err
 		}
 
 		// 刪除相關的 AnswerWrong
-		collection = database.GetCollection("answerwrongs")
-		filter = bson.D{{"questionId", questionId}}
-		_, err = collection.DeleteMany(ctx, filter)
+		err = databaseRepository.DeleteAnswerWrongByQuestionId(ctx, questionId)
 		if err != nil {
 			return nil, err
 		}
 
-		return result, nil
+		return nil, nil
 	})
 	if err != nil {
 		errorLogger.Log("err", err)
-		return "", nil
+		return "", fmt.Errorf("UpdateQuestion fail! error: %w", err)
 	}
 
 	logger.Log("questionId", questionId)

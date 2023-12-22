@@ -31,9 +31,12 @@ type MyTestSuite struct {
 	examIdForTestGetExam    string
 	examIdForTestDeleteExam string
 
-	questionIdForTestUpdateQuestion string
-	questionIdForTestGetQuestion    string
-	questionIdForTestDeleteQuestion string
+	questionIdForTestUpdateQuestion      string
+	questionIdForTestGetQuestion         string
+	questionIdForTestDeleteQuestion      string
+	examIdForTestDeleteQuestionsByExamId string
+
+	questionIdForTestDeleteAnswerWrongByQuestionId string
 }
 
 func TestMyTestSuite(t *testing.T) {
@@ -213,6 +216,21 @@ func (s *MyTestSuite) TestDeleteQuestion() {
 	s.Nil(err)
 }
 
+func (s *MyTestSuite) TestDeleteQuestionsByExamId() {
+	ctx := context.TODO()
+	err := s.repo.DeleteQuestionsByExamId(ctx, s.examIdForTestDeleteQuestionsByExamId)
+	s.Nil(err)
+}
+
+func (s *MyTestSuite) TestDeleteAnswerWrongByQuestionId() {
+	ctx := context.TODO()
+	err := s.repo.DeleteAnswerWrongByQuestionId(
+		ctx,
+		s.questionIdForTestDeleteAnswerWrongByQuestionId,
+	)
+	s.Nil(err)
+}
+
 // testcontainers mongodb 不支援交易功能，所以註解此測試
 // func (s *MyTestSuite) TestWithTransaction() {
 // 	userId := "user_mongodb_test_002"
@@ -376,6 +394,38 @@ func createTestData(s *MyTestSuite, uri string) error {
 		return err
 	}
 	s.questionIdForTestDeleteQuestion = result.InsertedID.(primitive.ObjectID).Hex()
+
+	// For TestDeleteQuestionsByExamId
+	s.examIdForTestDeleteQuestionsByExamId = "TestDeleteQuestionsByExamId"
+	questions = []interface{}{}
+
+	for i := 0; i < 30; i++ {
+		questions = append(questions, model.Question{
+			ExamId:  s.examIdForTestDeleteQuestionsByExamId,
+			Ask:     fmt.Sprintf("Question_%d", i),
+			Answers: []string{"a01", "a02"},
+			UserId:  "user01",
+		})
+	}
+	_, err = questionCollection.InsertMany(ctx, questions)
+	if err != nil {
+		return err
+	}
+
+	// AnswerWrong
+	answerWrongCollection := client.Database(DATABASE).Collection("answerwrongs")
+
+	s.questionIdForTestDeleteAnswerWrongByQuestionId = "TestDeleteAnswerWrongsByQuestionId"
+
+	_, err = answerWrongCollection.InsertOne(ctx, model.AnswerWrong{
+		ExamId:     "exam_abc_01",
+		QuestionId: s.questionIdForTestDeleteAnswerWrongByQuestionId,
+		Times:      10,
+		UserId:     "user01",
+	})
+	if err != nil {
+		return err
+	}
 
 	if err := client.Disconnect(ctx); err != nil {
 		return err
