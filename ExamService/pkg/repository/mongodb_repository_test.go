@@ -22,13 +22,18 @@ const DATABASE = "learnEnglish_test"
 
 type MyTestSuite struct {
 	suite.Suite
-	repo                    DatabaseRepository
-	uri                     string
-	ctx                     context.Context
-	mongodbContainer        *mongodb.MongoDBContainer
-	examIdForTestGetExam    string
+	repo             DatabaseRepository
+	uri              string
+	ctx              context.Context
+	mongodbContainer *mongodb.MongoDBContainer
+
 	examIdForTestUpdateExam string
+	examIdForTestGetExam    string
 	examIdForTestDeleteExam string
+
+	questionIdForTestUpdateQuestion string
+	questionIdForTestGetQuestion    string
+	questionIdForTestDeleteQuestion string
 }
 
 func TestMyTestSuite(t *testing.T) {
@@ -160,6 +165,54 @@ func (s *MyTestSuite) TestDeleteExam() {
 	s.Nil(err)
 }
 
+func (s *MyTestSuite) TestCreateQuestion() {
+	ctx := context.TODO()
+	questionId, err := s.repo.CreateQuestion(ctx, model.Question{
+		ExamId:  "exam01",
+		Ask:     "ask01",
+		Answers: []string{"a01", "a02"},
+		UserId:  "user01",
+	})
+	s.Nil(err)
+	s.NotEmpty(questionId)
+}
+
+func (s *MyTestSuite) TestUpdateQuestion() {
+	id, err := primitive.ObjectIDFromHex(s.questionIdForTestUpdateQuestion)
+	s.Nil(err)
+
+	ctx := context.TODO()
+	err = s.repo.UpdateQuestion(ctx, model.Question{
+		Id:      id,
+		ExamId:  "examId",
+		Ask:     "TestUpdateQuestion_u01",
+		Answers: []string{"a011", "a022"},
+		UserId:  "user01",
+	})
+	s.Nil(err)
+}
+
+func (s *MyTestSuite) TestGetQuestion() {
+	ctx := context.TODO()
+	question, err := s.repo.GetQuestion(ctx, s.questionIdForTestGetQuestion)
+	s.Nil(err)
+	s.NotNil(question)
+}
+
+func (s *MyTestSuite) TestFindQuestionsOrderByUpdateAtDesc() {
+	ctx := context.TODO()
+	questions, err := s.repo.FindQuestionsOrderByUpdateAtDesc(ctx, "exam01", 10, 10)
+	s.Nil(err)
+	s.NotEmpty(questions)
+	s.Equal(10, len(questions))
+}
+
+func (s *MyTestSuite) TestDeleteQuestion() {
+	ctx := context.TODO()
+	err := s.repo.DeleteQuestion(ctx, s.questionIdForTestDeleteQuestion)
+	s.Nil(err)
+}
+
 // testcontainers mongodb 不支援交易功能，所以註解此測試
 // func (s *MyTestSuite) TestWithTransaction() {
 // 	userId := "user_mongodb_test_002"
@@ -212,6 +265,9 @@ func createTestData(s *MyTestSuite, uri string) error {
 		return err
 	}
 
+	// Exam
+	collection := client.Database(DATABASE).Collection("exams")
+
 	exams := []interface{}{}
 
 	for i := 0; i < 30; i++ {
@@ -223,27 +279,13 @@ func createTestData(s *MyTestSuite, uri string) error {
 			UserId:      "user01",
 		})
 	}
-	collection := client.Database(DATABASE).Collection("exams")
 	_, err = collection.InsertMany(ctx, exams)
 	if err != nil {
 		return err
 	}
 
-	// For TestGetExam
-	result, err := collection.InsertOne(ctx, model.Exam{
-		Topic:       "TestGetExam",
-		Description: "jsut for test",
-		Tags:        []string{"tag01", "tag02"},
-		IsPublic:    true,
-		UserId:      "user01",
-	})
-	if err != nil {
-		return err
-	}
-	s.examIdForTestGetExam = result.InsertedID.(primitive.ObjectID).Hex()
-
 	// For TestUpdateExam
-	result, err = collection.InsertOne(ctx, model.Exam{
+	result, err := collection.InsertOne(ctx, model.Exam{
 		Topic:       "TestUpdateExam",
 		Description: "jsut for test",
 		Tags:        []string{"tag01", "tag02"},
@@ -254,6 +296,19 @@ func createTestData(s *MyTestSuite, uri string) error {
 		return err
 	}
 	s.examIdForTestUpdateExam = result.InsertedID.(primitive.ObjectID).Hex()
+
+	// For TestGetExam
+	result, err = collection.InsertOne(ctx, model.Exam{
+		Topic:       "TestGetExam",
+		Description: "jsut for test",
+		Tags:        []string{"tag01", "tag02"},
+		IsPublic:    true,
+		UserId:      "user01",
+	})
+	if err != nil {
+		return err
+	}
+	s.examIdForTestGetExam = result.InsertedID.(primitive.ObjectID).Hex()
 
 	// For TestDeleteExam
 	result, err = collection.InsertOne(ctx, model.Exam{
@@ -267,6 +322,60 @@ func createTestData(s *MyTestSuite, uri string) error {
 		return err
 	}
 	s.examIdForTestDeleteExam = result.InsertedID.(primitive.ObjectID).Hex()
+
+	// Question
+	questionCollection := client.Database(DATABASE).Collection("questions")
+
+	questions := []interface{}{}
+
+	for i := 0; i < 30; i++ {
+		questions = append(questions, model.Question{
+			ExamId:  "exam01",
+			Ask:     fmt.Sprintf("Question_%d", i),
+			Answers: []string{"a01", "a02"},
+			UserId:  "user01",
+		})
+	}
+	_, err = questionCollection.InsertMany(ctx, questions)
+	if err != nil {
+		return err
+	}
+
+	// For TestUpdateQuestion
+	result, err = questionCollection.InsertOne(ctx, model.Question{
+		ExamId:  "exam01",
+		Ask:     "TestUpdateQuestion",
+		Answers: []string{"a01", "a02"},
+		UserId:  "user01",
+	})
+	if err != nil {
+		return err
+	}
+	s.questionIdForTestUpdateQuestion = result.InsertedID.(primitive.ObjectID).Hex()
+
+	// For TestGetQuestion
+	result, err = questionCollection.InsertOne(ctx, model.Question{
+		ExamId:  "exam01",
+		Ask:     "TestGetQuestion",
+		Answers: []string{"a01", "a02"},
+		UserId:  "user01",
+	})
+	if err != nil {
+		return err
+	}
+	s.questionIdForTestGetQuestion = result.InsertedID.(primitive.ObjectID).Hex()
+
+	// For TestDeleteQuestion
+	result, err = questionCollection.InsertOne(ctx, model.Question{
+		ExamId:  "exam01",
+		Ask:     "TestDeleteQuestion",
+		Answers: []string{"a01", "a02"},
+		UserId:  "user01",
+	})
+	if err != nil {
+		return err
+	}
+	s.questionIdForTestDeleteQuestion = result.InsertedID.(primitive.ObjectID).Hex()
 
 	if err := client.Disconnect(ctx); err != nil {
 		return err

@@ -14,6 +14,11 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/model"
 )
 
+const (
+	EXAM_COLLECTION     = "exams"
+	QUESTION_COLLECTION = "questions"
+)
+
 type MongoDBRepository struct {
 	client   *mongo.Client
 	database string
@@ -64,7 +69,7 @@ func (repo *MongoDBRepository) CreateExam(
 	exam.CreatedAt = now
 	exam.UpdatedAt = now
 
-	collection := repo.getCollection("exams")
+	collection := repo.getCollection(EXAM_COLLECTION)
 	result, err := collection.InsertOne(ctx, exam)
 	if err != nil {
 		return "", err
@@ -85,7 +90,7 @@ func (repo *MongoDBRepository) UpdateExam(
 		{"userId", exam.UserId},
 		{"updatedAt", time.Now()},
 	}}}
-	collection := repo.getCollection("exams")
+	collection := repo.getCollection(EXAM_COLLECTION)
 	result, err := collection.UpdateByID(ctx, exam.Id, update)
 	if err != nil {
 		return err
@@ -113,7 +118,7 @@ func (repo *MongoDBRepository) GetExam(
 		{"_id", id},
 	}
 	var result model.Exam
-	collection := repo.getCollection("exams")
+	collection := repo.getCollection(EXAM_COLLECTION)
 	err = collection.FindOne(ctx, filter).Decode(&result)
 
 	if err != nil {
@@ -133,7 +138,7 @@ func (repo *MongoDBRepository) FindExamsOrderByUpdateAtDesc(
 	userId string,
 	skip, limit int64,
 ) (exams []model.Exam, err error) {
-	collection := repo.getCollection("exams")
+	collection := repo.getCollection(EXAM_COLLECTION)
 	filter := bson.D{{"userId", userId}}
 	sort := bson.D{{"updatedAt", -1}} // descending
 	opts := options.Find().SetSort(sort).SetSkip(skip).SetLimit(limit)
@@ -158,12 +163,126 @@ func (repo *MongoDBRepository) DeleteExam(ctx context.Context, examId string) er
 	filter := bson.D{
 		{"_id", id},
 	}
-	collection := repo.getCollection("exams")
+	collection := repo.getCollection(EXAM_COLLECTION)
 	result, err := collection.DeleteOne(ctx, filter)
 
 	// 查無符合條件的資料可供刪除
 	if result.DeletedCount == 0 {
 		err = fmt.Errorf("Exam not found by examId: %s", examId)
+		return err
+	}
+
+	return nil
+}
+
+func (repo *MongoDBRepository) CreateQuestion(
+	ctx context.Context,
+	question model.Question,
+) (questionId string, err error) {
+	now := time.Now()
+	question.CreatedAt = now
+	question.UpdatedAt = now
+
+	collection := repo.getCollection(QUESTION_COLLECTION)
+	result, err := collection.InsertOne(ctx, question)
+	if err != nil {
+		return "", err
+	}
+
+	questionId = result.InsertedID.(primitive.ObjectID).Hex()
+	return questionId, nil
+}
+
+func (repo *MongoDBRepository) UpdateQuestion(
+	ctx context.Context,
+	question model.Question,
+) error {
+	update := bson.D{{"$set", bson.D{
+		{"examId", question.ExamId},
+		{"ask", question.Ask},
+		{"answers", question.Answers},
+		{"userId", question.UserId},
+		{"updatedAt", time.Now()},
+	}}}
+	collection := repo.getCollection(QUESTION_COLLECTION)
+	result, err := collection.UpdateByID(ctx, question.Id, update)
+	if err != nil {
+		return err
+	}
+
+	// 查無符合條件的資料可供修改
+	if result.MatchedCount == 0 {
+		err = fmt.Errorf("Question not found by questionId: %s", question.Id.Hex())
+		return err
+	}
+
+	return nil
+}
+
+func (repo *MongoDBRepository) GetQuestion(
+	ctx context.Context,
+	questionId string,
+) (question *model.Question, err error) {
+	id, err := primitive.ObjectIDFromHex(questionId)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.D{
+		{"_id", id},
+	}
+	var result model.Question
+	collection := repo.getCollection(QUESTION_COLLECTION)
+	err = collection.FindOne(ctx, filter).Decode(&result)
+
+	if err != nil {
+		// 查無資料不視為錯誤
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+func (repo *MongoDBRepository) FindQuestionsOrderByUpdateAtDesc(
+	ctx context.Context,
+	examId string,
+	skip, limit int64,
+) (questions []model.Question, err error) {
+	collection := repo.getCollection(QUESTION_COLLECTION)
+	filter := bson.D{{"examId", examId}}
+	sort := bson.D{{"updatedAt", -1}} // descending
+	opts := options.Find().SetSort(sort).SetSkip(skip).SetLimit(limit)
+	cursor, err := collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cursor.All(ctx, &questions); err != nil {
+		return nil, err
+	}
+
+	return questions, nil
+}
+
+func (repo *MongoDBRepository) DeleteQuestion(ctx context.Context, questionId string) error {
+	id, err := primitive.ObjectIDFromHex(questionId)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.D{
+		{"_id", id},
+	}
+	collection := repo.getCollection(QUESTION_COLLECTION)
+	result, err := collection.DeleteOne(ctx, filter)
+
+	// 查無符合條件的資料可供刪除
+	if result.DeletedCount == 0 {
+		err = fmt.Errorf("Question not found by questionId: %s", questionId)
 		return err
 	}
 

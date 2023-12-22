@@ -27,8 +27,15 @@ type DatabaseRepository interface {
 	DeleteExam(ctx context.Context, examId string) error
 
 	// Question
-	// CreateQuestion(ctx context.Context, question model.Question) (questionId string, err error)
-	// UpdateQuestion(ctx context.Context, question model.Question) error
+	CreateQuestion(ctx context.Context, question model.Question) (questionId string, err error)
+	UpdateQuestion(ctx context.Context, question model.Question) error
+	GetQuestion(ctx context.Context, questionId string) (question *model.Question, err error)
+	FindQuestionsOrderByUpdateAtDesc(
+		ctx context.Context,
+		examId string,
+		skip, limit int64,
+	) (questions []model.Question, err error)
+	DeleteQuestion(ctx context.Context, questionId string) error
 
 	// TODO: AnswerWrong
 }
