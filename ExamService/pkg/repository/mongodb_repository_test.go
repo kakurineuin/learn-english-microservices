@@ -17,6 +17,9 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/model"
 )
 
+// 使用測試的資料庫
+const DATABASE = "learnEnglish_test"
+
 type MyTestSuite struct {
 	suite.Suite
 	repo                    DatabaseRepository
@@ -54,7 +57,7 @@ func (s *MyTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	s.repo = NewMongoDBRepository()
+	s.repo = NewMongoDBRepository(DATABASE)
 	s.repo.ConnectDB(uri)
 	s.uri = uri
 	s.ctx = ctx
@@ -97,7 +100,7 @@ func (s *MyTestSuite) AfterTest(suiteName, testName string) {
 }
 
 func (s *MyTestSuite) TestConnectDBAndDisconnectDB() {
-	repo := NewMongoDBRepository()
+	repo := NewMongoDBRepository(DATABASE)
 
 	err := repo.ConnectDB(s.uri)
 	s.Nil(err)
@@ -157,6 +160,48 @@ func (s *MyTestSuite) TestDeleteExam() {
 	s.Nil(err)
 }
 
+// testcontainers mongodb 不支援交易功能，所以註解此測試
+// func (s *MyTestSuite) TestWithTransaction() {
+// 	userId := "user_mongodb_test_002"
+//
+// 	_, err := s.repo.WithTransaction(func(ctx context.Context) (interface{}, error) {
+// 		deleteExamId := ""
+//
+// 		// 新增 10 筆資料
+// 		for i := 0; i < 10; i++ {
+// 			examId, err := s.repo.CreateExam(ctx, model.Exam{
+// 				Topic:       fmt.Sprintf("TestWithTransaction_%d", i),
+// 				Description: "jsut for test",
+// 				Tags:        []string{"tag01", "tag02"},
+// 				IsPublic:    true,
+// 				UserId:      userId,
+// 			})
+// 			if err != nil {
+// 				return nil, err
+// 			}
+//
+// 			if i == 0 {
+// 				deleteExamId = examId
+// 			}
+// 		}
+//
+// 		// 刪除 1 筆資料
+// 		err := s.repo.DeleteExam(ctx, deleteExamId)
+// 		if err != nil {
+// 			return nil, err
+// 		}
+//
+// 		return nil, nil
+// 	})
+// 	s.Nil(err)
+//
+// 	// 查詢看看交易是否真的成功新增資料
+// 	ctx := context.TODO()
+// 	exams, err := s.repo.FindExamsOrderByUpdateAtDesc(ctx, userId, 0, 100)
+// 	s.Nil(err)
+// 	s.Equal(9, len(exams))
+// }
+
 func createTestData(s *MyTestSuite, uri string) error {
 	ctx := context.TODO()
 	client, err := mongo.Connect(
@@ -178,7 +223,7 @@ func createTestData(s *MyTestSuite, uri string) error {
 			UserId:      "user01",
 		})
 	}
-	collection := client.Database("learnEnglish").Collection("exams")
+	collection := client.Database(DATABASE).Collection("exams")
 	_, err = collection.InsertMany(ctx, exams)
 	if err != nil {
 		return err

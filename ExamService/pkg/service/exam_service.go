@@ -17,6 +17,8 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/model"
 )
 
+// TODO 全部方法改用 repository 去對資料庫存取
+
 type ExamService interface {
 	CreateExam(topic, description string, isPublic bool, userId string) (string, error)
 	UpdateExam(examId, topic, description string, isPublic bool, userId string) (string, error)

@@ -6,9 +6,14 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/model"
 )
 
+type transactionFunc func(ctx context.Context) (interface{}, error)
+
 type DatabaseRepository interface {
 	ConnectDB(uri string) error
 	DisconnectDB() error
+
+	// Transaction
+	WithTransaction(transactoinFunc transactionFunc) (interface{}, error)
 
 	// Exam
 	CreateExam(ctx context.Context, exam model.Exam) (examId string, err error)

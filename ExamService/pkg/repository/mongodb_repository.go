@@ -9,18 +9,20 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/model"
 )
 
-const DATABASE = "learnEnglish"
-
 type MongoDBRepository struct {
-	client *mongo.Client
+	client   *mongo.Client
+	database string
 }
 
-func NewMongoDBRepository() *MongoDBRepository {
-	return &MongoDBRepository{}
+func NewMongoDBRepository(database string) *MongoDBRepository {
+	return &MongoDBRepository{
+		database: database,
+	}
 }
 
 func (repo *MongoDBRepository) ConnectDB(uri string) error {
@@ -168,6 +170,33 @@ func (repo *MongoDBRepository) DeleteExam(ctx context.Context, examId string) er
 	return nil
 }
 
+func (repo *MongoDBRepository) WithTransaction(
+	transactoinFunc transactionFunc,
+) (interface{}, error) {
+	// start-session
+	wc := writeconcern.Majority()
+	txnOptions := options.Transaction().SetWriteConcern(wc)
+
+	// Starts a session on the client
+	session, err := repo.client.StartSession()
+	if err != nil {
+		return nil, fmt.Errorf("Start session failed! error: %w", err)
+	}
+
+	// Defers ending the session after the transaction is committed or ended
+	defer session.EndSession(context.TODO())
+
+	// Handle data within a transaction
+	result, err := session.WithTransaction(
+		context.TODO(),
+		func(ctx mongo.SessionContext) (interface{}, error) {
+			return transactoinFunc(ctx)
+		},
+		txnOptions,
+	)
+	return result, err
+}
+
 func (repo *MongoDBRepository) getCollection(collectionName string) *mongo.Collection {
-	return repo.client.Database(DATABASE).Collection(collectionName)
+	return repo.client.Database(repo.database).Collection(collectionName)
 }
