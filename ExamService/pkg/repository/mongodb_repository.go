@@ -62,6 +62,27 @@ func (repo *MongoDBRepository) DisconnectDB() error {
 	return nil
 }
 
+func (repo *MongoDBRepository) ExistExam(
+	ctx context.Context, examId, userId string,
+) (isExist bool, err error) {
+	id, err := primitive.ObjectIDFromHex(examId)
+	if err != nil {
+		return false, err
+	}
+
+	collection := repo.getCollection(EXAM_COLLECTION)
+	filter := bson.D{
+		{"_id", id},
+		{"userId", userId},
+	}
+	count, err := collection.CountDocuments(ctx, filter)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
 func (repo *MongoDBRepository) CreateExam(
 	ctx context.Context,
 	exam model.Exam,
@@ -182,7 +203,7 @@ func (repo *MongoDBRepository) CountExamsByUserId(
 ) (count int64, err error) {
 	collection := repo.getCollection(EXAM_COLLECTION)
 	filter := bson.D{{"userId", userId}}
-	count, err = collection.CountDocuments(context.TODO(), filter)
+	count, err = collection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, err
 	}

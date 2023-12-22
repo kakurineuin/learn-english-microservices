@@ -8,6 +8,7 @@ import (
 
 type transactionFunc func(ctx context.Context) (interface{}, error)
 
+//go:generate mockery --name DatabaseRepository
 type DatabaseRepository interface {
 	ConnectDB(uri string) error
 	DisconnectDB() error
@@ -16,6 +17,7 @@ type DatabaseRepository interface {
 	WithTransaction(transactoinFunc transactionFunc) (interface{}, error)
 
 	// Exam
+	ExistExam(ctx context.Context, examId, userId string) (isExist bool, err error)
 	CreateExam(ctx context.Context, exam model.Exam) (examId string, err error)
 	UpdateExam(ctx context.Context, exam model.Exam) error
 	GetExam(ctx context.Context, examId string) (exam *model.Exam, err error)

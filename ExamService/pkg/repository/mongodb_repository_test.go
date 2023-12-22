@@ -27,6 +27,7 @@ type MyTestSuite struct {
 	ctx              context.Context
 	mongodbContainer *mongodb.MongoDBContainer
 
+	examIdForTestExistExam  string
 	examIdForTestUpdateExam string
 	examIdForTestGetExam    string
 	examIdForTestDeleteExam string
@@ -115,6 +116,14 @@ func (s *MyTestSuite) TestConnectDBAndDisconnectDB() {
 
 	err = repo.DisconnectDB()
 	s.Nil(err)
+}
+
+func (s *MyTestSuite) TestExistExam() {
+	ctx := context.TODO()
+
+	isExist, err := s.repo.ExistExam(ctx, s.examIdForTestExistExam, "user01")
+	s.Nil(err)
+	s.Equal(true, isExist)
 }
 
 func (s *MyTestSuite) TestCreateExam() {
@@ -302,8 +311,21 @@ func createTestData(s *MyTestSuite, uri string) error {
 		return err
 	}
 
-	// For TestUpdateExam
+	// For TestExistExam
 	result, err := collection.InsertOne(ctx, model.Exam{
+		Topic:       "TestExistExam",
+		Description: "jsut for test",
+		Tags:        []string{"tag01", "tag02"},
+		IsPublic:    true,
+		UserId:      "user01",
+	})
+	if err != nil {
+		return err
+	}
+	s.examIdForTestExistExam = result.InsertedID.(primitive.ObjectID).Hex()
+
+	// For TestUpdateExam
+	result, err = collection.InsertOne(ctx, model.Exam{
 		Topic:       "TestUpdateExam",
 		Description: "jsut for test",
 		Tags:        []string{"tag01", "tag02"},
