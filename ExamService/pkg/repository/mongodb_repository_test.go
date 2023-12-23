@@ -216,8 +216,9 @@ func (s *MyTestSuite) TestDeleteExamById() {
 	s.Nil(err)
 	examId := result.InsertedID.(primitive.ObjectID).Hex()
 
-	err = s.repo.DeleteExamById(ctx, examId)
+	deletedCount, err := s.repo.DeleteExamById(ctx, examId)
 	s.Nil(err)
+	s.Equal(int64(1), deletedCount)
 }
 
 func (s *MyTestSuite) TestCreateQuestion() {
@@ -313,17 +314,19 @@ func (s *MyTestSuite) TestDeleteQuestionById() {
 	s.Nil(err)
 	questionId := result.InsertedID.(primitive.ObjectID).Hex()
 
-	err = s.repo.DeleteQuestionById(ctx, questionId)
+	deletedCount, err := s.repo.DeleteQuestionById(ctx, questionId)
 	s.Nil(err)
+	s.Equal(int64(1), deletedCount)
 }
 
 func (s *MyTestSuite) TestDeleteQuestionsByExamId() {
 	ctx := context.TODO()
 
 	examId := "TestDeleteQuestionsByExamId"
+	size := 10
 	questions := []interface{}{}
 
-	for i := 0; i < 30; i++ {
+	for i := 0; i < size; i++ {
 		questions = append(questions, model.Question{
 			ExamId:  examId,
 			Ask:     fmt.Sprintf("Question_%d", i),
@@ -334,8 +337,9 @@ func (s *MyTestSuite) TestDeleteQuestionsByExamId() {
 	_, err := s.questionCollection.InsertMany(ctx, questions)
 	s.Nil(err)
 
-	err = s.repo.DeleteQuestionsByExamId(ctx, examId)
+	deletedCount, err := s.repo.DeleteQuestionsByExamId(ctx, examId)
 	s.Nil(err)
+	s.Equal(int64(size), deletedCount)
 }
 
 func (s *MyTestSuite) TestDeleteAnswerWrongByQuestionId() {
@@ -350,8 +354,32 @@ func (s *MyTestSuite) TestDeleteAnswerWrongByQuestionId() {
 	})
 	s.Nil(err)
 
-	err = s.repo.DeleteAnswerWrongByQuestionId(ctx, questionId)
+	deletedCount, err := s.repo.DeleteAnswerWrongByQuestionId(ctx, questionId)
 	s.Nil(err)
+	s.Equal(int64(1), deletedCount)
+}
+
+func (s *MyTestSuite) TestDeleteAnswerWrongsByExamId() {
+	ctx := context.TODO()
+
+	examId := "TestDeleteAnswerWrongsByExamId"
+	size := 10
+	documents := []interface{}{}
+
+	for i := 0; i < size; i++ {
+		documents = append(documents, model.AnswerWrong{
+			ExamId:     examId,
+			QuestionId: "q01",
+			Times:      10,
+			UserId:     "user01",
+		})
+	}
+	_, err := s.answerWrongCollection.InsertMany(ctx, documents)
+	s.Nil(err)
+
+	deletedCount, err := s.repo.DeleteAnswerWrongsByExamId(ctx, examId)
+	s.Nil(err)
+	s.Equal(int64(size), deletedCount)
 }
 
 // testcontainers mongodb 不支援交易功能，所以註解此測試

@@ -298,21 +298,31 @@ func (_c *MockDatabaseRepository_CreateQuestion_Call) RunAndReturn(run func(cont
 }
 
 // DeleteAnswerWrongByQuestionId provides a mock function with given fields: ctx, questionId
-func (_m *MockDatabaseRepository) DeleteAnswerWrongByQuestionId(ctx context.Context, questionId string) error {
+func (_m *MockDatabaseRepository) DeleteAnswerWrongByQuestionId(ctx context.Context, questionId string) (int64, error) {
 	ret := _m.Called(ctx, questionId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteAnswerWrongByQuestionId")
 	}
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return rf(ctx, questionId)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) int64); ok {
 		r0 = rf(ctx, questionId)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(int64)
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, questionId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // MockDatabaseRepository_DeleteAnswerWrongByQuestionId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteAnswerWrongByQuestionId'
@@ -334,32 +344,99 @@ func (_c *MockDatabaseRepository_DeleteAnswerWrongByQuestionId_Call) Run(run fun
 	return _c
 }
 
-func (_c *MockDatabaseRepository_DeleteAnswerWrongByQuestionId_Call) Return(_a0 error) *MockDatabaseRepository_DeleteAnswerWrongByQuestionId_Call {
-	_c.Call.Return(_a0)
+func (_c *MockDatabaseRepository_DeleteAnswerWrongByQuestionId_Call) Return(deletedCount int64, err error) *MockDatabaseRepository_DeleteAnswerWrongByQuestionId_Call {
+	_c.Call.Return(deletedCount, err)
 	return _c
 }
 
-func (_c *MockDatabaseRepository_DeleteAnswerWrongByQuestionId_Call) RunAndReturn(run func(context.Context, string) error) *MockDatabaseRepository_DeleteAnswerWrongByQuestionId_Call {
+func (_c *MockDatabaseRepository_DeleteAnswerWrongByQuestionId_Call) RunAndReturn(run func(context.Context, string) (int64, error)) *MockDatabaseRepository_DeleteAnswerWrongByQuestionId_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteAnswerWrongsByExamId provides a mock function with given fields: ctx, examId
+func (_m *MockDatabaseRepository) DeleteAnswerWrongsByExamId(ctx context.Context, examId string) (int64, error) {
+	ret := _m.Called(ctx, examId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteAnswerWrongsByExamId")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return rf(ctx, examId)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+		r0 = rf(ctx, examId)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, examId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockDatabaseRepository_DeleteAnswerWrongsByExamId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteAnswerWrongsByExamId'
+type MockDatabaseRepository_DeleteAnswerWrongsByExamId_Call struct {
+	*mock.Call
+}
+
+// DeleteAnswerWrongsByExamId is a helper method to define mock.On call
+//   - ctx context.Context
+//   - examId string
+func (_e *MockDatabaseRepository_Expecter) DeleteAnswerWrongsByExamId(ctx interface{}, examId interface{}) *MockDatabaseRepository_DeleteAnswerWrongsByExamId_Call {
+	return &MockDatabaseRepository_DeleteAnswerWrongsByExamId_Call{Call: _e.mock.On("DeleteAnswerWrongsByExamId", ctx, examId)}
+}
+
+func (_c *MockDatabaseRepository_DeleteAnswerWrongsByExamId_Call) Run(run func(ctx context.Context, examId string)) *MockDatabaseRepository_DeleteAnswerWrongsByExamId_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockDatabaseRepository_DeleteAnswerWrongsByExamId_Call) Return(deletedCount int64, err error) *MockDatabaseRepository_DeleteAnswerWrongsByExamId_Call {
+	_c.Call.Return(deletedCount, err)
+	return _c
+}
+
+func (_c *MockDatabaseRepository_DeleteAnswerWrongsByExamId_Call) RunAndReturn(run func(context.Context, string) (int64, error)) *MockDatabaseRepository_DeleteAnswerWrongsByExamId_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // DeleteExamById provides a mock function with given fields: ctx, examId
-func (_m *MockDatabaseRepository) DeleteExamById(ctx context.Context, examId string) error {
+func (_m *MockDatabaseRepository) DeleteExamById(ctx context.Context, examId string) (int64, error) {
 	ret := _m.Called(ctx, examId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteExamById")
 	}
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return rf(ctx, examId)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) int64); ok {
 		r0 = rf(ctx, examId)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(int64)
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, examId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // MockDatabaseRepository_DeleteExamById_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteExamById'
@@ -381,32 +458,42 @@ func (_c *MockDatabaseRepository_DeleteExamById_Call) Run(run func(ctx context.C
 	return _c
 }
 
-func (_c *MockDatabaseRepository_DeleteExamById_Call) Return(_a0 error) *MockDatabaseRepository_DeleteExamById_Call {
-	_c.Call.Return(_a0)
+func (_c *MockDatabaseRepository_DeleteExamById_Call) Return(deletedCount int64, err error) *MockDatabaseRepository_DeleteExamById_Call {
+	_c.Call.Return(deletedCount, err)
 	return _c
 }
 
-func (_c *MockDatabaseRepository_DeleteExamById_Call) RunAndReturn(run func(context.Context, string) error) *MockDatabaseRepository_DeleteExamById_Call {
+func (_c *MockDatabaseRepository_DeleteExamById_Call) RunAndReturn(run func(context.Context, string) (int64, error)) *MockDatabaseRepository_DeleteExamById_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // DeleteQuestionById provides a mock function with given fields: ctx, questionId
-func (_m *MockDatabaseRepository) DeleteQuestionById(ctx context.Context, questionId string) error {
+func (_m *MockDatabaseRepository) DeleteQuestionById(ctx context.Context, questionId string) (int64, error) {
 	ret := _m.Called(ctx, questionId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteQuestionById")
 	}
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return rf(ctx, questionId)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) int64); ok {
 		r0 = rf(ctx, questionId)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(int64)
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, questionId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // MockDatabaseRepository_DeleteQuestionById_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteQuestionById'
@@ -428,32 +515,42 @@ func (_c *MockDatabaseRepository_DeleteQuestionById_Call) Run(run func(ctx conte
 	return _c
 }
 
-func (_c *MockDatabaseRepository_DeleteQuestionById_Call) Return(_a0 error) *MockDatabaseRepository_DeleteQuestionById_Call {
-	_c.Call.Return(_a0)
+func (_c *MockDatabaseRepository_DeleteQuestionById_Call) Return(deletedCount int64, err error) *MockDatabaseRepository_DeleteQuestionById_Call {
+	_c.Call.Return(deletedCount, err)
 	return _c
 }
 
-func (_c *MockDatabaseRepository_DeleteQuestionById_Call) RunAndReturn(run func(context.Context, string) error) *MockDatabaseRepository_DeleteQuestionById_Call {
+func (_c *MockDatabaseRepository_DeleteQuestionById_Call) RunAndReturn(run func(context.Context, string) (int64, error)) *MockDatabaseRepository_DeleteQuestionById_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // DeleteQuestionsByExamId provides a mock function with given fields: ctx, examId
-func (_m *MockDatabaseRepository) DeleteQuestionsByExamId(ctx context.Context, examId string) error {
+func (_m *MockDatabaseRepository) DeleteQuestionsByExamId(ctx context.Context, examId string) (int64, error) {
 	ret := _m.Called(ctx, examId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteQuestionsByExamId")
 	}
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return rf(ctx, examId)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) int64); ok {
 		r0 = rf(ctx, examId)
 	} else {
-		r0 = ret.Error(0)
+		r0 = ret.Get(0).(int64)
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, examId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // MockDatabaseRepository_DeleteQuestionsByExamId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteQuestionsByExamId'
@@ -475,12 +572,12 @@ func (_c *MockDatabaseRepository_DeleteQuestionsByExamId_Call) Run(run func(ctx 
 	return _c
 }
 
-func (_c *MockDatabaseRepository_DeleteQuestionsByExamId_Call) Return(_a0 error) *MockDatabaseRepository_DeleteQuestionsByExamId_Call {
-	_c.Call.Return(_a0)
+func (_c *MockDatabaseRepository_DeleteQuestionsByExamId_Call) Return(deletedCount int64, err error) *MockDatabaseRepository_DeleteQuestionsByExamId_Call {
+	_c.Call.Return(deletedCount, err)
 	return _c
 }
 
-func (_c *MockDatabaseRepository_DeleteQuestionsByExamId_Call) RunAndReturn(run func(context.Context, string) error) *MockDatabaseRepository_DeleteQuestionsByExamId_Call {
+func (_c *MockDatabaseRepository_DeleteQuestionsByExamId_Call) RunAndReturn(run func(context.Context, string) (int64, error)) *MockDatabaseRepository_DeleteQuestionsByExamId_Call {
 	_c.Call.Return(run)
 	return _c
 }

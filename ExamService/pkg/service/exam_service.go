@@ -170,15 +170,15 @@ func (examService examService) DeleteExam(examId, userId string) error {
 	_, err = examService.databaseRepository.WithTransaction(
 		func(ctx context.Context) (interface{}, error) {
 			// Delete Exam
-			err := databaseRepository.DeleteExamById(ctx, examId)
+			_, err := databaseRepository.DeleteExamById(ctx, examId)
 			if err != nil {
 				return nil, err
 			}
 
 			// Delete Question
-			err = databaseRepository.DeleteQuestionsByExamId(ctx, examId)
+			_, err = databaseRepository.DeleteQuestionsByExamId(ctx, examId)
 
-			// TODO: Delete AnswerWrong
+			// TODO: Delete AnswerWrong by examId
 
 			// TODO: Delete ExamRecord
 
@@ -252,7 +252,7 @@ func (examService examService) UpdateQuestion(
 		}
 
 		// 刪除相關的 AnswerWrong
-		err = databaseRepository.DeleteAnswerWrongByQuestionId(ctx, questionId)
+		_, err = databaseRepository.DeleteAnswerWrongByQuestionId(ctx, questionId)
 		if err != nil {
 			return nil, err
 		}
@@ -325,15 +325,21 @@ func (examService examService) DeleteQuestion(
 		return fmt.Errorf(errorMessage, err)
 	}
 
-	// Delete AnswerWrong
-	err = databaseRepository.DeleteAnswerWrongByQuestionId(context.TODO(), questionId)
-	if err != nil {
-		errorLogger.Log("err", err)
-		return fmt.Errorf(errorMessage, err)
-	}
+	_, err = databaseRepository.WithTransaction(func(ctx context.Context) (interface{}, error) {
+		// Delete AnswerWrong
+		_, err = databaseRepository.DeleteAnswerWrongByQuestionId(ctx, questionId)
+		if err != nil {
+			return nil, err
+		}
 
-	// Delete Question
-	err = databaseRepository.DeleteQuestionById(context.TODO(), questionId)
+		// Delete Question
+		_, err = databaseRepository.DeleteQuestionById(ctx, questionId)
+		if err != nil {
+			return nil, err
+		}
+
+		return nil, nil
+	})
 	if err != nil {
 		errorLogger.Log("err", err)
 		return fmt.Errorf(errorMessage, err)

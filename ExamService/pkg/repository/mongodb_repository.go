@@ -155,10 +155,13 @@ func (repo *MongoDBRepository) FindExamsByUserIdOrderByUpdateAtDesc(
 	return exams, nil
 }
 
-func (repo *MongoDBRepository) DeleteExamById(ctx context.Context, examId string) error {
+func (repo *MongoDBRepository) DeleteExamById(
+	ctx context.Context,
+	examId string,
+) (deletedCount int64, err error) {
 	id, err := primitive.ObjectIDFromHex(examId)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	filter := bson.D{
@@ -166,14 +169,11 @@ func (repo *MongoDBRepository) DeleteExamById(ctx context.Context, examId string
 	}
 	collection := repo.getCollection(EXAM_COLLECTION)
 	result, err := collection.DeleteOne(ctx, filter)
-
-	// 查無符合條件的資料可供刪除
-	if result.DeletedCount == 0 {
-		err = fmt.Errorf("Exam not found by examId: %s", examId)
-		return err
+	if err != nil {
+		return 0, err
 	}
 
-	return nil
+	return result.DeletedCount, nil
 }
 
 func (repo *MongoDBRepository) CountExamsByUserId(
@@ -286,10 +286,13 @@ func (repo *MongoDBRepository) FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc
 	return questions, nil
 }
 
-func (repo *MongoDBRepository) DeleteQuestionById(ctx context.Context, questionId string) error {
+func (repo *MongoDBRepository) DeleteQuestionById(
+	ctx context.Context,
+	questionId string,
+) (deletedCount int64, err error) {
 	id, err := primitive.ObjectIDFromHex(questionId)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	filter := bson.D{
@@ -297,27 +300,27 @@ func (repo *MongoDBRepository) DeleteQuestionById(ctx context.Context, questionI
 	}
 	collection := repo.getCollection(QUESTION_COLLECTION)
 	result, err := collection.DeleteOne(ctx, filter)
-
-	// 查無符合條件的資料可供刪除
-	if result.DeletedCount == 0 {
-		err = fmt.Errorf("Question not found by questionId: %s", questionId)
-		return err
+	if err != nil {
+		return 0, err
 	}
 
-	return nil
+	return result.DeletedCount, nil
 }
 
-func (repo *MongoDBRepository) DeleteQuestionsByExamId(ctx context.Context, examId string) error {
+func (repo *MongoDBRepository) DeleteQuestionsByExamId(
+	ctx context.Context,
+	examId string,
+) (deletedCount int64, err error) {
 	filter := bson.D{
 		{"examId", examId},
 	}
 	collection := repo.getCollection(QUESTION_COLLECTION)
-	_, err := collection.DeleteMany(ctx, filter)
+	result, err := collection.DeleteMany(ctx, filter)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return result.DeletedCount, nil
 }
 
 func (repo *MongoDBRepository) CountQuestionsByExamIdAndUserId(
@@ -340,17 +343,33 @@ func (repo *MongoDBRepository) CountQuestionsByExamIdAndUserId(
 func (repo *MongoDBRepository) DeleteAnswerWrongByQuestionId(
 	ctx context.Context,
 	questionId string,
-) error {
+) (deletedCount int64, err error) {
 	filter := bson.D{
 		{"questionId", questionId},
 	}
 	collection := repo.getCollection(ANSWERWRONG_COLLECTION)
-	_, err := collection.DeleteOne(ctx, filter)
+	result, err := collection.DeleteOne(ctx, filter)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return result.DeletedCount, nil
+}
+
+func (repo *MongoDBRepository) DeleteAnswerWrongsByExamId(
+	ctx context.Context,
+	examId string,
+) (deletedCount int64, err error) {
+	filter := bson.D{
+		{"examId", examId},
+	}
+	collection := repo.getCollection(ANSWERWRONG_COLLECTION)
+	result, err := collection.DeleteMany(ctx, filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.DeletedCount, nil
 }
 
 func (repo *MongoDBRepository) WithTransaction(
