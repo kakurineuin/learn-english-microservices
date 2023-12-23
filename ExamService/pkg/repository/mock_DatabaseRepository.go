@@ -68,6 +68,64 @@ func (_c *MockDatabaseRepository_ConnectDB_Call) RunAndReturn(run func(string) e
 	return _c
 }
 
+// CountExamRecordsByExamIdAndUserId provides a mock function with given fields: ctx, examId, userId
+func (_m *MockDatabaseRepository) CountExamRecordsByExamIdAndUserId(ctx context.Context, examId string, userId string) (int64, error) {
+	ret := _m.Called(ctx, examId, userId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountExamRecordsByExamIdAndUserId")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (int64, error)); ok {
+		return rf(ctx, examId, userId)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) int64); ok {
+		r0 = rf(ctx, examId, userId)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, examId, userId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockDatabaseRepository_CountExamRecordsByExamIdAndUserId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountExamRecordsByExamIdAndUserId'
+type MockDatabaseRepository_CountExamRecordsByExamIdAndUserId_Call struct {
+	*mock.Call
+}
+
+// CountExamRecordsByExamIdAndUserId is a helper method to define mock.On call
+//   - ctx context.Context
+//   - examId string
+//   - userId string
+func (_e *MockDatabaseRepository_Expecter) CountExamRecordsByExamIdAndUserId(ctx interface{}, examId interface{}, userId interface{}) *MockDatabaseRepository_CountExamRecordsByExamIdAndUserId_Call {
+	return &MockDatabaseRepository_CountExamRecordsByExamIdAndUserId_Call{Call: _e.mock.On("CountExamRecordsByExamIdAndUserId", ctx, examId, userId)}
+}
+
+func (_c *MockDatabaseRepository_CountExamRecordsByExamIdAndUserId_Call) Run(run func(ctx context.Context, examId string, userId string)) *MockDatabaseRepository_CountExamRecordsByExamIdAndUserId_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
+	})
+	return _c
+}
+
+func (_c *MockDatabaseRepository_CountExamRecordsByExamIdAndUserId_Call) Return(count int64, err error) *MockDatabaseRepository_CountExamRecordsByExamIdAndUserId_Call {
+	_c.Call.Return(count, err)
+	return _c
+}
+
+func (_c *MockDatabaseRepository_CountExamRecordsByExamIdAndUserId_Call) RunAndReturn(run func(context.Context, string, string) (int64, error)) *MockDatabaseRepository_CountExamRecordsByExamIdAndUserId_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CountExamsByUserId provides a mock function with given fields: ctx, userId
 func (_m *MockDatabaseRepository) CountExamsByUserId(ctx context.Context, userId string) (int64, error) {
 	ret := _m.Called(ctx, userId)
@@ -737,6 +795,68 @@ func (_c *MockDatabaseRepository_DisconnectDB_Call) Return(_a0 error) *MockDatab
 }
 
 func (_c *MockDatabaseRepository_DisconnectDB_Call) RunAndReturn(run func() error) *MockDatabaseRepository_DisconnectDB_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc provides a mock function with given fields: ctx, examId, userId, skip, limit
+func (_m *MockDatabaseRepository) FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc(ctx context.Context, examId string, userId string, skip int64, limit int64) ([]model.ExamRecord, error) {
+	ret := _m.Called(ctx, examId, userId, skip, limit)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc")
+	}
+
+	var r0 []model.ExamRecord
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, int64, int64) ([]model.ExamRecord, error)); ok {
+		return rf(ctx, examId, userId, skip, limit)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, int64, int64) []model.ExamRecord); ok {
+		r0 = rf(ctx, examId, userId, skip, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]model.ExamRecord)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, int64, int64) error); ok {
+		r1 = rf(ctx, examId, userId, skip, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockDatabaseRepository_FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc'
+type MockDatabaseRepository_FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc_Call struct {
+	*mock.Call
+}
+
+// FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc is a helper method to define mock.On call
+//   - ctx context.Context
+//   - examId string
+//   - userId string
+//   - skip int64
+//   - limit int64
+func (_e *MockDatabaseRepository_Expecter) FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc(ctx interface{}, examId interface{}, userId interface{}, skip interface{}, limit interface{}) *MockDatabaseRepository_FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc_Call {
+	return &MockDatabaseRepository_FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc_Call{Call: _e.mock.On("FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc", ctx, examId, userId, skip, limit)}
+}
+
+func (_c *MockDatabaseRepository_FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc_Call) Run(run func(ctx context.Context, examId string, userId string, skip int64, limit int64)) *MockDatabaseRepository_FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(int64), args[4].(int64))
+	})
+	return _c
+}
+
+func (_c *MockDatabaseRepository_FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc_Call) Return(examRecords []model.ExamRecord, err error) *MockDatabaseRepository_FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc_Call {
+	_c.Call.Return(examRecords, err)
+	return _c
+}
+
+func (_c *MockDatabaseRepository_FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc_Call) RunAndReturn(run func(context.Context, string, string, int64, int64) ([]model.ExamRecord, error)) *MockDatabaseRepository_FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc_Call {
 	_c.Call.Return(run)
 	return _c
 }

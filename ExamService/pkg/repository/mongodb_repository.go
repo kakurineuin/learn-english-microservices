@@ -436,6 +436,47 @@ func (repo *MongoDBRepository) CreateExamRecord(
 	return examRecordId, nil
 }
 
+func (repo *MongoDBRepository) FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc(
+	ctx context.Context,
+	examId, userId string,
+	skip, limit int64,
+) (examRecords []model.ExamRecord, err error) {
+	collection := repo.getCollection(EXAM_RECORD_COLLECTION)
+	filter := bson.D{
+		{"examId", examId},
+		{"userId", userId},
+	}
+	sort := bson.D{{"updatedAt", -1}} // descending
+	opts := options.Find().SetSort(sort).SetSkip(skip).SetLimit(limit)
+	cursor, err := collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cursor.All(ctx, &examRecords); err != nil {
+		return nil, err
+	}
+
+	return examRecords, nil
+}
+
+func (repo *MongoDBRepository) CountExamRecordsByExamIdAndUserId(
+	ctx context.Context,
+	examId, userId string,
+) (count int64, err error) {
+	collection := repo.getCollection(EXAM_RECORD_COLLECTION)
+	filter := bson.D{
+		{"examId", examId},
+		{"userId", userId},
+	}
+	count, err = collection.CountDocuments(ctx, filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (repo *MongoDBRepository) WithTransaction(
 	transactoinFunc transactionFunc,
 ) (interface{}, error) {

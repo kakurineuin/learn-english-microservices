@@ -23,6 +23,7 @@ type GRPCServer struct {
 	deleteQuestion gt.Handler
 
 	createExamRecord gt.Handler
+	findExamRecords  gt.Handler
 
 	pb.UnimplementedExamServiceServer
 }
@@ -79,6 +80,11 @@ func NewGRPCServer(endpointds endpoint.Endpoints, logger log.Logger) pb.ExamServ
 			endpointds.CreateExamRecord,
 			decodeCreateExamRecordRequest,
 			encodeCreateExamRecordResponse,
+		),
+		findExamRecords: gt.NewServer(
+			endpointds.FindExamRecords,
+			decodeFindExamRecordsRequest,
+			encodeFindExamRecordsResponse,
 		),
 	}
 }
@@ -433,4 +439,54 @@ func encodeCreateExamRecordResponse(_ context.Context, response interface{}) (in
 	}
 
 	return &pb.CreateExamRecordResponse{}, nil
+}
+
+func (s GRPCServer) FindExamRecords(
+	ctx context.Context,
+	req *pb.FindExamRecordsRequest,
+) (*pb.FindExamRecordsResponse, error) {
+	_, resp, err := s.findExamRecords.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb.FindExamRecordsResponse), nil
+}
+
+func decodeFindExamRecordsRequest(_ context.Context, request interface{}) (interface{}, error) {
+	req, ok := request.(*pb.FindExamRecordsRequest)
+	if !ok {
+		return nil, errors.New("invalid request body")
+	}
+
+	return endpoint.FindExamRecordsRequest{
+		PageIndex: req.PageIndex,
+		PageSize:  req.PageSize,
+		ExamId:    req.ExamId,
+		UserId:    req.UserId,
+	}, nil
+}
+
+func encodeFindExamRecordsResponse(_ context.Context, response interface{}) (interface{}, error) {
+	resp, ok := response.(endpoint.FindExamRecordsResponse)
+	if !ok {
+		return nil, errors.New("invalid response body")
+	}
+
+	examRecords := []*pb.ExamRecord{}
+
+	for _, examRecord := range resp.ExamRecords {
+		examRecords = append(examRecords, &pb.ExamRecord{
+			Id:     examRecord.Id.Hex(),
+			ExamId: examRecord.ExamId,
+			Score:  examRecord.Score,
+			UserId: examRecord.UserId,
+		})
+	}
+
+	return &pb.FindExamRecordsResponse{
+		Total:       resp.Total,
+		PageCount:   resp.PageCount,
+		ExamRecords: examRecords,
+	}, nil
 }

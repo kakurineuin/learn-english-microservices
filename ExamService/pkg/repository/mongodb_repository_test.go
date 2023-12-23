@@ -501,6 +501,57 @@ func (s *MyTestSuite) TestCreateExamRecord() {
 	s.NotEmpty(examRecordId)
 }
 
+func (s *MyTestSuite) TestFindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc() {
+	ctx := context.TODO()
+
+	examId := "exam01"
+	userId := "user01"
+	documents := []interface{}{}
+
+	for i := 0; i < 30; i++ {
+		documents = append(documents, model.ExamRecord{
+			ExamId: examId,
+			Score:  10,
+			UserId: userId,
+		})
+	}
+	_, err := s.examRecordCollection.InsertMany(ctx, documents)
+	s.Nil(err)
+
+	examRecords, err := s.repo.FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc(
+		ctx,
+		examId,
+		userId,
+		10,
+		10,
+	)
+	s.Nil(err)
+	s.Equal(10, len(examRecords))
+}
+
+func (s *MyTestSuite) TestCountExamRecordsByExamIdAndUserId() {
+	ctx := context.TODO()
+
+	examId := "exam01"
+	userId := "user01"
+	size := 10
+	documents := []interface{}{}
+
+	for i := 0; i < size; i++ {
+		documents = append(documents, model.ExamRecord{
+			ExamId: examId,
+			Score:  10,
+			UserId: userId,
+		})
+	}
+	_, err := s.examRecordCollection.InsertMany(ctx, documents)
+	s.Nil(err)
+
+	count, err := s.repo.CountExamRecordsByExamIdAndUserId(ctx, examId, userId)
+	s.Nil(err)
+	s.Equal(int64(size), count)
+}
+
 // testcontainers mongodb 不支援交易功能，所以註解此測試
 // func (s *MyTestSuite) TestWithTransaction() {
 // 	userId := "user_mongodb_test_002"

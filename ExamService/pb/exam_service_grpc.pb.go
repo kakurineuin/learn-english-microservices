@@ -31,6 +31,7 @@ type ExamServiceClient interface {
 	FindQuestions(ctx context.Context, in *FindQuestionsRequest, opts ...grpc.CallOption) (*FindQuestionsResponse, error)
 	DeleteQuestion(ctx context.Context, in *DeleteQuestionRequest, opts ...grpc.CallOption) (*DeleteQuestionResponse, error)
 	CreateExamRecord(ctx context.Context, in *CreateExamRecordRequest, opts ...grpc.CallOption) (*CreateExamRecordResponse, error)
+	FindExamRecords(ctx context.Context, in *FindExamRecordsRequest, opts ...grpc.CallOption) (*FindExamRecordsResponse, error)
 }
 
 type examServiceClient struct {
@@ -122,6 +123,15 @@ func (c *examServiceClient) CreateExamRecord(ctx context.Context, in *CreateExam
 	return out, nil
 }
 
+func (c *examServiceClient) FindExamRecords(ctx context.Context, in *FindExamRecordsRequest, opts ...grpc.CallOption) (*FindExamRecordsResponse, error) {
+	out := new(FindExamRecordsResponse)
+	err := c.cc.Invoke(ctx, "/pb.ExamService/FindExamRecords", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ExamServiceServer is the server API for ExamService service.
 // All implementations must embed UnimplementedExamServiceServer
 // for forward compatibility
@@ -135,6 +145,7 @@ type ExamServiceServer interface {
 	FindQuestions(context.Context, *FindQuestionsRequest) (*FindQuestionsResponse, error)
 	DeleteQuestion(context.Context, *DeleteQuestionRequest) (*DeleteQuestionResponse, error)
 	CreateExamRecord(context.Context, *CreateExamRecordRequest) (*CreateExamRecordResponse, error)
+	FindExamRecords(context.Context, *FindExamRecordsRequest) (*FindExamRecordsResponse, error)
 	mustEmbedUnimplementedExamServiceServer()
 }
 
@@ -168,6 +179,9 @@ func (UnimplementedExamServiceServer) DeleteQuestion(context.Context, *DeleteQue
 }
 func (UnimplementedExamServiceServer) CreateExamRecord(context.Context, *CreateExamRecordRequest) (*CreateExamRecordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateExamRecord not implemented")
+}
+func (UnimplementedExamServiceServer) FindExamRecords(context.Context, *FindExamRecordsRequest) (*FindExamRecordsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindExamRecords not implemented")
 }
 func (UnimplementedExamServiceServer) mustEmbedUnimplementedExamServiceServer() {}
 
@@ -344,6 +358,24 @@ func _ExamService_CreateExamRecord_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExamService_FindExamRecords_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindExamRecordsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExamServiceServer).FindExamRecords(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.ExamService/FindExamRecords",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExamServiceServer).FindExamRecords(ctx, req.(*FindExamRecordsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ExamService_ServiceDesc is the grpc.ServiceDesc for ExamService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -386,6 +418,10 @@ var ExamService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateExamRecord",
 			Handler:    _ExamService_CreateExamRecord_Handler,
+		},
+		{
+			MethodName: "FindExamRecords",
+			Handler:    _ExamService_FindExamRecords_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

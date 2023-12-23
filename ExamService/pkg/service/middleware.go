@@ -140,3 +140,18 @@ func (mw loggingMiddleware) CreateExamRecord(
 	}()
 	return mw.next.CreateExamRecord(examId, score, wrongQuestionIds, userId)
 }
+
+func (mw loggingMiddleware) FindExamRecords(
+	pageIndex, pageSize int64, examId, userId string,
+) (total, pageCount int64, examRecords []model.ExamRecord, err error) {
+	defer func() {
+		mw.logger.Log(
+			"method", "FindExamRecords",
+			"pageIndex", pageIndex,
+			"pageSize", pageSize,
+			"exmaId", examId,
+			"userId", userId,
+			"err", err)
+	}()
+	return mw.next.FindExamRecords(pageIndex, pageSize, examId, userId)
+}

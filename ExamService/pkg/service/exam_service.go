@@ -35,6 +35,10 @@ type ExamService interface {
 
 	// ExamRecord
 	CreateExamRecord(examId string, score int64, wrongQuestionIds []string, userId string) error
+	FindExamRecords(
+		pageIndex, pageSize int64,
+		examId, userId string,
+	) (total, pageCount int64, examRecords []model.ExamRecord, err error)
 }
 
 type examService struct {
@@ -423,4 +427,38 @@ func (examService examService) CreateExamRecord(
 	}
 
 	return nil
+}
+
+func (examService examService) FindExamRecords(
+	pageIndex, pageSize int64,
+	examId, userId string,
+) (total, pageCount int64, examRecords []model.ExamRecord, err error) {
+	logger := examService.logger
+	errorLogger := examService.errorLogger
+	errorMessage := "FindExamRecords failed: %w"
+
+	databaseRepository := examService.databaseRepository
+	skip := pageSize * pageIndex
+	examRecords, err = databaseRepository.FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc(
+		context.TODO(), examId, userId, skip, pageSize)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return 0, 0, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	// Total
+	total, err = databaseRepository.CountExamRecordsByExamIdAndUserId(
+		context.TODO(),
+		examId,
+		userId,
+	)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return 0, 0, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	// PageCount
+	pageCount = int64(math.Ceil(float64(total) / float64(pageSize)))
+	logger.Log("total", total, "pageCount", pageCount, "examRecords size", len(examRecords))
+	return
 }

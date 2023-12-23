@@ -22,6 +22,7 @@ type Endpoints struct {
 	DeleteQuestion endpoint.Endpoint
 
 	CreateExamRecord endpoint.Endpoint
+	FindExamRecords  endpoint.Endpoint
 }
 
 type CreateExamRequest struct {
@@ -117,6 +118,19 @@ type CreateExamRecordRequest struct {
 
 type CreateExamRecordResponse struct{}
 
+type FindExamRecordsRequest struct {
+	PageIndex int64
+	PageSize  int64
+	ExamId    string
+	UserId    string
+}
+
+type FindExamRecordsResponse struct {
+	Total       int64
+	PageCount   int64
+	ExamRecords []model.ExamRecord
+}
+
 func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints {
 	createExamEndpoint := makeCreateExamEndpoint(examService)
 	createExamEndpoint = LoggingMiddleware(
@@ -154,6 +168,10 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	createExamRecordEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "CreateExamRecord"))(createExamRecordEndpoint)
 
+	findExamRecordsEndpoint := makeFindExamRecordsEndpoint(examService)
+	findExamRecordsEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "FindExamRecords"))(findExamRecordsEndpoint)
+
 	return Endpoints{
 		CreateExam: createExamEndpoint,
 		UpdateExam: updateExamEndpoint,
@@ -166,6 +184,7 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 		DeleteQuestion: deleteQuestionEndpoint,
 
 		CreateExamRecord: createExamRecordEndpoint,
+		FindExamRecords:  findExamRecordsEndpoint,
 	}
 }
 
@@ -288,5 +307,25 @@ func makeCreateExamRecordEndpoint(examService service.ExamService) endpoint.Endp
 			return nil, err
 		}
 		return CreateExamRecordResponse{}, nil
+	}
+}
+
+func makeFindExamRecordsEndpoint(examService service.ExamService) endpoint.Endpoint {
+	return func(_ context.Context, request interface{}) (interface{}, error) {
+		req := request.(FindExamRecordsRequest)
+		total, pageCount, examRecords, err := examService.FindExamRecords(
+			req.PageIndex,
+			req.PageSize,
+			req.ExamId,
+			req.UserId,
+		)
+		if err != nil {
+			return nil, err
+		}
+		return FindExamRecordsResponse{
+			Total:       total,
+			PageCount:   pageCount,
+			ExamRecords: examRecords,
+		}, nil
 	}
 }

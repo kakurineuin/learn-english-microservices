@@ -61,4 +61,13 @@ type DatabaseRepository interface {
 		examRecord model.ExamRecord,
 	) (examRecordId string, err error)
 	DeleteExamRecordsByExamId(ctx context.Context, examId string) (deletedCount int64, err error)
+	FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc(
+		ctx context.Context,
+		examId, userId string,
+		skip, limit int64,
+	) (examRecords []model.ExamRecord, err error)
+	CountExamRecordsByExamIdAndUserId(
+		ctx context.Context,
+		examId, userId string,
+	) (count int64, err error)
 }

@@ -97,6 +97,13 @@ message DeleteQuestionRequest {
 
 message DeleteQuestionResponse {}
 
+message ExamRecord {
+  string id = 1;
+  string exam_id = 2;
+  int64 score = 3;
+  string user_id = 4;
+}
+
 message CreateExamRecordRequest {
   string exam_id = 1;
   int64 score = 2;
@@ -105,6 +112,19 @@ message CreateExamRecordRequest {
 }
 
 message CreateExamRecordResponse {}
+
+message FindExamRecordsRequest {
+  int64 page_index = 1;
+  int64 page_size = 2;
+  string exam_id = 3;
+  string user_id = 4;
+}
+
+message FindExamRecordsResponse {
+  int64 total = 1;
+  int64 page_count = 2;
+  repeated ExamRecord examRecords = 3;
+}
 
 service ExamService {
   rpc CreateExam(CreateExamRequest) returns (CreateExamResponse);
@@ -119,4 +139,5 @@ service ExamService {
 
   rpc CreateExamRecord(CreateExamRecordRequest)
       returns (CreateExamRecordResponse);
+  rpc FindExamRecords(FindExamRecordsRequest) returns (FindExamRecordsResponse);
 }
