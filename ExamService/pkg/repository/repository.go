@@ -50,7 +50,15 @@ type DatabaseRepository interface {
 		questionId string,
 	) (deletedCount int64, err error)
 	DeleteAnswerWrongsByExamId(ctx context.Context, examId string) (deletedCount int64, err error)
+	UpsertAnswerWrongByTimesPlusOne(
+		ctx context.Context,
+		examId, questionId, userId string,
+	) (modifiedCount, upsertedCount int64, err error)
 
 	// ExamRecord
+	CreateExamRecord(
+		ctx context.Context,
+		examRecord model.ExamRecord,
+	) (examRecordId string, err error)
 	DeleteExamRecordsByExamId(ctx context.Context, examId string) (deletedCount int64, err error)
 }

@@ -373,6 +373,35 @@ func (repo *MongoDBRepository) DeleteAnswerWrongsByExamId(
 	return result.DeletedCount, nil
 }
 
+func (repo *MongoDBRepository) UpsertAnswerWrongByTimesPlusOne(
+	ctx context.Context,
+	examId, questionId, userId string,
+) (modifiedCount, upsertedCount int64, err error) {
+	filter := bson.D{
+		{"examId", examId},
+		{"questionId", questionId},
+		{"userId", userId},
+	}
+
+	// times 遞增 1
+	update := bson.D{
+		{"$inc", bson.D{
+			{"times", 1},
+		}},
+	}
+
+	// Enable update or insert
+	opts := options.Update().SetUpsert(true)
+
+	collection := repo.getCollection(ANSWERWRONG_COLLECTION)
+	result, err := collection.UpdateOne(ctx, filter, update, opts)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return result.ModifiedCount, result.UpsertedCount, nil
+}
+
 func (repo *MongoDBRepository) DeleteExamRecordsByExamId(
 	ctx context.Context,
 	examId string,
@@ -387,6 +416,24 @@ func (repo *MongoDBRepository) DeleteExamRecordsByExamId(
 	}
 
 	return result.DeletedCount, nil
+}
+
+func (repo *MongoDBRepository) CreateExamRecord(
+	ctx context.Context,
+	examRecord model.ExamRecord,
+) (examRecordId string, err error) {
+	now := time.Now()
+	examRecord.CreatedAt = now
+	examRecord.UpdatedAt = now
+
+	collection := repo.getCollection(EXAM_RECORD_COLLECTION)
+	result, err := collection.InsertOne(ctx, examRecord)
+	if err != nil {
+		return "", err
+	}
+
+	examRecordId = result.InsertedID.(primitive.ObjectID).Hex()
+	return examRecordId, nil
 }
 
 func (repo *MongoDBRepository) WithTransaction(

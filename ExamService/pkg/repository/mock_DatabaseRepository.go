@@ -240,6 +240,63 @@ func (_c *MockDatabaseRepository_CreateExam_Call) RunAndReturn(run func(context.
 	return _c
 }
 
+// CreateExamRecord provides a mock function with given fields: ctx, examRecord
+func (_m *MockDatabaseRepository) CreateExamRecord(ctx context.Context, examRecord model.ExamRecord) (string, error) {
+	ret := _m.Called(ctx, examRecord)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateExamRecord")
+	}
+
+	var r0 string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, model.ExamRecord) (string, error)); ok {
+		return rf(ctx, examRecord)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, model.ExamRecord) string); ok {
+		r0 = rf(ctx, examRecord)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, model.ExamRecord) error); ok {
+		r1 = rf(ctx, examRecord)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockDatabaseRepository_CreateExamRecord_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateExamRecord'
+type MockDatabaseRepository_CreateExamRecord_Call struct {
+	*mock.Call
+}
+
+// CreateExamRecord is a helper method to define mock.On call
+//   - ctx context.Context
+//   - examRecord model.ExamRecord
+func (_e *MockDatabaseRepository_Expecter) CreateExamRecord(ctx interface{}, examRecord interface{}) *MockDatabaseRepository_CreateExamRecord_Call {
+	return &MockDatabaseRepository_CreateExamRecord_Call{Call: _e.mock.On("CreateExamRecord", ctx, examRecord)}
+}
+
+func (_c *MockDatabaseRepository_CreateExamRecord_Call) Run(run func(ctx context.Context, examRecord model.ExamRecord)) *MockDatabaseRepository_CreateExamRecord_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(model.ExamRecord))
+	})
+	return _c
+}
+
+func (_c *MockDatabaseRepository_CreateExamRecord_Call) Return(examRecordId string, err error) *MockDatabaseRepository_CreateExamRecord_Call {
+	_c.Call.Return(examRecordId, err)
+	return _c
+}
+
+func (_c *MockDatabaseRepository_CreateExamRecord_Call) RunAndReturn(run func(context.Context, model.ExamRecord) (string, error)) *MockDatabaseRepository_CreateExamRecord_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateQuestion provides a mock function with given fields: ctx, question
 func (_m *MockDatabaseRepository) CreateQuestion(ctx context.Context, question model.Question) (string, error) {
 	ret := _m.Called(ctx, question)
@@ -1015,6 +1072,72 @@ func (_c *MockDatabaseRepository_UpdateQuestion_Call) Return(_a0 error) *MockDat
 }
 
 func (_c *MockDatabaseRepository_UpdateQuestion_Call) RunAndReturn(run func(context.Context, model.Question) error) *MockDatabaseRepository_UpdateQuestion_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpsertAnswerWrongByTimesPlusOne provides a mock function with given fields: ctx, examId, questionId, userId
+func (_m *MockDatabaseRepository) UpsertAnswerWrongByTimesPlusOne(ctx context.Context, examId string, questionId string, userId string) (int64, int64, error) {
+	ret := _m.Called(ctx, examId, questionId, userId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpsertAnswerWrongByTimesPlusOne")
+	}
+
+	var r0 int64
+	var r1 int64
+	var r2 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) (int64, int64, error)); ok {
+		return rf(ctx, examId, questionId, userId)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) int64); ok {
+		r0 = rf(ctx, examId, questionId, userId)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string) int64); ok {
+		r1 = rf(ctx, examId, questionId, userId)
+	} else {
+		r1 = ret.Get(1).(int64)
+	}
+
+	if rf, ok := ret.Get(2).(func(context.Context, string, string, string) error); ok {
+		r2 = rf(ctx, examId, questionId, userId)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
+// MockDatabaseRepository_UpsertAnswerWrongByTimesPlusOne_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpsertAnswerWrongByTimesPlusOne'
+type MockDatabaseRepository_UpsertAnswerWrongByTimesPlusOne_Call struct {
+	*mock.Call
+}
+
+// UpsertAnswerWrongByTimesPlusOne is a helper method to define mock.On call
+//   - ctx context.Context
+//   - examId string
+//   - questionId string
+//   - userId string
+func (_e *MockDatabaseRepository_Expecter) UpsertAnswerWrongByTimesPlusOne(ctx interface{}, examId interface{}, questionId interface{}, userId interface{}) *MockDatabaseRepository_UpsertAnswerWrongByTimesPlusOne_Call {
+	return &MockDatabaseRepository_UpsertAnswerWrongByTimesPlusOne_Call{Call: _e.mock.On("UpsertAnswerWrongByTimesPlusOne", ctx, examId, questionId, userId)}
+}
+
+func (_c *MockDatabaseRepository_UpsertAnswerWrongByTimesPlusOne_Call) Run(run func(ctx context.Context, examId string, questionId string, userId string)) *MockDatabaseRepository_UpsertAnswerWrongByTimesPlusOne_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(string))
+	})
+	return _c
+}
+
+func (_c *MockDatabaseRepository_UpsertAnswerWrongByTimesPlusOne_Call) Return(modifiedCount int64, upsertedCount int64, err error) *MockDatabaseRepository_UpsertAnswerWrongByTimesPlusOne_Call {
+	_c.Call.Return(modifiedCount, upsertedCount, err)
+	return _c
+}
+
+func (_c *MockDatabaseRepository_UpsertAnswerWrongByTimesPlusOne_Call) RunAndReturn(run func(context.Context, string, string, string) (int64, int64, error)) *MockDatabaseRepository_UpsertAnswerWrongByTimesPlusOne_Call {
 	_c.Call.Return(run)
 	return _c
 }

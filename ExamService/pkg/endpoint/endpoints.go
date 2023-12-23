@@ -20,6 +20,8 @@ type Endpoints struct {
 	UpdateQuestion endpoint.Endpoint
 	FindQuestions  endpoint.Endpoint
 	DeleteQuestion endpoint.Endpoint
+
+	CreateExamRecord endpoint.Endpoint
 }
 
 type CreateExamRequest struct {
@@ -106,6 +108,15 @@ type DeleteQuestionRequest struct {
 
 type DeleteQuestionResponse struct{}
 
+type CreateExamRecordRequest struct {
+	ExamId           string
+	Score            int64
+	WrongQuestionIds []string
+	UserId           string
+}
+
+type CreateExamRecordResponse struct{}
+
 func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints {
 	createExamEndpoint := makeCreateExamEndpoint(examService)
 	createExamEndpoint = LoggingMiddleware(
@@ -139,6 +150,10 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	deleteQuestionEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "DeleteQuestion"))(deleteQuestionEndpoint)
 
+	createExamRecordEndpoint := makeCreateExamRecordEndpoint(examService)
+	createExamRecordEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "CreateExamRecord"))(createExamRecordEndpoint)
+
 	return Endpoints{
 		CreateExam: createExamEndpoint,
 		UpdateExam: updateExamEndpoint,
@@ -149,6 +164,8 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 		UpdateQuestion: updateQuestionEndpoint,
 		FindQuestions:  findQuestionsEndpoint,
 		DeleteQuestion: deleteQuestionEndpoint,
+
+		CreateExamRecord: createExamRecordEndpoint,
 	}
 }
 
@@ -259,5 +276,17 @@ func makeDeleteQuestionEndpoint(examService service.ExamService) endpoint.Endpoi
 			return nil, err
 		}
 		return DeleteQuestionResponse{}, nil
+	}
+}
+
+func makeCreateExamRecordEndpoint(examService service.ExamService) endpoint.Endpoint {
+	return func(_ context.Context, request interface{}) (interface{}, error) {
+		req := request.(CreateExamRecordRequest)
+		err := examService.CreateExamRecord(
+			req.ExamId, req.Score, req.WrongQuestionIds, req.UserId)
+		if err != nil {
+			return nil, err
+		}
+		return CreateExamRecordResponse{}, nil
 	}
 }

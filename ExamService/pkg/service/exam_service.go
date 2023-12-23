@@ -15,6 +15,7 @@ import (
 var unauthorizedOperationError = fmt.Errorf("Unauthorized operation")
 
 type ExamService interface {
+	// Exam
 	CreateExam(topic, description string, isPublic bool, userId string) (string, error)
 	UpdateExam(examId, topic, description string, isPublic bool, userId string) (string, error)
 	FindExams(
@@ -23,6 +24,7 @@ type ExamService interface {
 	) (total, pageCount int64, exams []model.Exam, err error)
 	DeleteExam(examId, userId string) error
 
+	// Question
 	CreateQuestion(examId, ask string, answers []string, userId string) (string, error)
 	UpdateQuestion(questionId, ask string, answers []string, userId string) (string, error)
 	FindQuestions(
@@ -30,6 +32,9 @@ type ExamService interface {
 		examId, userId string,
 	) (total, pageCount int64, questions []model.Question, err error)
 	DeleteQuestion(questionId, userId string) error
+
+	// ExamRecord
+	CreateExamRecord(examId string, score int64, wrongQuestionIds []string, userId string) error
 }
 
 type examService struct {
@@ -351,6 +356,67 @@ func (examService examService) DeleteQuestion(
 
 		return nil, nil
 	})
+	if err != nil {
+		errorLogger.Log("err", err)
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	return nil
+}
+
+func (examService examService) CreateExamRecord(
+	examId string, score int64, wrongQuestionIds []string, userId string,
+) error {
+	errorLogger := examService.errorLogger
+	errorMessage := "CreateExamRecord failed: %w"
+
+	databaseRepository := examService.databaseRepository
+	exam, err := databaseRepository.GetExamById(context.TODO(), examId)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	if exam == nil {
+		err := fmt.Errorf("Exam not found by id: %s", examId)
+		errorLogger.Log("err", err)
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	// 檢查不能新增別人的測驗紀錄
+	if !exam.IsPublic && exam.UserId != userId {
+		err = unauthorizedOperationError
+		errorLogger.Log("err", err)
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	_, err = databaseRepository.WithTransaction(func(ctx context.Context) (interface{}, error) {
+		// 新增測驗紀錄
+		_, err = databaseRepository.CreateExamRecord(ctx, model.ExamRecord{
+			ExamId: examId,
+			Score:  score,
+			UserId: userId,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		// 更新問題的答錯次數
+		for _, questionId := range wrongQuestionIds {
+			_, _, err := databaseRepository.UpsertAnswerWrongByTimesPlusOne(
+				ctx,
+				examId,
+				questionId,
+				userId,
+			)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return nil, nil
+	})
+
 	if err != nil {
 		errorLogger.Log("err", err)
 		return fmt.Errorf(errorMessage, err)

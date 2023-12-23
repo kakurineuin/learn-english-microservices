@@ -22,6 +22,8 @@ type GRPCServer struct {
 	findQuestions  gt.Handler
 	deleteQuestion gt.Handler
 
+	createExamRecord gt.Handler
+
 	pb.UnimplementedExamServiceServer
 }
 
@@ -70,6 +72,13 @@ func NewGRPCServer(endpointds endpoint.Endpoints, logger log.Logger) pb.ExamServ
 			endpointds.DeleteQuestion,
 			decodeDeleteQuestionRequest,
 			encodeDeleteQuestionResponse,
+		),
+
+		// ExamRecord
+		createExamRecord: gt.NewServer(
+			endpointds.CreateExamRecord,
+			decodeCreateExamRecordRequest,
+			encodeCreateExamRecordResponse,
 		),
 	}
 }
@@ -389,4 +398,39 @@ func encodeDeleteQuestionResponse(_ context.Context, response interface{}) (inte
 	}
 
 	return &pb.DeleteQuestionResponse{}, nil
+}
+
+func (s GRPCServer) CreateExamRecord(
+	ctx context.Context,
+	req *pb.CreateExamRecordRequest,
+) (*pb.CreateExamRecordResponse, error) {
+	_, resp, err := s.createExamRecord.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb.CreateExamRecordResponse), nil
+}
+
+func decodeCreateExamRecordRequest(_ context.Context, request interface{}) (interface{}, error) {
+	req, ok := request.(*pb.CreateExamRecordRequest)
+	if !ok {
+		return nil, errors.New("invalid request body")
+	}
+
+	return endpoint.CreateExamRecordRequest{
+		ExamId:           req.ExamId,
+		Score:            req.Score,
+		WrongQuestionIds: req.WrongQuestionIds,
+		UserId:           req.UserId,
+	}, nil
+}
+
+func encodeCreateExamRecordResponse(_ context.Context, response interface{}) (interface{}, error) {
+	_, ok := response.(endpoint.CreateExamRecordResponse)
+	if !ok {
+		return nil, errors.New("invalid response body")
+	}
+
+	return &pb.CreateExamRecordResponse{}, nil
 }

@@ -223,6 +223,30 @@ func (s *MyTestSuite) TestDeleteExamById() {
 	s.Equal(int64(1), deletedCount)
 }
 
+func (s *MyTestSuite) TestCountExamsByUserId() {
+	ctx := context.TODO()
+
+	userId := "user01"
+	documents := []interface{}{}
+	size := 10
+
+	for i := 0; i < size; i++ {
+		documents = append(documents, model.Exam{
+			Topic:       fmt.Sprintf("topic_%d", i),
+			Description: "jsut for test",
+			Tags:        []string{"tag01", "tag02"},
+			IsPublic:    true,
+			UserId:      userId,
+		})
+	}
+	_, err := s.examCollection.InsertMany(ctx, documents)
+	s.Nil(err)
+
+	count, err := s.repo.CountExamsByUserId(ctx, userId)
+	s.Nil(err)
+	s.Equal(int64(size), count)
+}
+
 func (s *MyTestSuite) TestCreateQuestion() {
 	ctx := context.TODO()
 	questionId, err := s.repo.CreateQuestion(ctx, model.Question{
@@ -344,6 +368,30 @@ func (s *MyTestSuite) TestDeleteQuestionsByExamId() {
 	s.Equal(int64(size), deletedCount)
 }
 
+func (s *MyTestSuite) TestCountQuestionsByExamIdAndUserId() {
+	ctx := context.TODO()
+
+	examId := "TestCountQuestionsByExamIdAndUserId"
+	userId := "user01"
+	size := 10
+	questions := []interface{}{}
+
+	for i := 0; i < size; i++ {
+		questions = append(questions, model.Question{
+			ExamId:  examId,
+			Ask:     fmt.Sprintf("Question_%d", i),
+			Answers: []string{"a01", "a02"},
+			UserId:  userId,
+		})
+	}
+	_, err := s.questionCollection.InsertMany(ctx, questions)
+	s.Nil(err)
+
+	count, err := s.repo.CountQuestionsByExamIdAndUserId(ctx, examId, userId)
+	s.Nil(err)
+	s.Equal(int64(size), count)
+}
+
 func (s *MyTestSuite) TestDeleteAnswerWrongsByQuestionId() {
 	ctx := context.TODO()
 
@@ -391,6 +439,34 @@ func (s *MyTestSuite) TestDeleteAnswerWrongsByExamId() {
 	s.Equal(int64(size), deletedCount)
 }
 
+func (s *MyTestSuite) TestUpsertAnswerWrongByTimesPlusOne() {
+	ctx := context.TODO()
+
+	examId := "TestUpsertAnswerWrongByTimesPlusOne"
+	questionId := "TestUpsertAnswerWrongByTimesPlusOne_q01"
+	userId := "TestUpsertAnswerWrongByTimesPlusOne_u01"
+
+	modifiedCount, upsertedCount, err := s.repo.UpsertAnswerWrongByTimesPlusOne(
+		ctx,
+		examId,
+		questionId,
+		userId,
+	)
+	s.Nil(err)
+	s.Equal(int64(0), modifiedCount)
+	s.Equal(int64(1), upsertedCount)
+
+	modifiedCount, upsertedCount, err = s.repo.UpsertAnswerWrongByTimesPlusOne(
+		ctx,
+		examId,
+		questionId,
+		userId,
+	)
+	s.Nil(err)
+	s.Equal(int64(1), modifiedCount)
+	s.Equal(int64(0), upsertedCount)
+}
+
 func (s *MyTestSuite) TestDeleteExamRecordsByExamId() {
 	ctx := context.TODO()
 
@@ -411,6 +487,18 @@ func (s *MyTestSuite) TestDeleteExamRecordsByExamId() {
 	deletedCount, err := s.repo.DeleteExamRecordsByExamId(ctx, examId)
 	s.Nil(err)
 	s.Equal(int64(size), deletedCount)
+}
+
+func (s *MyTestSuite) TestCreateExamRecord() {
+	ctx := context.TODO()
+
+	examRecordId, err := s.repo.CreateExamRecord(ctx, model.ExamRecord{
+		ExamId: "TestCreateExamRecord",
+		Score:  10,
+		UserId: "user01",
+	})
+	s.Nil(err)
+	s.NotEmpty(examRecordId)
 }
 
 // testcontainers mongodb 不支援交易功能，所以註解此測試

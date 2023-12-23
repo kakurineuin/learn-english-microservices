@@ -201,3 +201,77 @@ func (s *MyTestSuite) TestUpdaetQuestion() {
 	s.Nil(err)
 	s.Equal(QUESTION_ID, questionId)
 }
+
+func (s *MyTestSuite) TestFindQuestions() {
+	userId := "user01"
+	var pageIndex int64 = 2
+	var pageSize int64 = 10
+	skip := pageIndex * pageSize
+	limit := pageSize
+	var expectedTotal int64 = 23
+
+	s.mockDatabaseRepository.EXPECT().
+		FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc(mock.Anything, EXAM_ID, userId, skip, limit).
+		Return([]model.Question{
+			{},
+			{},
+			{},
+		}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		CountQuestionsByExamIdAndUserId(mock.Anything, EXAM_ID, userId).
+		Return(expectedTotal, nil)
+
+	total, pageCount, questions, err := s.examService.FindQuestions(
+		pageIndex,
+		pageSize,
+		EXAM_ID,
+		userId,
+	)
+	s.Nil(err)
+	s.Equal(expectedTotal, total)
+	s.Equal(int64(3), pageCount)
+	s.Equal(3, len(questions))
+}
+
+func (s *MyTestSuite) TestDeleteQuestion() {
+	userId := "user01"
+	id, err := primitive.ObjectIDFromHex(QUESTION_ID)
+	s.Nil(err)
+
+	s.mockDatabaseRepository.EXPECT().
+		GetQuestionById(mock.Anything, QUESTION_ID).
+		Return(&model.Question{
+			Id:      id,
+			ExamId:  EXAM_ID,
+			Ask:     "ask02",
+			Answers: []string{"b01", "b02"},
+			UserId:  userId,
+		}, nil)
+
+	err = s.examService.DeleteQuestion(QUESTION_ID, userId)
+	s.Nil(err)
+}
+
+func (s *MyTestSuite) TestCreateExamRecord() {
+	userId := "user01"
+	id, err := primitive.ObjectIDFromHex(EXAM_ID)
+	s.Nil(err)
+
+	s.mockDatabaseRepository.EXPECT().GetExamById(mock.Anything, EXAM_ID).Return(&model.Exam{
+		Id:          id,
+		Topic:       "topic",
+		Description: "desc",
+		Tags:        []string{"a01"},
+		IsPublic:    true,
+		UserId:      userId,
+	}, nil)
+	s.mockDatabaseRepository.EXPECT().WithTransaction(mock.Anything).Return(nil, nil)
+
+	err = s.examService.CreateExamRecord(
+		EXAM_ID,
+		10,
+		[]string{"question01", "question02", "quesiton03"},
+		userId,
+	)
+	s.Nil(err)
+}

@@ -125,3 +125,18 @@ func (mw loggingMiddleware) DeleteQuestion(questionId, userId string) (err error
 	}()
 	return mw.next.DeleteQuestion(questionId, userId)
 }
+
+func (mw loggingMiddleware) CreateExamRecord(
+	examId string, score int64, wrongQuestionIds []string, userId string,
+) (err error) {
+	defer func() {
+		mw.logger.Log(
+			"method", "CreateExamRecord",
+			"examId", examId,
+			"score", score,
+			"wrongQuestionIds", wrongQuestionIds,
+			"userId", userId,
+			"err", err)
+	}()
+	return mw.next.CreateExamRecord(examId, score, wrongQuestionIds, userId)
+}
