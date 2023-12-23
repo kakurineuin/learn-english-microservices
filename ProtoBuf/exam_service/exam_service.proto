@@ -77,6 +77,19 @@ message UpdateQuestionRequest {
 
 message UpdateQuestionResponse { string question_id = 1; }
 
+message FindQuestionsRequest {
+  int64 page_index = 1;
+  int64 page_size = 2;
+  string exam_id = 3;
+  string user_id = 4;
+}
+
+message FindQuestionsResponse {
+  int64 total = 1;
+  int64 page_count = 2;
+  repeated Question questions = 3;
+}
+
 message DeleteQuestionRequest {
   string question_id = 1;
   string user_id = 2;
@@ -92,5 +105,6 @@ service ExamService {
 
   rpc CreateQuestion(CreateQuestionRequest) returns (CreateQuestionResponse);
   rpc UpdateQuestion(UpdateQuestionRequest) returns (UpdateQuestionResponse);
+  rpc FindQuestions(FindQuestionsRequest) returns (FindQuestionsResponse);
   rpc DeleteQuestion(DeleteQuestionRequest) returns (DeleteQuestionResponse);
 }

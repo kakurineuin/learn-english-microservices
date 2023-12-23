@@ -28,6 +28,7 @@ type ExamServiceClient interface {
 	DeleteExam(ctx context.Context, in *DeleteExamRequest, opts ...grpc.CallOption) (*DeleteExamResponse, error)
 	CreateQuestion(ctx context.Context, in *CreateQuestionRequest, opts ...grpc.CallOption) (*CreateQuestionResponse, error)
 	UpdateQuestion(ctx context.Context, in *UpdateQuestionRequest, opts ...grpc.CallOption) (*UpdateQuestionResponse, error)
+	FindQuestions(ctx context.Context, in *FindQuestionsRequest, opts ...grpc.CallOption) (*FindQuestionsResponse, error)
 	DeleteQuestion(ctx context.Context, in *DeleteQuestionRequest, opts ...grpc.CallOption) (*DeleteQuestionResponse, error)
 }
 
@@ -93,6 +94,15 @@ func (c *examServiceClient) UpdateQuestion(ctx context.Context, in *UpdateQuesti
 	return out, nil
 }
 
+func (c *examServiceClient) FindQuestions(ctx context.Context, in *FindQuestionsRequest, opts ...grpc.CallOption) (*FindQuestionsResponse, error) {
+	out := new(FindQuestionsResponse)
+	err := c.cc.Invoke(ctx, "/pb.ExamService/FindQuestions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *examServiceClient) DeleteQuestion(ctx context.Context, in *DeleteQuestionRequest, opts ...grpc.CallOption) (*DeleteQuestionResponse, error) {
 	out := new(DeleteQuestionResponse)
 	err := c.cc.Invoke(ctx, "/pb.ExamService/DeleteQuestion", in, out, opts...)
@@ -112,6 +122,7 @@ type ExamServiceServer interface {
 	DeleteExam(context.Context, *DeleteExamRequest) (*DeleteExamResponse, error)
 	CreateQuestion(context.Context, *CreateQuestionRequest) (*CreateQuestionResponse, error)
 	UpdateQuestion(context.Context, *UpdateQuestionRequest) (*UpdateQuestionResponse, error)
+	FindQuestions(context.Context, *FindQuestionsRequest) (*FindQuestionsResponse, error)
 	DeleteQuestion(context.Context, *DeleteQuestionRequest) (*DeleteQuestionResponse, error)
 	mustEmbedUnimplementedExamServiceServer()
 }
@@ -137,6 +148,9 @@ func (UnimplementedExamServiceServer) CreateQuestion(context.Context, *CreateQue
 }
 func (UnimplementedExamServiceServer) UpdateQuestion(context.Context, *UpdateQuestionRequest) (*UpdateQuestionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateQuestion not implemented")
+}
+func (UnimplementedExamServiceServer) FindQuestions(context.Context, *FindQuestionsRequest) (*FindQuestionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindQuestions not implemented")
 }
 func (UnimplementedExamServiceServer) DeleteQuestion(context.Context, *DeleteQuestionRequest) (*DeleteQuestionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteQuestion not implemented")
@@ -262,6 +276,24 @@ func _ExamService_UpdateQuestion_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExamService_FindQuestions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindQuestionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExamServiceServer).FindQuestions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.ExamService/FindQuestions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExamServiceServer).FindQuestions(ctx, req.(*FindQuestionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ExamService_DeleteQuestion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteQuestionRequest)
 	if err := dec(in); err != nil {
@@ -310,6 +342,10 @@ var ExamService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateQuestion",
 			Handler:    _ExamService_UpdateQuestion_Handler,
+		},
+		{
+			MethodName: "FindQuestions",
+			Handler:    _ExamService_FindQuestions_Handler,
 		},
 		{
 			MethodName: "DeleteQuestion",

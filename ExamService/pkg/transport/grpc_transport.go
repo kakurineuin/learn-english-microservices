@@ -19,6 +19,7 @@ type GRPCServer struct {
 
 	createQuestion gt.Handler
 	updateQuestion gt.Handler
+	findQuestions  gt.Handler
 	deleteQuestion gt.Handler
 
 	pb.UnimplementedExamServiceServer
@@ -59,6 +60,11 @@ func NewGRPCServer(endpointds endpoint.Endpoints, logger log.Logger) pb.ExamServ
 			endpointds.UpdateQuestion,
 			decodeUpdateQuestionRequest,
 			encodeUpdateQuestionResponse,
+		),
+		findQuestions: gt.NewServer(
+			endpointds.FindQuestions,
+			decodeFindQuestionsRequest,
+			encodeFindQuestionsResponse,
 		),
 		deleteQuestion: gt.NewServer(
 			endpointds.DeleteQuestion,
@@ -298,6 +304,57 @@ func encodeUpdateQuestionResponse(_ context.Context, response interface{}) (inte
 
 	return &pb.UpdateQuestionResponse{
 		QuestionId: resp.QuestionId,
+	}, nil
+}
+
+func (s GRPCServer) FindQuestions(
+	ctx context.Context,
+	req *pb.FindQuestionsRequest,
+) (*pb.FindQuestionsResponse, error) {
+	_, resp, err := s.findQuestions.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb.FindQuestionsResponse), nil
+}
+
+func decodeFindQuestionsRequest(_ context.Context, request interface{}) (interface{}, error) {
+	req, ok := request.(*pb.FindQuestionsRequest)
+	if !ok {
+		return nil, errors.New("invalid request body")
+	}
+
+	return endpoint.FindQuestionsRequest{
+		PageIndex: req.PageIndex,
+		PageSize:  req.PageSize,
+		ExamId:    req.ExamId,
+		UserId:    req.UserId,
+	}, nil
+}
+
+func encodeFindQuestionsResponse(_ context.Context, response interface{}) (interface{}, error) {
+	resp, ok := response.(endpoint.FindQuestionsResponse)
+	if !ok {
+		return nil, errors.New("invalid response body")
+	}
+
+	questions := []*pb.Question{}
+
+	for _, question := range resp.Questions {
+		questions = append(questions, &pb.Question{
+			Id:      question.Id.Hex(),
+			ExamId:  question.ExamId,
+			Ask:     question.Ask,
+			Answers: question.Answers,
+			UserId:  question.UserId,
+		})
+	}
+
+	return &pb.FindQuestionsResponse{
+		Total:     resp.Total,
+		PageCount: resp.PageCount,
+		Questions: questions,
 	}, nil
 }
 

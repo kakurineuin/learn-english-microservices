@@ -18,6 +18,7 @@ type Endpoints struct {
 
 	CreateQuestion endpoint.Endpoint
 	UpdateQuestion endpoint.Endpoint
+	FindQuestions  endpoint.Endpoint
 	DeleteQuestion endpoint.Endpoint
 }
 
@@ -85,6 +86,19 @@ type UpdateQuestionResponse struct {
 	QuestionId string
 }
 
+type FindQuestionsRequest struct {
+	PageIndex int64
+	PageSize  int64
+	ExamId    string
+	UserId    string
+}
+
+type FindQuestionsResponse struct {
+	Total     int64
+	PageCount int64
+	Questions []model.Question
+}
+
 type DeleteQuestionRequest struct {
 	QuestionId string
 	UserId     string
@@ -117,6 +131,10 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	updateQuestionEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "UpdateQuestion"))(updateQuestionEndpoint)
 
+	findQuestionsEndpoint := makeFindQuestionsEndpoint(examService)
+	findQuestionsEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "FindQuestions"))(findQuestionsEndpoint)
+
 	deleteQuestionEndpoint := makeDeleteQuestionEndpoint(examService)
 	deleteQuestionEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "DeleteQuestion"))(deleteQuestionEndpoint)
@@ -129,6 +147,7 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 
 		CreateQuestion: createQuestionEndpoint,
 		UpdateQuestion: updateQuestionEndpoint,
+		FindQuestions:  findQuestionsEndpoint,
 		DeleteQuestion: deleteQuestionEndpoint,
 	}
 }
@@ -208,6 +227,26 @@ func makeUpdateQuestionEndpoint(examService service.ExamService) endpoint.Endpoi
 			return nil, err
 		}
 		return UpdateQuestionResponse{QuestionId: questionId}, nil
+	}
+}
+
+func makeFindQuestionsEndpoint(examService service.ExamService) endpoint.Endpoint {
+	return func(_ context.Context, request interface{}) (interface{}, error) {
+		req := request.(FindQuestionsRequest)
+		total, pageCount, quesitons, err := examService.FindQuestions(
+			req.PageIndex,
+			req.PageSize,
+			req.ExamId,
+			req.UserId,
+		)
+		if err != nil {
+			return nil, err
+		}
+		return FindQuestionsResponse{
+			Total:     total,
+			PageCount: pageCount,
+			Questions: quesitons,
+		}, nil
 	}
 }
 
