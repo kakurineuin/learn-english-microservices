@@ -263,7 +263,7 @@ func (examService examService) UpdateQuestion(
 		}
 
 		// 刪除相關的 AnswerWrong
-		_, err = databaseRepository.DeleteAnswerWrongByQuestionId(ctx, questionId)
+		_, err = databaseRepository.DeleteAnswerWrongsByQuestionId(ctx, questionId)
 		if err != nil {
 			return nil, err
 		}
@@ -338,7 +338,7 @@ func (examService examService) DeleteQuestion(
 
 	_, err = databaseRepository.WithTransaction(func(ctx context.Context) (interface{}, error) {
 		// Delete AnswerWrong
-		_, err = databaseRepository.DeleteAnswerWrongByQuestionId(ctx, questionId)
+		_, err = databaseRepository.DeleteAnswerWrongsByQuestionId(ctx, questionId)
 		if err != nil {
 			return nil, err
 		}

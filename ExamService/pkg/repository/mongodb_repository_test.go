@@ -344,21 +344,28 @@ func (s *MyTestSuite) TestDeleteQuestionsByExamId() {
 	s.Equal(int64(size), deletedCount)
 }
 
-func (s *MyTestSuite) TestDeleteAnswerWrongByQuestionId() {
+func (s *MyTestSuite) TestDeleteAnswerWrongsByQuestionId() {
 	ctx := context.TODO()
 
-	questionId := "TestDeleteAnswerWrongByQuestionId"
-	_, err := s.answerWrongCollection.InsertOne(ctx, model.AnswerWrong{
-		ExamId:     "exam_abc_01",
-		QuestionId: questionId,
-		Times:      10,
-		UserId:     "user01",
-	})
+	questionId := "TestDeleteAnswerWrongsByQuestionId"
+	size := 10
+	documents := []interface{}{}
+
+	for i := 0; i < size; i++ {
+		documents = append(documents, model.AnswerWrong{
+			ExamId:     "exam_abc_01",
+			QuestionId: questionId,
+			Times:      10,
+			UserId:     "user01",
+		})
+	}
+
+	_, err := s.answerWrongCollection.InsertMany(ctx, documents)
 	s.Nil(err)
 
-	deletedCount, err := s.repo.DeleteAnswerWrongByQuestionId(ctx, questionId)
+	deletedCount, err := s.repo.DeleteAnswerWrongsByQuestionId(ctx, questionId)
 	s.Nil(err)
-	s.Equal(int64(1), deletedCount)
+	s.Equal(int64(size), deletedCount)
 }
 
 func (s *MyTestSuite) TestDeleteAnswerWrongsByExamId() {

@@ -341,7 +341,7 @@ func (repo *MongoDBRepository) CountQuestionsByExamIdAndUserId(
 	return count, nil
 }
 
-func (repo *MongoDBRepository) DeleteAnswerWrongByQuestionId(
+func (repo *MongoDBRepository) DeleteAnswerWrongsByQuestionId(
 	ctx context.Context,
 	questionId string,
 ) (deletedCount int64, err error) {
@@ -349,7 +349,7 @@ func (repo *MongoDBRepository) DeleteAnswerWrongByQuestionId(
 		{"questionId", questionId},
 	}
 	collection := repo.getCollection(ANSWERWRONG_COLLECTION)
-	result, err := collection.DeleteOne(ctx, filter)
+	result, err := collection.DeleteMany(ctx, filter)
 	if err != nil {
 		return 0, err
 	}

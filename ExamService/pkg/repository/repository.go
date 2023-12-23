@@ -45,7 +45,7 @@ type DatabaseRepository interface {
 	) (count int64, err error)
 
 	// AnswerWrong
-	DeleteAnswerWrongByQuestionId(
+	DeleteAnswerWrongsByQuestionId(
 		ctx context.Context,
 		questionId string,
 	) (deletedCount int64, err error)
