@@ -99,3 +99,18 @@ func (mw loggingMiddleware) UpdateQuestion(
 	}()
 	return mw.next.UpdateQuestion(questionId, ask, answers, userId)
 }
+
+func (mw loggingMiddleware) FindQuestions(
+	pageIndex, pageSize int64, examId, userId string,
+) (total, pageCount int64, questions []model.Question, err error) {
+	defer func() {
+		mw.logger.Log(
+			"method", "FindQuestions",
+			"pageIndex", pageIndex,
+			"pageSize", pageSize,
+			"exmaId", examId,
+			"userId", userId,
+			"err", err)
+	}()
+	return mw.next.FindQuestions(pageIndex, pageSize, examId, userId)
+}

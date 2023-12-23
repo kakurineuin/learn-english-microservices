@@ -22,22 +22,14 @@ const DATABASE = "learnEnglish_test"
 
 type MyTestSuite struct {
 	suite.Suite
-	repo             DatabaseRepository
-	uri              string
-	ctx              context.Context
-	mongodbContainer *mongodb.MongoDBContainer
-
-	examIdForTestExistExam  string
-	examIdForTestUpdateExam string
-	examIdForTestGetExam    string
-	examIdForTestDeleteExam string
-
-	questionIdForTestUpdateQuestion      string
-	questionIdForTestGetQuestion         string
-	questionIdForTestDeleteQuestion      string
-	examIdForTestDeleteQuestionsByExamId string
-
-	questionIdForTestDeleteAnswerWrongByQuestionId string
+	repo                  DatabaseRepository
+	uri                   string
+	ctx                   context.Context
+	mongodbContainer      *mongodb.MongoDBContainer
+	client                *mongo.Client
+	examCollection        *mongo.Collection
+	questionCollection    *mongo.Collection
+	answerWrongCollection *mongo.Collection
 }
 
 func TestMyTestSuite(t *testing.T) {
@@ -60,22 +52,35 @@ func (s *MyTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	// 建立測試資料
-	err = createTestData(s, uri)
-	if err != nil {
-		panic(err)
-	}
-
 	s.repo = NewMongoDBRepository(DATABASE)
 	s.repo.ConnectDB(uri)
 	s.uri = uri
 	s.ctx = ctx
 	s.mongodbContainer = mongodbContainer
+
+	// 用來建立測試資料的 client
+	client, err := mongo.Connect(
+		context.TODO(),
+		options.Client().ApplyURI(uri).SetTimeout(10*time.Second),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	s.client = client
+	s.examCollection = client.Database(DATABASE).Collection("exams")
+	s.questionCollection = client.Database(DATABASE).Collection("questions")
+	s.answerWrongCollection = s.client.Database(DATABASE).Collection("answerwrongs")
 }
 
 // run once, after test suite methods
 func (s *MyTestSuite) TearDownSuite() {
 	log.Println("TearDownSuite()")
+
+	// 不呼叫 panic，為了繼續往下執行去關閉 container
+	if err := s.client.Disconnect(context.TODO()); err != nil {
+		log.Printf("DisconnectDB error: %v", err)
+	}
 
 	// 不呼叫 panic，為了繼續往下執行去關閉 container
 	if err := s.repo.DisconnectDB(); err != nil {
@@ -118,14 +123,6 @@ func (s *MyTestSuite) TestConnectDBAndDisconnectDB() {
 	s.Nil(err)
 }
 
-func (s *MyTestSuite) TestExistExam() {
-	ctx := context.TODO()
-
-	isExist, err := s.repo.ExistExam(ctx, s.examIdForTestExistExam, "user01")
-	s.Nil(err)
-	s.Equal(true, isExist)
-}
-
 func (s *MyTestSuite) TestCreateExam() {
 	ctx := context.TODO()
 
@@ -141,10 +138,18 @@ func (s *MyTestSuite) TestCreateExam() {
 }
 
 func (s *MyTestSuite) TestUpdateExam() {
-	id, err := primitive.ObjectIDFromHex(s.examIdForTestUpdateExam)
-	s.Nil(err)
-
 	ctx := context.TODO()
+
+	result, err := s.examCollection.InsertOne(ctx, model.Exam{
+		Topic:       "TestUpdateExam",
+		Description: "jsut for test",
+		Tags:        []string{"tag01", "tag02"},
+		IsPublic:    true,
+		UserId:      "user01",
+	})
+	s.Nil(err)
+	id := result.InsertedID.(primitive.ObjectID)
+
 	err = s.repo.UpdateExam(ctx, model.Exam{
 		Id:          id,
 		Topic:       "TestUpdateExam_u01",
@@ -156,24 +161,62 @@ func (s *MyTestSuite) TestUpdateExam() {
 	s.Nil(err)
 }
 
-func (s *MyTestSuite) TestGetExam() {
+func (s *MyTestSuite) TestGetExamById() {
 	ctx := context.TODO()
-	exam, err := s.repo.GetExam(ctx, s.examIdForTestGetExam)
+
+	result, err := s.examCollection.InsertOne(ctx, model.Exam{
+		Topic:       "TestGetExamById",
+		Description: "jsut for test",
+		Tags:        []string{"tag01", "tag02"},
+		IsPublic:    true,
+		UserId:      "user01",
+	})
+	s.Nil(err)
+	examId := result.InsertedID.(primitive.ObjectID).Hex()
+
+	exam, err := s.repo.GetExamById(ctx, examId)
 	s.Nil(err)
 	s.NotNil(exam)
 }
 
-func (s *MyTestSuite) TestFindExamsOrderByUpdateAtDesc() {
+func (s *MyTestSuite) TestFindExamsByUserIdOrderByUpdateAtDesc() {
 	ctx := context.TODO()
-	exams, err := s.repo.FindExamsOrderByUpdateAtDesc(ctx, "user01", 10, 10)
+
+	userId := "user01"
+	documents := []interface{}{}
+
+	for i := 0; i < 30; i++ {
+		documents = append(documents, model.Exam{
+			Topic:       fmt.Sprintf("topic_%d", i),
+			Description: "jsut for test",
+			Tags:        []string{"tag01", "tag02"},
+			IsPublic:    true,
+			UserId:      userId,
+		})
+	}
+	_, err := s.examCollection.InsertMany(ctx, documents)
+	s.Nil(err)
+
+	exams, err := s.repo.FindExamsByUserIdOrderByUpdateAtDesc(ctx, userId, 10, 10)
 	s.Nil(err)
 	s.NotEmpty(exams)
 	s.Equal(10, len(exams))
 }
 
-func (s *MyTestSuite) TestDeleteExam() {
+func (s *MyTestSuite) TestDeleteExamById() {
 	ctx := context.TODO()
-	err := s.repo.DeleteExam(ctx, s.examIdForTestDeleteExam)
+
+	result, err := s.examCollection.InsertOne(ctx, model.Exam{
+		Topic:       "TestDeleteExamById",
+		Description: "jsut for test",
+		Tags:        []string{"tag01", "tag02"},
+		IsPublic:    true,
+		UserId:      "user01",
+	})
+	s.Nil(err)
+	examId := result.InsertedID.(primitive.ObjectID).Hex()
+
+	err = s.repo.DeleteExamById(ctx, examId)
 	s.Nil(err)
 }
 
@@ -190,53 +233,124 @@ func (s *MyTestSuite) TestCreateQuestion() {
 }
 
 func (s *MyTestSuite) TestUpdateQuestion() {
-	id, err := primitive.ObjectIDFromHex(s.questionIdForTestUpdateQuestion)
-	s.Nil(err)
-
 	ctx := context.TODO()
+
+	result, err := s.questionCollection.InsertOne(ctx, model.Question{
+		ExamId:  "exam01",
+		Ask:     "TestUpdateQuestion",
+		Answers: []string{"a01", "a02"},
+		UserId:  "user01",
+	})
+	s.Nil(err)
+	id := result.InsertedID.(primitive.ObjectID)
+
 	err = s.repo.UpdateQuestion(ctx, model.Question{
 		Id:      id,
-		ExamId:  "examId",
-		Ask:     "TestUpdateQuestion_u01",
+		ExamId:  "exam02",
+		Ask:     "TestUpdateQuestion02",
 		Answers: []string{"a011", "a022"},
 		UserId:  "user01",
 	})
 	s.Nil(err)
 }
 
-func (s *MyTestSuite) TestGetQuestion() {
+func (s *MyTestSuite) TestGetQuestionById() {
 	ctx := context.TODO()
-	question, err := s.repo.GetQuestion(ctx, s.questionIdForTestGetQuestion)
+
+	result, err := s.questionCollection.InsertOne(ctx, model.Question{
+		ExamId:  "exam01",
+		Ask:     "TestGetQuestion",
+		Answers: []string{"a01", "a02"},
+		UserId:  "user01",
+	})
+	s.Nil(err)
+	questionId := result.InsertedID.(primitive.ObjectID).Hex()
+
+	question, err := s.repo.GetQuestionById(ctx, questionId)
 	s.Nil(err)
 	s.NotNil(question)
 }
 
-func (s *MyTestSuite) TestFindQuestionsOrderByUpdateAtDesc() {
+func (s *MyTestSuite) TestFindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc() {
 	ctx := context.TODO()
-	questions, err := s.repo.FindQuestionsOrderByUpdateAtDesc(ctx, "exam01", 10, 10)
+
+	examId := "TestFindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc"
+	userId := "user01"
+	documents := []interface{}{}
+
+	for i := 0; i < 30; i++ {
+		documents = append(documents, model.Question{
+			ExamId:  examId,
+			Ask:     fmt.Sprintf("Question_%d", i),
+			Answers: []string{"a01", "a02"},
+			UserId:  userId,
+		})
+	}
+	_, err := s.questionCollection.InsertMany(ctx, documents)
+	s.Nil(err)
+
+	questions, err := s.repo.FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc(
+		ctx,
+		examId,
+		userId,
+		10,
+		10,
+	)
 	s.Nil(err)
 	s.NotEmpty(questions)
 	s.Equal(10, len(questions))
 }
 
-func (s *MyTestSuite) TestDeleteQuestion() {
+func (s *MyTestSuite) TestDeleteQuestionById() {
 	ctx := context.TODO()
-	err := s.repo.DeleteQuestion(ctx, s.questionIdForTestDeleteQuestion)
+
+	result, err := s.questionCollection.InsertOne(ctx, model.Question{
+		ExamId:  "exam01",
+		Ask:     "TestDeleteQuestion",
+		Answers: []string{"a01", "a02"},
+		UserId:  "user01",
+	})
+	s.Nil(err)
+	questionId := result.InsertedID.(primitive.ObjectID).Hex()
+
+	err = s.repo.DeleteQuestionById(ctx, questionId)
 	s.Nil(err)
 }
 
 func (s *MyTestSuite) TestDeleteQuestionsByExamId() {
 	ctx := context.TODO()
-	err := s.repo.DeleteQuestionsByExamId(ctx, s.examIdForTestDeleteQuestionsByExamId)
+
+	examId := "TestDeleteQuestionsByExamId"
+	questions := []interface{}{}
+
+	for i := 0; i < 30; i++ {
+		questions = append(questions, model.Question{
+			ExamId:  examId,
+			Ask:     fmt.Sprintf("Question_%d", i),
+			Answers: []string{"a01", "a02"},
+			UserId:  "user01",
+		})
+	}
+	_, err := s.questionCollection.InsertMany(ctx, questions)
+	s.Nil(err)
+
+	err = s.repo.DeleteQuestionsByExamId(ctx, examId)
 	s.Nil(err)
 }
 
 func (s *MyTestSuite) TestDeleteAnswerWrongByQuestionId() {
 	ctx := context.TODO()
-	err := s.repo.DeleteAnswerWrongByQuestionId(
-		ctx,
-		s.questionIdForTestDeleteAnswerWrongByQuestionId,
-	)
+
+	questionId := "TestDeleteAnswerWrongByQuestionId"
+	_, err := s.answerWrongCollection.InsertOne(ctx, model.AnswerWrong{
+		ExamId:     "exam_abc_01",
+		QuestionId: questionId,
+		Times:      10,
+		UserId:     "user01",
+	})
+	s.Nil(err)
+
+	err = s.repo.DeleteAnswerWrongByQuestionId(ctx, questionId)
 	s.Nil(err)
 }
 
@@ -281,177 +395,3 @@ func (s *MyTestSuite) TestDeleteAnswerWrongByQuestionId() {
 // 	s.Nil(err)
 // 	s.Equal(9, len(exams))
 // }
-
-func createTestData(s *MyTestSuite, uri string) error {
-	ctx := context.TODO()
-	client, err := mongo.Connect(
-		ctx,
-		options.Client().ApplyURI(uri).SetTimeout(10*time.Second),
-	)
-	if err != nil {
-		return err
-	}
-
-	// Exam
-	collection := client.Database(DATABASE).Collection("exams")
-
-	exams := []interface{}{}
-
-	for i := 0; i < 30; i++ {
-		exams = append(exams, model.Exam{
-			Topic:       fmt.Sprintf("topic_%d", i),
-			Description: "jsut for test",
-			Tags:        []string{"tag01", "tag02"},
-			IsPublic:    true,
-			UserId:      "user01",
-		})
-	}
-	_, err = collection.InsertMany(ctx, exams)
-	if err != nil {
-		return err
-	}
-
-	// For TestExistExam
-	result, err := collection.InsertOne(ctx, model.Exam{
-		Topic:       "TestExistExam",
-		Description: "jsut for test",
-		Tags:        []string{"tag01", "tag02"},
-		IsPublic:    true,
-		UserId:      "user01",
-	})
-	if err != nil {
-		return err
-	}
-	s.examIdForTestExistExam = result.InsertedID.(primitive.ObjectID).Hex()
-
-	// For TestUpdateExam
-	result, err = collection.InsertOne(ctx, model.Exam{
-		Topic:       "TestUpdateExam",
-		Description: "jsut for test",
-		Tags:        []string{"tag01", "tag02"},
-		IsPublic:    true,
-		UserId:      "user01",
-	})
-	if err != nil {
-		return err
-	}
-	s.examIdForTestUpdateExam = result.InsertedID.(primitive.ObjectID).Hex()
-
-	// For TestGetExam
-	result, err = collection.InsertOne(ctx, model.Exam{
-		Topic:       "TestGetExam",
-		Description: "jsut for test",
-		Tags:        []string{"tag01", "tag02"},
-		IsPublic:    true,
-		UserId:      "user01",
-	})
-	if err != nil {
-		return err
-	}
-	s.examIdForTestGetExam = result.InsertedID.(primitive.ObjectID).Hex()
-
-	// For TestDeleteExam
-	result, err = collection.InsertOne(ctx, model.Exam{
-		Topic:       "TestDeleteExam",
-		Description: "jsut for test",
-		Tags:        []string{"tag01", "tag02"},
-		IsPublic:    true,
-		UserId:      "user01",
-	})
-	if err != nil {
-		return err
-	}
-	s.examIdForTestDeleteExam = result.InsertedID.(primitive.ObjectID).Hex()
-
-	// Question
-	questionCollection := client.Database(DATABASE).Collection("questions")
-
-	questions := []interface{}{}
-
-	for i := 0; i < 30; i++ {
-		questions = append(questions, model.Question{
-			ExamId:  "exam01",
-			Ask:     fmt.Sprintf("Question_%d", i),
-			Answers: []string{"a01", "a02"},
-			UserId:  "user01",
-		})
-	}
-	_, err = questionCollection.InsertMany(ctx, questions)
-	if err != nil {
-		return err
-	}
-
-	// For TestUpdateQuestion
-	result, err = questionCollection.InsertOne(ctx, model.Question{
-		ExamId:  "exam01",
-		Ask:     "TestUpdateQuestion",
-		Answers: []string{"a01", "a02"},
-		UserId:  "user01",
-	})
-	if err != nil {
-		return err
-	}
-	s.questionIdForTestUpdateQuestion = result.InsertedID.(primitive.ObjectID).Hex()
-
-	// For TestGetQuestion
-	result, err = questionCollection.InsertOne(ctx, model.Question{
-		ExamId:  "exam01",
-		Ask:     "TestGetQuestion",
-		Answers: []string{"a01", "a02"},
-		UserId:  "user01",
-	})
-	if err != nil {
-		return err
-	}
-	s.questionIdForTestGetQuestion = result.InsertedID.(primitive.ObjectID).Hex()
-
-	// For TestDeleteQuestion
-	result, err = questionCollection.InsertOne(ctx, model.Question{
-		ExamId:  "exam01",
-		Ask:     "TestDeleteQuestion",
-		Answers: []string{"a01", "a02"},
-		UserId:  "user01",
-	})
-	if err != nil {
-		return err
-	}
-	s.questionIdForTestDeleteQuestion = result.InsertedID.(primitive.ObjectID).Hex()
-
-	// For TestDeleteQuestionsByExamId
-	s.examIdForTestDeleteQuestionsByExamId = "TestDeleteQuestionsByExamId"
-	questions = []interface{}{}
-
-	for i := 0; i < 30; i++ {
-		questions = append(questions, model.Question{
-			ExamId:  s.examIdForTestDeleteQuestionsByExamId,
-			Ask:     fmt.Sprintf("Question_%d", i),
-			Answers: []string{"a01", "a02"},
-			UserId:  "user01",
-		})
-	}
-	_, err = questionCollection.InsertMany(ctx, questions)
-	if err != nil {
-		return err
-	}
-
-	// AnswerWrong
-	answerWrongCollection := client.Database(DATABASE).Collection("answerwrongs")
-
-	s.questionIdForTestDeleteAnswerWrongByQuestionId = "TestDeleteAnswerWrongsByQuestionId"
-
-	_, err = answerWrongCollection.InsertOne(ctx, model.AnswerWrong{
-		ExamId:     "exam_abc_01",
-		QuestionId: s.questionIdForTestDeleteAnswerWrongByQuestionId,
-		Times:      10,
-		UserId:     "user01",
-	})
-	if err != nil {
-		return err
-	}
-
-	if err := client.Disconnect(ctx); err != nil {
-		return err
-	}
-
-	return nil
-}

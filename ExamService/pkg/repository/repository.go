@@ -17,29 +17,32 @@ type DatabaseRepository interface {
 	WithTransaction(transactoinFunc transactionFunc) (interface{}, error)
 
 	// Exam
-	ExistExam(ctx context.Context, examId, userId string) (isExist bool, err error)
 	CreateExam(ctx context.Context, exam model.Exam) (examId string, err error)
 	UpdateExam(ctx context.Context, exam model.Exam) error
-	GetExam(ctx context.Context, examId string) (exam *model.Exam, err error)
-	FindExamsOrderByUpdateAtDesc(
+	GetExamById(ctx context.Context, examId string) (exam *model.Exam, err error)
+	FindExamsByUserIdOrderByUpdateAtDesc(
 		ctx context.Context,
 		userId string,
 		skip, limit int64,
 	) (exams []model.Exam, err error)
-	DeleteExam(ctx context.Context, examId string) error
+	DeleteExamById(ctx context.Context, examId string) error
 	CountExamsByUserId(ctx context.Context, userId string) (count int64, err error)
 
 	// Question
 	CreateQuestion(ctx context.Context, question model.Question) (questionId string, err error)
 	UpdateQuestion(ctx context.Context, question model.Question) error
-	GetQuestion(ctx context.Context, questionId string) (question *model.Question, err error)
-	FindQuestionsOrderByUpdateAtDesc(
+	GetQuestionById(ctx context.Context, questionId string) (question *model.Question, err error)
+	FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc(
 		ctx context.Context,
-		examId string,
+		examId, userId string,
 		skip, limit int64,
 	) (questions []model.Question, err error)
-	DeleteQuestion(ctx context.Context, questionId string) error
+	DeleteQuestionById(ctx context.Context, questionId string) error
 	DeleteQuestionsByExamId(ctx context.Context, examId string) error
+	CountQuestionsByExamIdAndUserId(
+		ctx context.Context,
+		examId, userId string,
+	) (count int64, err error)
 
 	// TODO: AnswerWrong
 	DeleteAnswerWrongByQuestionId(ctx context.Context, questionId string) error

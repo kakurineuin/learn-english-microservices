@@ -62,27 +62,6 @@ func (repo *MongoDBRepository) DisconnectDB() error {
 	return nil
 }
 
-func (repo *MongoDBRepository) ExistExam(
-	ctx context.Context, examId, userId string,
-) (isExist bool, err error) {
-	id, err := primitive.ObjectIDFromHex(examId)
-	if err != nil {
-		return false, err
-	}
-
-	collection := repo.getCollection(EXAM_COLLECTION)
-	filter := bson.D{
-		{"_id", id},
-		{"userId", userId},
-	}
-	count, err := collection.CountDocuments(ctx, filter)
-	if err != nil {
-		return false, err
-	}
-
-	return count > 0, nil
-}
-
 func (repo *MongoDBRepository) CreateExam(
 	ctx context.Context,
 	exam model.Exam,
@@ -127,7 +106,7 @@ func (repo *MongoDBRepository) UpdateExam(
 	return nil
 }
 
-func (repo *MongoDBRepository) GetExam(
+func (repo *MongoDBRepository) GetExamById(
 	ctx context.Context,
 	examId string,
 ) (exam *model.Exam, err error) {
@@ -155,7 +134,7 @@ func (repo *MongoDBRepository) GetExam(
 	return &result, nil
 }
 
-func (repo *MongoDBRepository) FindExamsOrderByUpdateAtDesc(
+func (repo *MongoDBRepository) FindExamsByUserIdOrderByUpdateAtDesc(
 	ctx context.Context,
 	userId string,
 	skip, limit int64,
@@ -176,7 +155,7 @@ func (repo *MongoDBRepository) FindExamsOrderByUpdateAtDesc(
 	return exams, nil
 }
 
-func (repo *MongoDBRepository) DeleteExam(ctx context.Context, examId string) error {
+func (repo *MongoDBRepository) DeleteExamById(ctx context.Context, examId string) error {
 	id, err := primitive.ObjectIDFromHex(examId)
 	if err != nil {
 		return err
@@ -255,7 +234,7 @@ func (repo *MongoDBRepository) UpdateQuestion(
 	return nil
 }
 
-func (repo *MongoDBRepository) GetQuestion(
+func (repo *MongoDBRepository) GetQuestionById(
 	ctx context.Context,
 	questionId string,
 ) (question *model.Question, err error) {
@@ -283,13 +262,16 @@ func (repo *MongoDBRepository) GetQuestion(
 	return &result, nil
 }
 
-func (repo *MongoDBRepository) FindQuestionsOrderByUpdateAtDesc(
+func (repo *MongoDBRepository) FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc(
 	ctx context.Context,
-	examId string,
+	examId, userId string,
 	skip, limit int64,
 ) (questions []model.Question, err error) {
 	collection := repo.getCollection(QUESTION_COLLECTION)
-	filter := bson.D{{"examId", examId}}
+	filter := bson.D{
+		{"examId", examId},
+		{"userId", userId},
+	}
 	sort := bson.D{{"updatedAt", -1}} // descending
 	opts := options.Find().SetSort(sort).SetSkip(skip).SetLimit(limit)
 	cursor, err := collection.Find(ctx, filter, opts)
@@ -304,7 +286,7 @@ func (repo *MongoDBRepository) FindQuestionsOrderByUpdateAtDesc(
 	return questions, nil
 }
 
-func (repo *MongoDBRepository) DeleteQuestion(ctx context.Context, questionId string) error {
+func (repo *MongoDBRepository) DeleteQuestionById(ctx context.Context, questionId string) error {
 	id, err := primitive.ObjectIDFromHex(questionId)
 	if err != nil {
 		return err
@@ -336,6 +318,23 @@ func (repo *MongoDBRepository) DeleteQuestionsByExamId(ctx context.Context, exam
 	}
 
 	return nil
+}
+
+func (repo *MongoDBRepository) CountQuestionsByExamIdAndUserId(
+	ctx context.Context,
+	examId, userId string,
+) (count int64, err error) {
+	collection := repo.getCollection(QUESTION_COLLECTION)
+	filter := bson.D{
+		{"examId", examId},
+		{"userId", userId},
+	}
+	count, err = collection.CountDocuments(ctx, filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
 func (repo *MongoDBRepository) DeleteAnswerWrongByQuestionId(

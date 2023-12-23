@@ -12,7 +12,7 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/repository"
 )
 
-// TODO 全部方法改用 repository 去對資料庫存取
+var unauthorizedOperationError = fmt.Errorf("Unauthorized operation")
 
 type ExamService interface {
 	CreateExam(topic, description string, isPublic bool, userId string) (string, error)
@@ -25,6 +25,10 @@ type ExamService interface {
 
 	CreateQuestion(examId, ask string, answers []string, userId string) (string, error)
 	UpdateQuestion(questionId, ask string, answers []string, userId string) (string, error)
+	FindQuestions(
+		pageIndex, pageSize int64,
+		examId, userId string,
+	) (total, pageCount int64, questions []model.Question, err error)
 }
 
 type examService struct {
@@ -48,6 +52,7 @@ func (examService examService) CreateExam(
 ) (string, error) {
 	logger := examService.logger
 	errorLogger := examService.errorLogger
+	errorMessage := "CreateExam failed: %w"
 
 	exam := model.Exam{
 		Topic:       topic,
@@ -59,7 +64,7 @@ func (examService examService) CreateExam(
 	examId, err := examService.databaseRepository.CreateExam(context.TODO(), exam)
 	if err != nil {
 		errorLogger.Log("err", err)
-		return "", fmt.Errorf("CreateExam fail! error: %w", err)
+		return "", fmt.Errorf(errorMessage, err)
 	}
 
 	logger.Log("examId", examId)
@@ -71,28 +76,35 @@ func (examService examService) UpdateExam(
 ) (string, error) {
 	logger := examService.logger
 	errorLogger := examService.errorLogger
+	errorMessage := "UpdateExam failed: %w"
 
 	databaseRepository := examService.databaseRepository
-	exam, err := databaseRepository.GetExam(context.TODO(), examId)
+	exam, err := databaseRepository.GetExamById(context.TODO(), examId)
 	if err != nil {
 		errorLogger.Log("err", err)
-		return "", err
+		return "", fmt.Errorf(errorMessage, err)
+	}
+
+	if exam == nil {
+		err = fmt.Errorf("Exam not found")
+		errorLogger.Log("err", err)
+		return "", fmt.Errorf(errorMessage, err)
 	}
 
 	// 檢查使用者是否是該測驗的擁有者
 	if exam.UserId != userId {
-		err = fmt.Errorf("Unauthorized operation")
+		err = unauthorizedOperationError
 		errorLogger.Log("err", err)
-		return "", err
+		return "", fmt.Errorf(errorMessage, err)
 	}
 
 	exam.Topic = topic
 	exam.Description = description
 	exam.IsPublic = isPublic
-	err = examService.databaseRepository.UpdateExam(context.TODO(), *exam)
+	err = databaseRepository.UpdateExam(context.TODO(), *exam)
 	if err != nil {
 		errorLogger.Log("err", err)
-		return "", fmt.Errorf("UpdateExam fail! error: %w", err)
+		return "", fmt.Errorf(errorMessage, err)
 	}
 
 	logger.Log("examId", examId)
@@ -105,20 +117,21 @@ func (examService examService) FindExams(
 ) (total, pageCount int64, exams []model.Exam, err error) {
 	logger := examService.logger
 	errorLogger := examService.errorLogger
+	errorMessage := "FindExams failed: %w"
 
 	skip := pageSize * pageIndex
-	exams, err = examService.databaseRepository.FindExamsOrderByUpdateAtDesc(
+	exams, err = examService.databaseRepository.FindExamsByUserIdOrderByUpdateAtDesc(
 		context.TODO(), userId, skip, pageSize)
 	if err != nil {
 		errorLogger.Log("err", err)
-		return 0, 0, nil, fmt.Errorf("FindExams fail! error: %w", err)
+		return 0, 0, nil, fmt.Errorf(errorMessage, err)
 	}
 
 	// Total
 	total, err = examService.databaseRepository.CountExamsByUserId(context.TODO(), userId)
 	if err != nil {
 		errorLogger.Log("err", err)
-		return 0, 0, nil, fmt.Errorf("FindExams fail! error: %w", err)
+		return 0, 0, nil, fmt.Errorf(errorMessage, err)
 	}
 
 	// PageCount
@@ -129,26 +142,34 @@ func (examService examService) FindExams(
 
 func (examService examService) DeleteExam(examId, userId string) error {
 	errorLogger := examService.errorLogger
+	errorMessage := "DeleteExam failed: %w"
+
 	databaseRepository := examService.databaseRepository
 
 	// 檢查使用者是否是該測驗的擁有者
-	isExist, err := databaseRepository.ExistExam(context.TODO(), examId, userId)
+	exam, err := databaseRepository.GetExamById(context.TODO(), examId)
 	if err != nil {
 		errorLogger.Log("err", err)
-		return fmt.Errorf("DeleteExam fail! error: %w", err)
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	if exam == nil {
+		err = fmt.Errorf("Exam not found by id: %s", examId)
+		errorLogger.Log("err", err)
+		return fmt.Errorf(errorMessage, err)
 	}
 
 	// 使用者不是該測驗的擁有者
-	if !isExist {
-		err = fmt.Errorf("Unauthorized operation")
+	if exam.UserId != userId {
+		err = unauthorizedOperationError
 		errorLogger.Log("err", err)
-		return err
+		return fmt.Errorf(errorMessage, err)
 	}
 
 	_, err = examService.databaseRepository.WithTransaction(
 		func(ctx context.Context) (interface{}, error) {
 			// Delete Exam
-			err := databaseRepository.DeleteExam(ctx, examId)
+			err := databaseRepository.DeleteExamById(ctx, examId)
 			if err != nil {
 				return nil, err
 			}
@@ -165,7 +186,7 @@ func (examService examService) DeleteExam(examId, userId string) error {
 	)
 	if err != nil {
 		errorLogger.Log("err", err)
-		return fmt.Errorf("DeleteExam fail! error: %w", err)
+		return fmt.Errorf(errorMessage, err)
 	}
 
 	return nil
@@ -176,6 +197,7 @@ func (examService examService) CreateQuestion(
 ) (string, error) {
 	logger := examService.logger
 	errorLogger := examService.errorLogger
+	errorMessage := "CreateQuestion failed: %w"
 
 	questionId, err := examService.databaseRepository.CreateQuestion(context.TODO(), model.Question{
 		ExamId:  examId,
@@ -185,7 +207,7 @@ func (examService examService) CreateQuestion(
 	})
 	if err != nil {
 		errorLogger.Log("err", err)
-		return "", fmt.Errorf("CreateQuestion fail! error: %w", err)
+		return "", fmt.Errorf(errorMessage, err)
 	}
 
 	logger.Log("questionId", questionId)
@@ -197,19 +219,26 @@ func (examService examService) UpdateQuestion(
 ) (string, error) {
 	logger := examService.logger
 	errorLogger := examService.errorLogger
+	errorMessage := "UpdateQuestion failed: %w"
 
 	databaseRepository := examService.databaseRepository
-	question, err := databaseRepository.GetQuestion(context.TODO(), questionId)
+	question, err := databaseRepository.GetQuestionById(context.TODO(), questionId)
 	if err != nil {
 		errorLogger.Log("err", err)
-		return "", fmt.Errorf("UpdateQuestion fail! error: %w", err)
+		return "", fmt.Errorf(errorMessage, err)
+	}
+
+	if question == nil {
+		err = fmt.Errorf("Question not found")
+		errorLogger.Log("err", err)
+		return "", fmt.Errorf(errorMessage, err)
 	}
 
 	// 檢查使用者是否是該 question 的擁有者
 	if question.UserId != userId {
-		err = fmt.Errorf("Unauthorized operation")
+		err = unauthorizedOperationError
 		errorLogger.Log("err", err)
-		return "", err
+		return "", fmt.Errorf(errorMessage, err)
 	}
 
 	_, err = databaseRepository.WithTransaction(func(ctx context.Context) (interface{}, error) {
@@ -231,9 +260,39 @@ func (examService examService) UpdateQuestion(
 	})
 	if err != nil {
 		errorLogger.Log("err", err)
-		return "", fmt.Errorf("UpdateQuestion fail! error: %w", err)
+		return "", fmt.Errorf(errorMessage, err)
 	}
 
 	logger.Log("questionId", questionId)
 	return questionId, nil
+}
+
+func (examService examService) FindQuestions(
+	pageIndex, pageSize int64,
+	examId, userId string,
+) (total, pageCount int64, questions []model.Question, err error) {
+	logger := examService.logger
+	errorLogger := examService.errorLogger
+	errorMessage := "FindQuestions failed: %w"
+
+	databaseRepository := examService.databaseRepository
+	skip := pageSize * pageIndex
+	questions, err = databaseRepository.FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc(
+		context.TODO(), examId, userId, skip, pageSize)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return 0, 0, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	// Total
+	total, err = databaseRepository.CountQuestionsByExamIdAndUserId(context.TODO(), examId, userId)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return 0, 0, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	// PageCount
+	pageCount = int64(math.Ceil(float64(total) / float64(pageSize)))
+	logger.Log("total", total, "pageCount", pageCount, "questions size", len(questions))
+	return
 }
