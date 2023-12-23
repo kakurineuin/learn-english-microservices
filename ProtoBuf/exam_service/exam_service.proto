@@ -77,6 +77,13 @@ message UpdateQuestionRequest {
 
 message UpdateQuestionResponse { string question_id = 1; }
 
+message DeleteQuestionRequest {
+  string question_id = 1;
+  string user_id = 2;
+}
+
+message DeleteQuestionResponse {}
+
 service ExamService {
   rpc CreateExam(CreateExamRequest) returns (CreateExamResponse);
   rpc UpdateExam(UpdateExamRequest) returns (UpdateExamResponse);
@@ -85,4 +92,5 @@ service ExamService {
 
   rpc CreateQuestion(CreateQuestionRequest) returns (CreateQuestionResponse);
   rpc UpdateQuestion(UpdateQuestionRequest) returns (UpdateQuestionResponse);
+  rpc DeleteQuestion(DeleteQuestionRequest) returns (DeleteQuestionResponse);
 }

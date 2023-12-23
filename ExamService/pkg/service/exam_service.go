@@ -29,6 +29,7 @@ type ExamService interface {
 		pageIndex, pageSize int64,
 		examId, userId string,
 	) (total, pageCount int64, questions []model.Question, err error)
+	DeleteQuestion(questionId, userId string) error
 }
 
 type examService struct {
@@ -295,4 +296,48 @@ func (examService examService) FindQuestions(
 	pageCount = int64(math.Ceil(float64(total) / float64(pageSize)))
 	logger.Log("total", total, "pageCount", pageCount, "questions size", len(questions))
 	return
+}
+
+func (examService examService) DeleteQuestion(
+	questionId, userId string,
+) error {
+	errorLogger := examService.errorLogger
+	errorMessage := "DeleteQuestion failed: %w"
+
+	databaseRepository := examService.databaseRepository
+
+	// 檢查不能刪除別人的 question
+	question, err := databaseRepository.GetQuestionById(context.TODO(), questionId)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	if question == nil {
+		err = fmt.Errorf("Question not found by id: %s", questionId)
+		errorLogger.Log("err", err)
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	if question.UserId != userId {
+		err = unauthorizedOperationError
+		errorLogger.Log("err", err)
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	// Delete AnswerWrong
+	err = databaseRepository.DeleteAnswerWrongByQuestionId(context.TODO(), questionId)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	// Delete Question
+	err = databaseRepository.DeleteQuestionById(context.TODO(), questionId)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	return nil
 }

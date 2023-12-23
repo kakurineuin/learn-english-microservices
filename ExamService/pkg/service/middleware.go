@@ -114,3 +114,14 @@ func (mw loggingMiddleware) FindQuestions(
 	}()
 	return mw.next.FindQuestions(pageIndex, pageSize, examId, userId)
 }
+
+func (mw loggingMiddleware) DeleteQuestion(questionId, userId string) (err error) {
+	defer func() {
+		mw.logger.Log(
+			"method", "DeleteQuestion",
+			"questionId", questionId,
+			"userId", userId,
+			"err", err)
+	}()
+	return mw.next.DeleteQuestion(questionId, userId)
+}
