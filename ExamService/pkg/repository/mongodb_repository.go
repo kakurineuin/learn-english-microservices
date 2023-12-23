@@ -18,6 +18,7 @@ const (
 	EXAM_COLLECTION        = "exams"
 	QUESTION_COLLECTION    = "questions"
 	ANSWERWRONG_COLLECTION = "answerwrongs"
+	EXAM_RECORD_COLLECTION = "examrecords"
 )
 
 type MongoDBRepository struct {
@@ -364,6 +365,22 @@ func (repo *MongoDBRepository) DeleteAnswerWrongsByExamId(
 		{"examId", examId},
 	}
 	collection := repo.getCollection(ANSWERWRONG_COLLECTION)
+	result, err := collection.DeleteMany(ctx, filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.DeletedCount, nil
+}
+
+func (repo *MongoDBRepository) DeleteExamRecordsByExamId(
+	ctx context.Context,
+	examId string,
+) (deletedCount int64, err error) {
+	filter := bson.D{
+		{"examId", examId},
+	}
+	collection := repo.getCollection(EXAM_RECORD_COLLECTION)
 	result, err := collection.DeleteMany(ctx, filter)
 	if err != nil {
 		return 0, err

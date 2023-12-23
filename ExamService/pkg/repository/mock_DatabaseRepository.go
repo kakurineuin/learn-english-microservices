@@ -468,6 +468,63 @@ func (_c *MockDatabaseRepository_DeleteExamById_Call) RunAndReturn(run func(cont
 	return _c
 }
 
+// DeleteExamRecordsByExamId provides a mock function with given fields: ctx, examId
+func (_m *MockDatabaseRepository) DeleteExamRecordsByExamId(ctx context.Context, examId string) (int64, error) {
+	ret := _m.Called(ctx, examId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteExamRecordsByExamId")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return rf(ctx, examId)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+		r0 = rf(ctx, examId)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, examId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockDatabaseRepository_DeleteExamRecordsByExamId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteExamRecordsByExamId'
+type MockDatabaseRepository_DeleteExamRecordsByExamId_Call struct {
+	*mock.Call
+}
+
+// DeleteExamRecordsByExamId is a helper method to define mock.On call
+//   - ctx context.Context
+//   - examId string
+func (_e *MockDatabaseRepository_Expecter) DeleteExamRecordsByExamId(ctx interface{}, examId interface{}) *MockDatabaseRepository_DeleteExamRecordsByExamId_Call {
+	return &MockDatabaseRepository_DeleteExamRecordsByExamId_Call{Call: _e.mock.On("DeleteExamRecordsByExamId", ctx, examId)}
+}
+
+func (_c *MockDatabaseRepository_DeleteExamRecordsByExamId_Call) Run(run func(ctx context.Context, examId string)) *MockDatabaseRepository_DeleteExamRecordsByExamId_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockDatabaseRepository_DeleteExamRecordsByExamId_Call) Return(deletedCount int64, err error) *MockDatabaseRepository_DeleteExamRecordsByExamId_Call {
+	_c.Call.Return(deletedCount, err)
+	return _c
+}
+
+func (_c *MockDatabaseRepository_DeleteExamRecordsByExamId_Call) RunAndReturn(run func(context.Context, string) (int64, error)) *MockDatabaseRepository_DeleteExamRecordsByExamId_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteQuestionById provides a mock function with given fields: ctx, questionId
 func (_m *MockDatabaseRepository) DeleteQuestionById(ctx context.Context, questionId string) (int64, error) {
 	ret := _m.Called(ctx, questionId)

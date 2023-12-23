@@ -30,6 +30,7 @@ type MyTestSuite struct {
 	examCollection        *mongo.Collection
 	questionCollection    *mongo.Collection
 	answerWrongCollection *mongo.Collection
+	examRecordCollection  *mongo.Collection
 }
 
 func TestMyTestSuite(t *testing.T) {
@@ -71,6 +72,7 @@ func (s *MyTestSuite) SetupSuite() {
 	s.examCollection = client.Database(DATABASE).Collection("exams")
 	s.questionCollection = client.Database(DATABASE).Collection("questions")
 	s.answerWrongCollection = s.client.Database(DATABASE).Collection("answerwrongs")
+	s.examRecordCollection = s.client.Database(DATABASE).Collection("examrecords")
 }
 
 // run once, after test suite methods
@@ -378,6 +380,28 @@ func (s *MyTestSuite) TestDeleteAnswerWrongsByExamId() {
 	s.Nil(err)
 
 	deletedCount, err := s.repo.DeleteAnswerWrongsByExamId(ctx, examId)
+	s.Nil(err)
+	s.Equal(int64(size), deletedCount)
+}
+
+func (s *MyTestSuite) TestDeleteExamRecordsByExamId() {
+	ctx := context.TODO()
+
+	examId := "TestDeleteExamRecordsByExamId"
+	size := 10
+	documents := []interface{}{}
+
+	for i := 0; i < size; i++ {
+		documents = append(documents, model.ExamRecord{
+			ExamId: examId,
+			Score:  6,
+			UserId: "user01",
+		})
+	}
+	_, err := s.examRecordCollection.InsertMany(ctx, documents)
+	s.Nil(err)
+
+	deletedCount, err := s.repo.DeleteExamRecordsByExamId(ctx, examId)
 	s.Nil(err)
 	s.Equal(int64(size), deletedCount)
 }

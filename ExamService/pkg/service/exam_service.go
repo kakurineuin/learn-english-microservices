@@ -177,10 +177,21 @@ func (examService examService) DeleteExam(examId, userId string) error {
 
 			// Delete Question
 			_, err = databaseRepository.DeleteQuestionsByExamId(ctx, examId)
+			if err != nil {
+				return nil, err
+			}
 
-			// TODO: Delete AnswerWrong by examId
+			// Delete AnswerWrong
+			_, err = databaseRepository.DeleteAnswerWrongsByExamId(ctx, examId)
+			if err != nil {
+				return nil, err
+			}
 
-			// TODO: Delete ExamRecord
+			// Delete ExamRecord
+			_, err = databaseRepository.DeleteExamRecordsByExamId(ctx, examId)
+			if err != nil {
+				return nil, err
+			}
 
 			return nil, nil
 		},

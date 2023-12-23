@@ -44,10 +44,13 @@ type DatabaseRepository interface {
 		examId, userId string,
 	) (count int64, err error)
 
-	// TODO: AnswerWrong
+	// AnswerWrong
 	DeleteAnswerWrongByQuestionId(
 		ctx context.Context,
 		questionId string,
 	) (deletedCount int64, err error)
 	DeleteAnswerWrongsByExamId(ctx context.Context, examId string) (deletedCount int64, err error)
+
+	// ExamRecord
+	DeleteExamRecordsByExamId(ctx context.Context, examId string) (deletedCount int64, err error)
 }
