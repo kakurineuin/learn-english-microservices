@@ -6,6 +6,7 @@ import (
 
 	gt "github.com/go-kit/kit/transport/grpc"
 	"github.com/go-kit/log"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pb"
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/endpoint"
@@ -205,6 +206,8 @@ func encodeFindExamsResponse(_ context.Context, response interface{}) (interface
 			IsPublic:    exam.IsPublic,
 			Tags:        exam.Tags,
 			UserId:      exam.UserId,
+			CreatedAt:   timestamppb.New(exam.CreatedAt),
+			UpdatedAt:   timestamppb.New(exam.UpdatedAt),
 		})
 	}
 
@@ -358,11 +361,13 @@ func encodeFindQuestionsResponse(_ context.Context, response interface{}) (inter
 
 	for _, question := range resp.Questions {
 		questions = append(questions, &pb.Question{
-			Id:      question.Id.Hex(),
-			ExamId:  question.ExamId,
-			Ask:     question.Ask,
-			Answers: question.Answers,
-			UserId:  question.UserId,
+			Id:        question.Id.Hex(),
+			ExamId:    question.ExamId,
+			Ask:       question.Ask,
+			Answers:   question.Answers,
+			UserId:    question.UserId,
+			CreatedAt: timestamppb.New(question.CreatedAt),
+			UpdatedAt: timestamppb.New(question.UpdatedAt),
 		})
 	}
 
@@ -477,10 +482,12 @@ func encodeFindExamRecordsResponse(_ context.Context, response interface{}) (int
 
 	for _, examRecord := range resp.ExamRecords {
 		examRecords = append(examRecords, &pb.ExamRecord{
-			Id:     examRecord.Id.Hex(),
-			ExamId: examRecord.ExamId,
-			Score:  examRecord.Score,
-			UserId: examRecord.UserId,
+			Id:        examRecord.Id.Hex(),
+			ExamId:    examRecord.ExamId,
+			Score:     examRecord.Score,
+			UserId:    examRecord.UserId,
+			CreatedAt: timestamppb.New(examRecord.CreatedAt),
+			UpdatedAt: timestamppb.New(examRecord.UpdatedAt),
 		})
 	}
 

@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package pb;
 
+import "google/protobuf/timestamp.proto";
+
 option go_package = "./;pb";
 
 message Exam {
@@ -11,6 +13,8 @@ message Exam {
   repeated string tags = 4;
   bool is_public = 5;
   string user_id = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
 }
 
 message CreateExamRequest {
@@ -57,6 +61,8 @@ message Question {
   string ask = 3;
   repeated string answers = 4;
   string user_id = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
 }
 
 message CreateQuestionRequest {
@@ -102,6 +108,8 @@ message ExamRecord {
   string exam_id = 2;
   int64 score = 3;
   string user_id = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
 }
 
 message CreateExamRecordRequest {
