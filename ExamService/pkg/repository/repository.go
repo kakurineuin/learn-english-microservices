@@ -25,6 +25,11 @@ type DatabaseRepository interface {
 		userId string,
 		skip, limit int64,
 	) (exams []model.Exam, err error)
+	FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc(
+		ctx context.Context,
+		userId string,
+		isPublic bool,
+	) (exams []model.Exam, err error)
 	DeleteExamById(ctx context.Context, examId string) (deletedCount int64, err error)
 	CountExamsByUserId(ctx context.Context, userId string) (count int64, err error)
 

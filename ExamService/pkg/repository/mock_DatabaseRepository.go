@@ -861,6 +861,66 @@ func (_c *MockDatabaseRepository_FindExamRecordsByExamIdAndUserIdOrderByUpdateAt
 	return _c
 }
 
+// FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc provides a mock function with given fields: ctx, userId, isPublic
+func (_m *MockDatabaseRepository) FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc(ctx context.Context, userId string, isPublic bool) ([]model.Exam, error) {
+	ret := _m.Called(ctx, userId, isPublic)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc")
+	}
+
+	var r0 []model.Exam
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, bool) ([]model.Exam, error)); ok {
+		return rf(ctx, userId, isPublic)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, bool) []model.Exam); ok {
+		r0 = rf(ctx, userId, isPublic)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]model.Exam)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, bool) error); ok {
+		r1 = rf(ctx, userId, isPublic)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockDatabaseRepository_FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc'
+type MockDatabaseRepository_FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc_Call struct {
+	*mock.Call
+}
+
+// FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userId string
+//   - isPublic bool
+func (_e *MockDatabaseRepository_Expecter) FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc(ctx interface{}, userId interface{}, isPublic interface{}) *MockDatabaseRepository_FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc_Call {
+	return &MockDatabaseRepository_FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc_Call{Call: _e.mock.On("FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc", ctx, userId, isPublic)}
+}
+
+func (_c *MockDatabaseRepository_FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc_Call) Run(run func(ctx context.Context, userId string, isPublic bool)) *MockDatabaseRepository_FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(bool))
+	})
+	return _c
+}
+
+func (_c *MockDatabaseRepository_FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc_Call) Return(exams []model.Exam, err error) *MockDatabaseRepository_FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc_Call {
+	_c.Call.Return(exams, err)
+	return _c
+}
+
+func (_c *MockDatabaseRepository_FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc_Call) RunAndReturn(run func(context.Context, string, bool) ([]model.Exam, error)) *MockDatabaseRepository_FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // FindExamsByUserIdOrderByUpdateAtDesc provides a mock function with given fields: ctx, userId, skip, limit
 func (_m *MockDatabaseRepository) FindExamsByUserIdOrderByUpdateAtDesc(ctx context.Context, userId string, skip int64, limit int64) ([]model.Exam, error) {
 	ret := _m.Called(ctx, userId, skip, limit)

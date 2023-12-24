@@ -205,6 +205,31 @@ func (s *MyTestSuite) TestFindExamsByUserIdOrderByUpdateAtDesc() {
 	s.Equal(10, len(exams))
 }
 
+func (s *MyTestSuite) TestFindExamsByUserIdAndIsPublicOrderByUpdateAtDesc() {
+	ctx := context.TODO()
+
+	userId := "TestFindExamsByUserIdAndIsPublicOrderByUpdateAtDesc"
+	isPublic := true
+	size := 10
+	documents := []interface{}{}
+
+	for i := 0; i < size; i++ {
+		documents = append(documents, model.Exam{
+			Topic:       fmt.Sprintf("topic_%d", i),
+			Description: "jsut for test",
+			Tags:        []string{"tag01", "tag02"},
+			IsPublic:    isPublic,
+			UserId:      userId,
+		})
+	}
+	_, err := s.examCollection.InsertMany(ctx, documents)
+	s.Nil(err)
+
+	exams, err := s.repo.FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc(ctx, userId, isPublic)
+	s.Nil(err)
+	s.Equal(size, len(exams))
+}
+
 func (s *MyTestSuite) TestDeleteExamById() {
 	ctx := context.TODO()
 

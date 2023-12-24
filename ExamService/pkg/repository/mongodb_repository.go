@@ -156,6 +156,30 @@ func (repo *MongoDBRepository) FindExamsByUserIdOrderByUpdateAtDesc(
 	return exams, nil
 }
 
+func (repo *MongoDBRepository) FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc(
+	ctx context.Context,
+	userId string,
+	isPublic bool,
+) (exams []model.Exam, err error) {
+	collection := repo.getCollection(EXAM_COLLECTION)
+	filter := bson.D{
+		{"userId", userId},
+		{"isPublic", isPublic},
+	}
+	sort := bson.D{{"updatedAt", -1}} // descending
+	opts := options.Find().SetSort(sort)
+	cursor, err := collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cursor.All(ctx, &exams); err != nil {
+		return nil, err
+	}
+
+	return exams, nil
+}
+
 func (repo *MongoDBRepository) DeleteExamById(
 	ctx context.Context,
 	examId string,
