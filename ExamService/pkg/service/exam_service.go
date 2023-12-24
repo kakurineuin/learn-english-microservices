@@ -14,6 +14,16 @@ import (
 
 var unauthorizedOperationError = fmt.Errorf("Unauthorized operation")
 
+// 這不是 MongoDB 的 document，所以不放在 model 目錄之下
+type ExamInfo struct {
+	ExamId        string
+	Topic         string
+	Description   string
+	IsPublic      bool
+	QuestionCount int64
+	RecordCount   int64
+}
+
 type ExamService interface {
 	// Exam
 	CreateExam(topic, description string, isPublic bool, userId string) (string, error)
@@ -39,6 +49,9 @@ type ExamService interface {
 		pageIndex, pageSize int64,
 		examId, userId string,
 	) (total, pageCount int64, examRecords []model.ExamRecord, err error)
+
+	// ExamInfo
+	// FindExamInfos(userId string, isPublic bool) (examInfos []ExamInfo, err error)
 }
 
 type examService struct {
@@ -501,4 +514,54 @@ func (examService examService) FindExamRecords(
 	pageCount = int64(math.Ceil(float64(total) / float64(pageSize)))
 	logger.Log("total", total, "pageCount", pageCount, "examRecords size", len(examRecords))
 	return
+}
+
+func (examService examService) FindExamInfos(
+	userId string,
+	isPublic bool,
+) (examInfos []ExamInfo, err error) {
+	errorLogger := examService.errorLogger
+	errorMessage := "FindExamInfos failed: %w"
+
+	databaseRepository := examService.databaseRepository
+
+	exams, err := databaseRepository.FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc(
+		context.TODO(),
+		userId,
+		isPublic,
+	)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return nil, fmt.Errorf(errorMessage, err)
+	}
+
+	for _, exam := range exams {
+		examId := exam.Id.Hex()
+		questionCount, err := databaseRepository.CountQuestionsByExamId(context.TODO(), examId)
+		if err != nil {
+			errorLogger.Log("err", err)
+			return nil, fmt.Errorf(errorMessage, err)
+		}
+
+		examRecordCount, err := databaseRepository.CountExamRecordsByExamIdAndUserId(
+			context.TODO(),
+			examId,
+			userId,
+		)
+		if err != nil {
+			errorLogger.Log("err", err)
+			return nil, fmt.Errorf(errorMessage, err)
+		}
+
+		examInfos = append(examInfos, ExamInfo{
+			ExamId:        examId,
+			Topic:         exam.Topic,
+			Description:   exam.Description,
+			IsPublic:      exam.IsPublic,
+			QuestionCount: questionCount,
+			RecordCount:   examRecordCount,
+		})
+	}
+
+	return examInfos, nil
 }

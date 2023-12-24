@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	gokitlog "github.com/go-kit/log"
+	"github.com/go-kit/log/level"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -21,7 +22,7 @@ const (
 
 type MyTestSuite struct {
 	suite.Suite
-	examService            ExamService
+	examService            examService
 	mockDatabaseRepository *repository.MockDatabaseRepository
 }
 
@@ -42,7 +43,11 @@ func (s *MyTestSuite) SetupSuite() {
 		gokitlog.DefaultCaller,
 	)
 	mockDatabaseRepository := repository.NewMockDatabaseRepository(s.T())
-	s.examService = New(logger, mockDatabaseRepository)
+	s.examService = examService{
+		logger:             logger,
+		errorLogger:        level.Error(logger),
+		databaseRepository: mockDatabaseRepository,
+	}
 	s.mockDatabaseRepository = mockDatabaseRepository
 }
 
@@ -274,4 +279,65 @@ func (s *MyTestSuite) TestCreateExamRecord() {
 		userId,
 	)
 	s.Nil(err)
+}
+
+func (s *MyTestSuite) TestFindExamInfos() {
+	userId := "user01"
+	isPublic := true
+
+	examId1 := "658875894c61d5f50a71a7b6"
+	id1, err := primitive.ObjectIDFromHex(examId1)
+	s.Nil(err)
+
+	examId2 := "658875a9512667185df5e0b9"
+	id2, err := primitive.ObjectIDFromHex(examId2)
+	s.Nil(err)
+
+	var (
+		questionCount1 int64 = 10
+		questionCount2 int64 = 20
+		recordCount1   int64 = 1
+		recordCount2   int64 = 2
+	)
+
+	s.mockDatabaseRepository.EXPECT().
+		FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc(mock.Anything, userId, isPublic).
+		Return([]model.Exam{
+			{
+				Id:          id1,
+				Topic:       "topic01",
+				Description: "desc01",
+				Tags:        []string{"a01"},
+				IsPublic:    isPublic,
+				UserId:      userId,
+			},
+			{
+				Id:          id2,
+				Topic:       "topic02",
+				Description: "desc02",
+				Tags:        []string{"a02"},
+				IsPublic:    isPublic,
+				UserId:      userId,
+			},
+		}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		CountQuestionsByExamId(mock.Anything, examId1).
+		Return(questionCount1, nil)
+	s.mockDatabaseRepository.EXPECT().
+		CountQuestionsByExamId(mock.Anything, examId2).
+		Return(questionCount2, nil)
+	s.mockDatabaseRepository.EXPECT().
+		CountExamRecordsByExamIdAndUserId(mock.Anything, examId1, userId).
+		Return(recordCount1, nil)
+	s.mockDatabaseRepository.EXPECT().
+		CountExamRecordsByExamIdAndUserId(mock.Anything, examId2, userId).
+		Return(recordCount2, nil)
+
+	examInfos, err := s.examService.FindExamInfos(userId, isPublic)
+	s.Nil(err)
+	s.Equal(2, len(examInfos))
+	s.Equal(questionCount1, examInfos[0].QuestionCount)
+	s.Equal(questionCount2, examInfos[1].QuestionCount)
+	s.Equal(recordCount1, examInfos[0].RecordCount)
+	s.Equal(recordCount2, examInfos[1].RecordCount)
 }
