@@ -96,7 +96,7 @@ func (examService examService) UpdateExam(
 	}
 
 	if exam == nil {
-		err = fmt.Errorf("Exam not found")
+		err = fmt.Errorf("Exam not found by id: %s", examId)
 		errorLogger.Log("err", err)
 		return "", fmt.Errorf(errorMessage, err)
 	}
@@ -220,7 +220,27 @@ func (examService examService) CreateQuestion(
 	errorLogger := examService.errorLogger
 	errorMessage := "CreateQuestion failed: %w"
 
-	questionId, err := examService.databaseRepository.CreateQuestion(context.TODO(), model.Question{
+	databaseRepository := examService.databaseRepository
+	exam, err := databaseRepository.GetExamById(context.TODO(), examId)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return "", fmt.Errorf(errorMessage, err)
+	}
+
+	if exam == nil {
+		err = fmt.Errorf("Exam not found by id: %s", examId)
+		errorLogger.Log("err", err)
+		return "", fmt.Errorf(errorMessage, err)
+	}
+
+	// 檢查使用者是否是該測驗的擁有者
+	if exam.UserId != userId {
+		err = unauthorizedOperationError
+		errorLogger.Log("err", err)
+		return "", fmt.Errorf(errorMessage, err)
+	}
+
+	questionId, err := databaseRepository.CreateQuestion(context.TODO(), model.Question{
 		ExamId:  examId,
 		Ask:     ask,
 		Answers: answers,
@@ -250,7 +270,7 @@ func (examService examService) UpdateQuestion(
 	}
 
 	if question == nil {
-		err = fmt.Errorf("Question not found")
+		err = fmt.Errorf("Question not found by id: %s", questionId)
 		errorLogger.Log("err", err)
 		return "", fmt.Errorf(errorMessage, err)
 	}
