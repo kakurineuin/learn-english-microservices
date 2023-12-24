@@ -211,7 +211,7 @@ func (s *MyTestSuite) TestFindQuestions() {
 	var expectedTotal int64 = 23
 
 	s.mockDatabaseRepository.EXPECT().
-		FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc(mock.Anything, EXAM_ID, userId, skip, limit).
+		FindQuestionsByExamIdOrderByUpdateAtDesc(mock.Anything, EXAM_ID, skip, limit).
 		Return([]model.Question{
 			{},
 			{},

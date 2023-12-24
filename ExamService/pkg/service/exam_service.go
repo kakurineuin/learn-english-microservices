@@ -297,9 +297,29 @@ func (examService examService) FindQuestions(
 	errorMessage := "FindQuestions failed: %w"
 
 	databaseRepository := examService.databaseRepository
+
+	exam, err := databaseRepository.GetExamById(context.TODO(), examId)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return 0, 0, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	if exam == nil {
+		err := fmt.Errorf("Exam not found by id: %s", examId)
+		errorLogger.Log("err", err)
+		return 0, 0, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	// 檢查不能查詢別人的 question
+	if exam.UserId != userId {
+		err = unauthorizedOperationError
+		errorLogger.Log("err", err)
+		return 0, 0, nil, fmt.Errorf(errorMessage, err)
+	}
+
 	skip := pageSize * pageIndex
-	questions, err = databaseRepository.FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc(
-		context.TODO(), examId, userId, skip, pageSize)
+	questions, err = databaseRepository.FindQuestionsByExamIdOrderByUpdateAtDesc(
+		context.TODO(), examId, skip, pageSize)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return 0, 0, nil, fmt.Errorf(errorMessage, err)

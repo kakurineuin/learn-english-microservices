@@ -287,15 +287,14 @@ func (repo *MongoDBRepository) GetQuestionById(
 	return &result, nil
 }
 
-func (repo *MongoDBRepository) FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc(
+func (repo *MongoDBRepository) FindQuestionsByExamIdOrderByUpdateAtDesc(
 	ctx context.Context,
-	examId, userId string,
+	examId string,
 	skip, limit int64,
 ) (questions []model.Question, err error) {
 	collection := repo.getCollection(QUESTION_COLLECTION)
 	filter := bson.D{
 		{"examId", examId},
-		{"userId", userId},
 	}
 	sort := bson.D{{"updatedAt", -1}} // descending
 	opts := options.Find().SetSort(sort).SetSkip(skip).SetLimit(limit)

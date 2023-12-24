@@ -982,29 +982,29 @@ func (_c *MockDatabaseRepository_FindExamsByUserIdOrderByUpdateAtDesc_Call) RunA
 	return _c
 }
 
-// FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc provides a mock function with given fields: ctx, examId, userId, skip, limit
-func (_m *MockDatabaseRepository) FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc(ctx context.Context, examId string, userId string, skip int64, limit int64) ([]model.Question, error) {
-	ret := _m.Called(ctx, examId, userId, skip, limit)
+// FindQuestionsByExamIdOrderByUpdateAtDesc provides a mock function with given fields: ctx, examId, skip, limit
+func (_m *MockDatabaseRepository) FindQuestionsByExamIdOrderByUpdateAtDesc(ctx context.Context, examId string, skip int64, limit int64) ([]model.Question, error) {
+	ret := _m.Called(ctx, examId, skip, limit)
 
 	if len(ret) == 0 {
-		panic("no return value specified for FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc")
+		panic("no return value specified for FindQuestionsByExamIdOrderByUpdateAtDesc")
 	}
 
 	var r0 []model.Question
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, int64, int64) ([]model.Question, error)); ok {
-		return rf(ctx, examId, userId, skip, limit)
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64, int64) ([]model.Question, error)); ok {
+		return rf(ctx, examId, skip, limit)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, int64, int64) []model.Question); ok {
-		r0 = rf(ctx, examId, userId, skip, limit)
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64, int64) []model.Question); ok {
+		r0 = rf(ctx, examId, skip, limit)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]model.Question)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string, string, int64, int64) error); ok {
-		r1 = rf(ctx, examId, userId, skip, limit)
+	if rf, ok := ret.Get(1).(func(context.Context, string, int64, int64) error); ok {
+		r1 = rf(ctx, examId, skip, limit)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1012,34 +1012,33 @@ func (_m *MockDatabaseRepository) FindQuestionsByExamIdAndUserIdOrderByUpdateAtD
 	return r0, r1
 }
 
-// MockDatabaseRepository_FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc'
-type MockDatabaseRepository_FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc_Call struct {
+// MockDatabaseRepository_FindQuestionsByExamIdOrderByUpdateAtDesc_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindQuestionsByExamIdOrderByUpdateAtDesc'
+type MockDatabaseRepository_FindQuestionsByExamIdOrderByUpdateAtDesc_Call struct {
 	*mock.Call
 }
 
-// FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc is a helper method to define mock.On call
+// FindQuestionsByExamIdOrderByUpdateAtDesc is a helper method to define mock.On call
 //   - ctx context.Context
 //   - examId string
-//   - userId string
 //   - skip int64
 //   - limit int64
-func (_e *MockDatabaseRepository_Expecter) FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc(ctx interface{}, examId interface{}, userId interface{}, skip interface{}, limit interface{}) *MockDatabaseRepository_FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc_Call {
-	return &MockDatabaseRepository_FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc_Call{Call: _e.mock.On("FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc", ctx, examId, userId, skip, limit)}
+func (_e *MockDatabaseRepository_Expecter) FindQuestionsByExamIdOrderByUpdateAtDesc(ctx interface{}, examId interface{}, skip interface{}, limit interface{}) *MockDatabaseRepository_FindQuestionsByExamIdOrderByUpdateAtDesc_Call {
+	return &MockDatabaseRepository_FindQuestionsByExamIdOrderByUpdateAtDesc_Call{Call: _e.mock.On("FindQuestionsByExamIdOrderByUpdateAtDesc", ctx, examId, skip, limit)}
 }
 
-func (_c *MockDatabaseRepository_FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc_Call) Run(run func(ctx context.Context, examId string, userId string, skip int64, limit int64)) *MockDatabaseRepository_FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc_Call {
+func (_c *MockDatabaseRepository_FindQuestionsByExamIdOrderByUpdateAtDesc_Call) Run(run func(ctx context.Context, examId string, skip int64, limit int64)) *MockDatabaseRepository_FindQuestionsByExamIdOrderByUpdateAtDesc_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(int64), args[4].(int64))
+		run(args[0].(context.Context), args[1].(string), args[2].(int64), args[3].(int64))
 	})
 	return _c
 }
 
-func (_c *MockDatabaseRepository_FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc_Call) Return(questions []model.Question, err error) *MockDatabaseRepository_FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc_Call {
+func (_c *MockDatabaseRepository_FindQuestionsByExamIdOrderByUpdateAtDesc_Call) Return(questions []model.Question, err error) *MockDatabaseRepository_FindQuestionsByExamIdOrderByUpdateAtDesc_Call {
 	_c.Call.Return(questions, err)
 	return _c
 }
 
-func (_c *MockDatabaseRepository_FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc_Call) RunAndReturn(run func(context.Context, string, string, int64, int64) ([]model.Question, error)) *MockDatabaseRepository_FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc_Call {
+func (_c *MockDatabaseRepository_FindQuestionsByExamIdOrderByUpdateAtDesc_Call) RunAndReturn(run func(context.Context, string, int64, int64) ([]model.Question, error)) *MockDatabaseRepository_FindQuestionsByExamIdOrderByUpdateAtDesc_Call {
 	_c.Call.Return(run)
 	return _c
 }

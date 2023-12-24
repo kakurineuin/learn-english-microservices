@@ -37,9 +37,9 @@ type DatabaseRepository interface {
 	CreateQuestion(ctx context.Context, question model.Question) (questionId string, err error)
 	UpdateQuestion(ctx context.Context, question model.Question) error
 	GetQuestionById(ctx context.Context, questionId string) (question *model.Question, err error)
-	FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc(
+	FindQuestionsByExamIdOrderByUpdateAtDesc(
 		ctx context.Context,
-		examId, userId string,
+		examId string,
 		skip, limit int64,
 	) (questions []model.Question, err error)
 	DeleteQuestionById(ctx context.Context, questionId string) (deletedCount int64, err error)

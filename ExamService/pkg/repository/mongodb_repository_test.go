@@ -323,10 +323,10 @@ func (s *MyTestSuite) TestGetQuestionById() {
 	s.NotNil(question)
 }
 
-func (s *MyTestSuite) TestFindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc() {
+func (s *MyTestSuite) TestFindQuestionsByExamIdOrderByUpdateAtDesc() {
 	ctx := context.TODO()
 
-	examId := "TestFindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc"
+	examId := "TestFindQuestionsByExamIdOrderByUpdateAtDesc"
 	userId := "user01"
 	documents := []interface{}{}
 
@@ -341,10 +341,9 @@ func (s *MyTestSuite) TestFindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc() {
 	_, err := s.questionCollection.InsertMany(ctx, documents)
 	s.Nil(err)
 
-	questions, err := s.repo.FindQuestionsByExamIdAndUserIdOrderByUpdateAtDesc(
+	questions, err := s.repo.FindQuestionsByExamIdOrderByUpdateAtDesc(
 		ctx,
 		examId,
-		userId,
 		10,
 		10,
 	)
