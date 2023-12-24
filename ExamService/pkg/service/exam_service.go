@@ -51,7 +51,7 @@ type ExamService interface {
 	) (total, pageCount int64, examRecords []model.ExamRecord, err error)
 
 	// ExamInfo
-	// FindExamInfos(userId string, isPublic bool) (examInfos []ExamInfo, err error)
+	FindExamInfos(userId string, isPublic bool) (examInfos []ExamInfo, err error)
 }
 
 type examService struct {
@@ -541,6 +541,10 @@ func (examService examService) FindExamInfos(
 		if err != nil {
 			errorLogger.Log("err", err)
 			return nil, fmt.Errorf(errorMessage, err)
+		}
+
+		if questionCount == 0 {
+			continue
 		}
 
 		examRecordCount, err := databaseRepository.CountExamRecordsByExamIdAndUserId(

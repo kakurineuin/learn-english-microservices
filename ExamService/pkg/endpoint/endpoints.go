@@ -23,112 +23,8 @@ type Endpoints struct {
 
 	CreateExamRecord endpoint.Endpoint
 	FindExamRecords  endpoint.Endpoint
-}
 
-type CreateExamRequest struct {
-	Topic       string
-	Description string
-	IsPublic    bool
-	UserId      string
-}
-
-type CreateExamResponse struct {
-	ExamId string
-}
-
-type UpdateExamRequest struct {
-	ExamId      string
-	Topic       string
-	Description string
-	IsPublic    bool
-	UserId      string
-}
-
-type UpdateExamResponse struct {
-	ExamId string
-}
-
-type FindExamsRequest struct {
-	PageIndex int64
-	PageSize  int64
-	UserId    string
-}
-
-type FindExamsResponse struct {
-	Total     int64
-	PageCount int64
-	Exams     []model.Exam
-}
-
-type DeleteExamRequest struct {
-	ExamId string
-	UserId string
-}
-
-type DeleteExamResponse struct{}
-
-type CreateQuestionRequest struct {
-	ExamId  string
-	Ask     string
-	Answers []string
-	UserId  string
-}
-
-type CreateQuestionResponse struct {
-	QuestionId string
-}
-
-type UpdateQuestionRequest struct {
-	QuestionId string
-	Ask        string
-	Answers    []string
-	UserId     string
-}
-
-type UpdateQuestionResponse struct {
-	QuestionId string
-}
-
-type FindQuestionsRequest struct {
-	PageIndex int64
-	PageSize  int64
-	ExamId    string
-	UserId    string
-}
-
-type FindQuestionsResponse struct {
-	Total     int64
-	PageCount int64
-	Questions []model.Question
-}
-
-type DeleteQuestionRequest struct {
-	QuestionId string
-	UserId     string
-}
-
-type DeleteQuestionResponse struct{}
-
-type CreateExamRecordRequest struct {
-	ExamId           string
-	Score            int64
-	WrongQuestionIds []string
-	UserId           string
-}
-
-type CreateExamRecordResponse struct{}
-
-type FindExamRecordsRequest struct {
-	PageIndex int64
-	PageSize  int64
-	ExamId    string
-	UserId    string
-}
-
-type FindExamRecordsResponse struct {
-	Total       int64
-	PageCount   int64
-	ExamRecords []model.ExamRecord
+	FindExamInfos endpoint.Endpoint
 }
 
 func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints {
@@ -172,6 +68,10 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	findExamRecordsEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "FindExamRecords"))(findExamRecordsEndpoint)
 
+	findExamInfosEndpoint := makeFindExamInfosEndpoint(examService)
+	findExamInfosEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "FindExamInfos"))(findExamInfosEndpoint)
+
 	return Endpoints{
 		CreateExam: createExamEndpoint,
 		UpdateExam: updateExamEndpoint,
@@ -185,7 +85,20 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 
 		CreateExamRecord: createExamRecordEndpoint,
 		FindExamRecords:  findExamRecordsEndpoint,
+
+		FindExamInfos: findExamInfosEndpoint,
 	}
+}
+
+type CreateExamRequest struct {
+	Topic       string
+	Description string
+	IsPublic    bool
+	UserId      string
+}
+
+type CreateExamResponse struct {
+	ExamId string
 }
 
 func makeCreateExamEndpoint(examService service.ExamService) endpoint.Endpoint {
@@ -200,6 +113,18 @@ func makeCreateExamEndpoint(examService service.ExamService) endpoint.Endpoint {
 	}
 }
 
+type UpdateExamRequest struct {
+	ExamId      string
+	Topic       string
+	Description string
+	IsPublic    bool
+	UserId      string
+}
+
+type UpdateExamResponse struct {
+	ExamId string
+}
+
 func makeUpdateExamEndpoint(examService service.ExamService) endpoint.Endpoint {
 	return func(_ context.Context, request interface{}) (interface{}, error) {
 		req := request.(UpdateExamRequest)
@@ -210,6 +135,18 @@ func makeUpdateExamEndpoint(examService service.ExamService) endpoint.Endpoint {
 		}
 		return UpdateExamResponse{ExamId: examId}, nil
 	}
+}
+
+type FindExamsRequest struct {
+	PageIndex int64
+	PageSize  int64
+	UserId    string
+}
+
+type FindExamsResponse struct {
+	Total     int64
+	PageCount int64
+	Exams     []model.Exam
 }
 
 func makeFindExamsEndpoint(examService service.ExamService) endpoint.Endpoint {
@@ -231,6 +168,13 @@ func makeFindExamsEndpoint(examService service.ExamService) endpoint.Endpoint {
 	}
 }
 
+type DeleteExamRequest struct {
+	ExamId string
+	UserId string
+}
+
+type DeleteExamResponse struct{}
+
 func makeDeleteExamEndpoint(examService service.ExamService) endpoint.Endpoint {
 	return func(_ context.Context, request interface{}) (interface{}, error) {
 		req := request.(DeleteExamRequest)
@@ -240,6 +184,17 @@ func makeDeleteExamEndpoint(examService service.ExamService) endpoint.Endpoint {
 		}
 		return DeleteExamResponse{}, nil
 	}
+}
+
+type CreateQuestionRequest struct {
+	ExamId  string
+	Ask     string
+	Answers []string
+	UserId  string
+}
+
+type CreateQuestionResponse struct {
+	QuestionId string
 }
 
 func makeCreateQuestionEndpoint(examService service.ExamService) endpoint.Endpoint {
@@ -254,6 +209,17 @@ func makeCreateQuestionEndpoint(examService service.ExamService) endpoint.Endpoi
 	}
 }
 
+type UpdateQuestionRequest struct {
+	QuestionId string
+	Ask        string
+	Answers    []string
+	UserId     string
+}
+
+type UpdateQuestionResponse struct {
+	QuestionId string
+}
+
 func makeUpdateQuestionEndpoint(examService service.ExamService) endpoint.Endpoint {
 	return func(_ context.Context, request interface{}) (interface{}, error) {
 		req := request.(UpdateQuestionRequest)
@@ -264,6 +230,19 @@ func makeUpdateQuestionEndpoint(examService service.ExamService) endpoint.Endpoi
 		}
 		return UpdateQuestionResponse{QuestionId: questionId}, nil
 	}
+}
+
+type FindQuestionsRequest struct {
+	PageIndex int64
+	PageSize  int64
+	ExamId    string
+	UserId    string
+}
+
+type FindQuestionsResponse struct {
+	Total     int64
+	PageCount int64
+	Questions []model.Question
 }
 
 func makeFindQuestionsEndpoint(examService service.ExamService) endpoint.Endpoint {
@@ -286,6 +265,13 @@ func makeFindQuestionsEndpoint(examService service.ExamService) endpoint.Endpoin
 	}
 }
 
+type DeleteQuestionRequest struct {
+	QuestionId string
+	UserId     string
+}
+
+type DeleteQuestionResponse struct{}
+
 func makeDeleteQuestionEndpoint(examService service.ExamService) endpoint.Endpoint {
 	return func(_ context.Context, request interface{}) (interface{}, error) {
 		req := request.(DeleteQuestionRequest)
@@ -298,6 +284,15 @@ func makeDeleteQuestionEndpoint(examService service.ExamService) endpoint.Endpoi
 	}
 }
 
+type CreateExamRecordRequest struct {
+	ExamId           string
+	Score            int64
+	WrongQuestionIds []string
+	UserId           string
+}
+
+type CreateExamRecordResponse struct{}
+
 func makeCreateExamRecordEndpoint(examService service.ExamService) endpoint.Endpoint {
 	return func(_ context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateExamRecordRequest)
@@ -308,6 +303,19 @@ func makeCreateExamRecordEndpoint(examService service.ExamService) endpoint.Endp
 		}
 		return CreateExamRecordResponse{}, nil
 	}
+}
+
+type FindExamRecordsRequest struct {
+	PageIndex int64
+	PageSize  int64
+	ExamId    string
+	UserId    string
+}
+
+type FindExamRecordsResponse struct {
+	Total       int64
+	PageCount   int64
+	ExamRecords []model.ExamRecord
 }
 
 func makeFindExamRecordsEndpoint(examService service.ExamService) endpoint.Endpoint {
@@ -326,6 +334,31 @@ func makeFindExamRecordsEndpoint(examService service.ExamService) endpoint.Endpo
 			Total:       total,
 			PageCount:   pageCount,
 			ExamRecords: examRecords,
+		}, nil
+	}
+}
+
+type FindExamInfosRequest struct {
+	UserId   string
+	IsPublic bool
+}
+
+type FindExamInfosResponse struct {
+	ExamInfos []service.ExamInfo
+}
+
+func makeFindExamInfosEndpoint(examService service.ExamService) endpoint.Endpoint {
+	return func(_ context.Context, request interface{}) (interface{}, error) {
+		req := request.(FindExamInfosRequest)
+		examInfos, err := examService.FindExamInfos(
+			req.UserId,
+			req.IsPublic,
+		)
+		if err != nil {
+			return nil, err
+		}
+		return FindExamInfosResponse{
+			ExamInfos: examInfos,
 		}, nil
 	}
 }

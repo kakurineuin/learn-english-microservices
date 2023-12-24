@@ -26,6 +26,8 @@ type GRPCServer struct {
 	createExamRecord gt.Handler
 	findExamRecords  gt.Handler
 
+	findExamInfos gt.Handler
+
 	pb.UnimplementedExamServiceServer
 }
 
@@ -86,6 +88,13 @@ func NewGRPCServer(endpointds endpoint.Endpoints, logger log.Logger) pb.ExamServ
 			endpointds.FindExamRecords,
 			decodeFindExamRecordsRequest,
 			encodeFindExamRecordsResponse,
+		),
+
+		// ExamInfo
+		findExamInfos: gt.NewServer(
+			endpointds.FindExamInfos,
+			decodeFindExamInfosRequest,
+			encodeFindExamInfosResponse,
 		),
 	}
 }
@@ -495,5 +504,53 @@ func encodeFindExamRecordsResponse(_ context.Context, response interface{}) (int
 		Total:       resp.Total,
 		PageCount:   resp.PageCount,
 		ExamRecords: examRecords,
+	}, nil
+}
+
+func (s GRPCServer) FindExamInfos(
+	ctx context.Context,
+	req *pb.FindExamInfosRequest,
+) (*pb.FindExamInfosResponse, error) {
+	_, resp, err := s.findExamInfos.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb.FindExamInfosResponse), nil
+}
+
+func decodeFindExamInfosRequest(_ context.Context, request interface{}) (interface{}, error) {
+	req, ok := request.(*pb.FindExamInfosRequest)
+	if !ok {
+		return nil, errors.New("invalid request body")
+	}
+
+	return endpoint.FindExamInfosRequest{
+		UserId:   req.UserId,
+		IsPublic: req.IsPublic,
+	}, nil
+}
+
+func encodeFindExamInfosResponse(_ context.Context, response interface{}) (interface{}, error) {
+	resp, ok := response.(endpoint.FindExamInfosResponse)
+	if !ok {
+		return nil, errors.New("invalid response body")
+	}
+
+	examInfos := []*pb.ExamInfo{}
+
+	for _, examInfo := range resp.ExamInfos {
+		examInfos = append(examInfos, &pb.ExamInfo{
+			ExamId:        examInfo.ExamId,
+			Topic:         examInfo.Topic,
+			Description:   examInfo.Description,
+			IsPublic:      examInfo.IsPublic,
+			QuestionCount: examInfo.QuestionCount,
+			RecordCount:   examInfo.RecordCount,
+		})
+	}
+
+	return &pb.FindExamInfosResponse{
+		ExamInfos: examInfos,
 	}, nil
 }

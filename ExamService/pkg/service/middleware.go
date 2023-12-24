@@ -155,3 +155,16 @@ func (mw loggingMiddleware) FindExamRecords(
 	}()
 	return mw.next.FindExamRecords(pageIndex, pageSize, examId, userId)
 }
+
+func (mw loggingMiddleware) FindExamInfos(
+	userId string, isPublic bool,
+) (examInfos []ExamInfo, err error) {
+	defer func() {
+		mw.logger.Log(
+			"method", "FindExamInfos",
+			"userId", userId,
+			"isPublic", isPublic,
+			"err", err)
+	}()
+	return mw.next.FindExamInfos(userId, isPublic)
+}

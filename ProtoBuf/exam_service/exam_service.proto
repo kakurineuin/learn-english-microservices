@@ -131,8 +131,24 @@ message FindExamRecordsRequest {
 message FindExamRecordsResponse {
   int64 total = 1;
   int64 page_count = 2;
-  repeated ExamRecord examRecords = 3;
+  repeated ExamRecord exam_records = 3;
 }
+
+message ExamInfo {
+  string exam_id = 1;
+  string topic = 2;
+  string description = 3;
+  bool is_public = 4;
+  int64 question_count = 5;
+  int64 record_count = 6;
+}
+
+message FindExamInfosRequest {
+  string user_id = 1;
+  bool is_public = 2;
+}
+
+message FindExamInfosResponse { repeated ExamInfo exam_infos = 1; }
 
 service ExamService {
   rpc CreateExam(CreateExamRequest) returns (CreateExamResponse);
@@ -148,4 +164,6 @@ service ExamService {
   rpc CreateExamRecord(CreateExamRecordRequest)
       returns (CreateExamRecordResponse);
   rpc FindExamRecords(FindExamRecordsRequest) returns (FindExamRecordsResponse);
+
+  rpc FindExamInfos(FindExamInfosRequest) returns (FindExamInfosResponse);
 }
