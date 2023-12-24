@@ -218,7 +218,7 @@ func (s *MyTestSuite) TestFindQuestions() {
 			{},
 		}, nil)
 	s.mockDatabaseRepository.EXPECT().
-		CountQuestionsByExamIdAndUserId(mock.Anything, EXAM_ID, userId).
+		CountQuestionsByExamId(mock.Anything, EXAM_ID).
 		Return(expectedTotal, nil)
 
 	total, pageCount, questions, err := s.examService.FindQuestions(

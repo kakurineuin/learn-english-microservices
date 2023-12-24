@@ -183,27 +183,27 @@ func (_c *MockDatabaseRepository_CountExamsByUserId_Call) RunAndReturn(run func(
 	return _c
 }
 
-// CountQuestionsByExamIdAndUserId provides a mock function with given fields: ctx, examId, userId
-func (_m *MockDatabaseRepository) CountQuestionsByExamIdAndUserId(ctx context.Context, examId string, userId string) (int64, error) {
-	ret := _m.Called(ctx, examId, userId)
+// CountQuestionsByExamId provides a mock function with given fields: ctx, examId
+func (_m *MockDatabaseRepository) CountQuestionsByExamId(ctx context.Context, examId string) (int64, error) {
+	ret := _m.Called(ctx, examId)
 
 	if len(ret) == 0 {
-		panic("no return value specified for CountQuestionsByExamIdAndUserId")
+		panic("no return value specified for CountQuestionsByExamId")
 	}
 
 	var r0 int64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) (int64, error)); ok {
-		return rf(ctx, examId, userId)
+	if rf, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return rf(ctx, examId)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) int64); ok {
-		r0 = rf(ctx, examId, userId)
+	if rf, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+		r0 = rf(ctx, examId)
 	} else {
 		r0 = ret.Get(0).(int64)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
-		r1 = rf(ctx, examId, userId)
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, examId)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -211,32 +211,31 @@ func (_m *MockDatabaseRepository) CountQuestionsByExamIdAndUserId(ctx context.Co
 	return r0, r1
 }
 
-// MockDatabaseRepository_CountQuestionsByExamIdAndUserId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountQuestionsByExamIdAndUserId'
-type MockDatabaseRepository_CountQuestionsByExamIdAndUserId_Call struct {
+// MockDatabaseRepository_CountQuestionsByExamId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountQuestionsByExamId'
+type MockDatabaseRepository_CountQuestionsByExamId_Call struct {
 	*mock.Call
 }
 
-// CountQuestionsByExamIdAndUserId is a helper method to define mock.On call
+// CountQuestionsByExamId is a helper method to define mock.On call
 //   - ctx context.Context
 //   - examId string
-//   - userId string
-func (_e *MockDatabaseRepository_Expecter) CountQuestionsByExamIdAndUserId(ctx interface{}, examId interface{}, userId interface{}) *MockDatabaseRepository_CountQuestionsByExamIdAndUserId_Call {
-	return &MockDatabaseRepository_CountQuestionsByExamIdAndUserId_Call{Call: _e.mock.On("CountQuestionsByExamIdAndUserId", ctx, examId, userId)}
+func (_e *MockDatabaseRepository_Expecter) CountQuestionsByExamId(ctx interface{}, examId interface{}) *MockDatabaseRepository_CountQuestionsByExamId_Call {
+	return &MockDatabaseRepository_CountQuestionsByExamId_Call{Call: _e.mock.On("CountQuestionsByExamId", ctx, examId)}
 }
 
-func (_c *MockDatabaseRepository_CountQuestionsByExamIdAndUserId_Call) Run(run func(ctx context.Context, examId string, userId string)) *MockDatabaseRepository_CountQuestionsByExamIdAndUserId_Call {
+func (_c *MockDatabaseRepository_CountQuestionsByExamId_Call) Run(run func(ctx context.Context, examId string)) *MockDatabaseRepository_CountQuestionsByExamId_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(string))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
 
-func (_c *MockDatabaseRepository_CountQuestionsByExamIdAndUserId_Call) Return(count int64, err error) *MockDatabaseRepository_CountQuestionsByExamIdAndUserId_Call {
+func (_c *MockDatabaseRepository_CountQuestionsByExamId_Call) Return(count int64, err error) *MockDatabaseRepository_CountQuestionsByExamId_Call {
 	_c.Call.Return(count, err)
 	return _c
 }
 
-func (_c *MockDatabaseRepository_CountQuestionsByExamIdAndUserId_Call) RunAndReturn(run func(context.Context, string, string) (int64, error)) *MockDatabaseRepository_CountQuestionsByExamIdAndUserId_Call {
+func (_c *MockDatabaseRepository_CountQuestionsByExamId_Call) RunAndReturn(run func(context.Context, string) (int64, error)) *MockDatabaseRepository_CountQuestionsByExamId_Call {
 	_c.Call.Return(run)
 	return _c
 }

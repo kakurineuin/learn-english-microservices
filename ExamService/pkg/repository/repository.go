@@ -44,9 +44,9 @@ type DatabaseRepository interface {
 	) (questions []model.Question, err error)
 	DeleteQuestionById(ctx context.Context, questionId string) (deletedCount int64, err error)
 	DeleteQuestionsByExamId(ctx context.Context, examId string) (deletedCount int64, err error)
-	CountQuestionsByExamIdAndUserId(
+	CountQuestionsByExamId(
 		ctx context.Context,
-		examId, userId string,
+		examId string,
 	) (count int64, err error)
 
 	// AnswerWrong

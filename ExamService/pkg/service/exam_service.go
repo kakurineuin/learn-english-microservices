@@ -346,7 +346,7 @@ func (examService examService) FindQuestions(
 	}
 
 	// Total
-	total, err = databaseRepository.CountQuestionsByExamIdAndUserId(context.TODO(), examId, userId)
+	total, err = databaseRepository.CountQuestionsByExamId(context.TODO(), examId)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return 0, 0, nil, fmt.Errorf(errorMessage, err)

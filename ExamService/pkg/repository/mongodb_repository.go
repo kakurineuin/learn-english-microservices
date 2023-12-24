@@ -347,14 +347,13 @@ func (repo *MongoDBRepository) DeleteQuestionsByExamId(
 	return result.DeletedCount, nil
 }
 
-func (repo *MongoDBRepository) CountQuestionsByExamIdAndUserId(
+func (repo *MongoDBRepository) CountQuestionsByExamId(
 	ctx context.Context,
-	examId, userId string,
+	examId string,
 ) (count int64, err error) {
 	collection := repo.getCollection(QUESTION_COLLECTION)
 	filter := bson.D{
 		{"examId", examId},
-		{"userId", userId},
 	}
 	count, err = collection.CountDocuments(ctx, filter)
 	if err != nil {

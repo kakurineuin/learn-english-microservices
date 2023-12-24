@@ -392,10 +392,10 @@ func (s *MyTestSuite) TestDeleteQuestionsByExamId() {
 	s.Equal(int64(size), deletedCount)
 }
 
-func (s *MyTestSuite) TestCountQuestionsByExamIdAndUserId() {
+func (s *MyTestSuite) TestCountQuestionsByExamId() {
 	ctx := context.TODO()
 
-	examId := "TestCountQuestionsByExamIdAndUserId"
+	examId := "TestCountQuestionsByExamId"
 	userId := "user01"
 	size := 10
 	questions := []interface{}{}
@@ -411,7 +411,7 @@ func (s *MyTestSuite) TestCountQuestionsByExamIdAndUserId() {
 	_, err := s.questionCollection.InsertMany(ctx, questions)
 	s.Nil(err)
 
-	count, err := s.repo.CountQuestionsByExamIdAndUserId(ctx, examId, userId)
+	count, err := s.repo.CountQuestionsByExamId(ctx, examId)
 	s.Nil(err)
 	s.Equal(int64(size), count)
 }
