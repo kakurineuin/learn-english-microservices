@@ -212,7 +212,9 @@ function WordInfo({
         <ShowText color="blue.500" mb="2">
           {defGram}
         </ShowText>
-        <ShowText fontSize="2xl">{definition}</ShowText>
+        <ShowText fontSize="2xl" key={definition}>
+          {definition}
+        </ShowText>
         <Divider mt="2" />
         <UnorderedList mt="5">{exampleComponents}</UnorderedList>
       </Box>
