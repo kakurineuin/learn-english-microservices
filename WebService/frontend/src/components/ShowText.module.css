@@ -1,0 +1,4 @@
+.show-text {
+  /* 使用 Chakra UI 設定的字形 */
+  font-family: var(--chakra-fonts-body);
+}
