@@ -4,15 +4,16 @@ import (
 	"net"
 	"os"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+
 	"github.com/kakurineuin/learn-english-microservices/word-service/pb"
-	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/database"
+	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/config"
 	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/endpoint"
+	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/repository"
 	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/service"
 	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/transport"
 )
@@ -27,14 +28,16 @@ func main() {
 	loadEnv()
 
 	// 連線到資料庫
-	if err := database.ConnectDB(); err != nil {
+	databaseRepository := repository.NewMongoDBRepository("learnEnglish")
+	err := databaseRepository.ConnectDB(config.EnvMongoDBURI())
+	if err != nil {
 		errorLogger.Log("msg", "Connect DB fail", "err", err)
 		os.Exit(1)
 	}
 
 	// 程式結束時，結束資料庫連線
 	defer func() {
-		if err := database.DisconnectDB(); err != nil {
+		if err := databaseRepository.DisconnectDB(); err != nil {
 			errorLogger.Log("msg", "Disconnect DB fail", "err", err)
 			os.Exit(1)
 		}
@@ -46,7 +49,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	wordService := service.New(logger)
+	wordService := service.New(logger, databaseRepository)
 	wordEndpoints := endpoint.MakeEndpoints(wordService, logger)
 	myGrpcServer := transport.NewGRPCServer(wordEndpoints, logger)
 
