@@ -25,4 +25,10 @@ type DatabaseRepository interface {
 		ctx context.Context,
 		word, userId string,
 	) (wordMeanings []model.WordMeaning, err error)
+
+	// FavoriteWordMeaning
+	CreateFavoriteWordMeaning(
+		ctx context.Context,
+		userId, wordMeaningId string,
+	) (favoriteWordMeaningId string, err error)
 }

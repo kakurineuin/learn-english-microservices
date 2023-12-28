@@ -209,3 +209,13 @@ func (s *MyTestSuite) TestFindWordMeaningsByWordAndUserId() {
 	s.Nil(err)
 	s.Equal(size, len(wordMeanings))
 }
+
+func (s *MyTestSuite) TestCreateFavoriteWordMeaning() {
+	ctx := context.TODO()
+
+	userId := "user01"
+	wordMeaningId := "658dfc0d26c7337ddf4ab0cf"
+	favoriteWordMeaningId, err := s.repo.CreateFavoriteWordMeaning(ctx, userId, wordMeaningId)
+	s.Nil(err)
+	s.NotEmpty(favoriteWordMeaningId)
+}

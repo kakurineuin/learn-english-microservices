@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	WORD_MEANING_COLLECTION = "wordmeanings"
+	WORD_MEANING_COLLECTION          = "wordmeanings"
+	FAVORITE_WORD_MEANING_COLLECTION = "favoritewordmeanings"
 )
 
 type MongoDBRepository struct {
@@ -136,6 +137,27 @@ func (repo *MongoDBRepository) FindWordMeaningsByWordAndUserId(
 	}
 
 	return wordMeanings, nil
+}
+
+func (repo *MongoDBRepository) CreateFavoriteWordMeaning(
+	ctx context.Context,
+	userId, wordMeaningId string,
+) (favoriteWordMeaningId string, err error) {
+	wordMeaningObjectId, err := primitive.ObjectIDFromHex(wordMeaningId)
+	if err != nil {
+		return "", err
+	}
+
+	colleciton := repo.getCollection(FAVORITE_WORD_MEANING_COLLECTION)
+	result, err := colleciton.InsertOne(ctx, model.FavoriteWordMeaning{
+		UserId:        userId,
+		WordMeaningId: wordMeaningObjectId,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return result.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
 func (repo *MongoDBRepository) WithTransaction(

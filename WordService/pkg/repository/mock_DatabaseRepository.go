@@ -68,6 +68,64 @@ func (_c *MockDatabaseRepository_ConnectDB_Call) RunAndReturn(run func(string) e
 	return _c
 }
 
+// CreateFavoriteWordMeaning provides a mock function with given fields: ctx, userId, wordMeaningId
+func (_m *MockDatabaseRepository) CreateFavoriteWordMeaning(ctx context.Context, userId string, wordMeaningId string) (string, error) {
+	ret := _m.Called(ctx, userId, wordMeaningId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateFavoriteWordMeaning")
+	}
+
+	var r0 string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (string, error)); ok {
+		return rf(ctx, userId, wordMeaningId)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) string); ok {
+		r0 = rf(ctx, userId, wordMeaningId)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, userId, wordMeaningId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockDatabaseRepository_CreateFavoriteWordMeaning_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateFavoriteWordMeaning'
+type MockDatabaseRepository_CreateFavoriteWordMeaning_Call struct {
+	*mock.Call
+}
+
+// CreateFavoriteWordMeaning is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userId string
+//   - wordMeaningId string
+func (_e *MockDatabaseRepository_Expecter) CreateFavoriteWordMeaning(ctx interface{}, userId interface{}, wordMeaningId interface{}) *MockDatabaseRepository_CreateFavoriteWordMeaning_Call {
+	return &MockDatabaseRepository_CreateFavoriteWordMeaning_Call{Call: _e.mock.On("CreateFavoriteWordMeaning", ctx, userId, wordMeaningId)}
+}
+
+func (_c *MockDatabaseRepository_CreateFavoriteWordMeaning_Call) Run(run func(ctx context.Context, userId string, wordMeaningId string)) *MockDatabaseRepository_CreateFavoriteWordMeaning_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
+	})
+	return _c
+}
+
+func (_c *MockDatabaseRepository_CreateFavoriteWordMeaning_Call) Return(favoriteWordMeaningId string, err error) *MockDatabaseRepository_CreateFavoriteWordMeaning_Call {
+	_c.Call.Return(favoriteWordMeaningId, err)
+	return _c
+}
+
+func (_c *MockDatabaseRepository_CreateFavoriteWordMeaning_Call) RunAndReturn(run func(context.Context, string, string) (string, error)) *MockDatabaseRepository_CreateFavoriteWordMeaning_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateWordMeanings provides a mock function with given fields: ctx, wordMeanings
 func (_m *MockDatabaseRepository) CreateWordMeanings(ctx context.Context, wordMeanings []model.WordMeaning) ([]string, error) {
 	ret := _m.Called(ctx, wordMeanings)
