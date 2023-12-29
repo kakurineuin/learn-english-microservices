@@ -23,17 +23,19 @@ type Example struct {
 }
 
 type WordMeaning struct {
-	Id                    primitive.ObjectID `json:"_id"                   bson:"_id,omitempty"`
-	Word                  string             `json:"word"                  bson:"word"`
-	PartOfSpeech          string             `json:"partOfSpeech"          bson:"partOfSpeech"`
-	Gram                  string             `json:"gram"                  bson:"gram"`
-	Pronunciation         Pronunciation      `json:"pronunciation"         bson:"pronunciation"`
-	DefGram               string             `json:"defGram"               bson:"defGram"`
-	Definition            string             `json:"definition"            bson:"definition"`
-	Examples              []Example          `json:"examples"              bson:"examples"`
-	OrderByNo             int64              `json:"orderByNo"             bson:"orderByNo"`
-	QueryByWords          []string           `json:"queryByWords"          bson:"queryByWords"`
-	FavoriteWordMeaningId primitive.ObjectID `json:"favoriteWordMeaningId" bson:"-"` // 只有前端會用此屬性，不用保存到 DB
+	Id            primitive.ObjectID `json:"_id"           bson:"_id,omitempty"`
+	Word          string             `json:"word"          bson:"word"`
+	PartOfSpeech  string             `json:"partOfSpeech"  bson:"partOfSpeech"`
+	Gram          string             `json:"gram"          bson:"gram"`
+	Pronunciation Pronunciation      `json:"pronunciation" bson:"pronunciation"`
+	DefGram       string             `json:"defGram"       bson:"defGram"`
+	Definition    string             `json:"definition"    bson:"definition"`
+	Examples      []Example          `json:"examples"      bson:"examples"`
+	OrderByNo     int64              `json:"orderByNo"     bson:"orderByNo"`
+	QueryByWords  []string           `json:"queryByWords"  bson:"queryByWords"`
+
+	// 只有前端會用此屬性 favoriteWordMeaningId，不用保存到 DB
+	FavoriteWordMeaningId primitive.ObjectID `json:"favoriteWordMeaningId" bson:"favoriteWordMeaningId,omitempty"`
 	CreatedAt             time.Time          `json:"createdAt"             bson:"createdAt"`
 	UpdatedAt             time.Time          `json:"updatedAt"             bson:"updatedAt"`
 }

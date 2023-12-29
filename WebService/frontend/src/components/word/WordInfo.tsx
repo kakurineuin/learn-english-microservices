@@ -83,7 +83,7 @@ function WordInfo({
     dispatch(loaderActions.toggleLoading());
 
     try {
-      const response = await axios.post('/word/favorite', {
+      const response = await axios.post('/restricted/word/favorite', {
         wordMeaningId,
       });
       setFavoriteId(response.data.favoriteWordMeaningId);

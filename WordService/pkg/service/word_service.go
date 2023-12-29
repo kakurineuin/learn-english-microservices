@@ -15,6 +15,9 @@ import (
 
 type WordService interface {
 	FindWordByDictionary(word, userId string) ([]model.WordMeaning, error)
+	CreateFavoriteWordMeaning(
+		userId, wordMeaningId string,
+	) (favoriteWordMeaningId string, err error)
 }
 
 type wordService struct {
@@ -97,4 +100,24 @@ func (wordService wordService) FindWordByDictionary(
 	}
 
 	return wordMeanings, nil
+}
+
+func (wordService wordService) CreateFavoriteWordMeaning(
+	userId, wordMeaningId string,
+) (favoriteWordMeaningId string, err error) {
+	errorLogger := wordService.errorLogger
+	errorMessage := "CreateFavoriteWordMeaning failed! error: %w"
+
+	databaseRepository := wordService.databaseRepository
+	favoriteWordMeaningId, err = databaseRepository.CreateFavoriteWordMeaning(
+		context.TODO(),
+		userId,
+		wordMeaningId,
+	)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return "", fmt.Errorf(errorMessage, err)
+	}
+
+	return favoriteWordMeaningId, nil
 }

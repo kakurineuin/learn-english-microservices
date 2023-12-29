@@ -131,3 +131,17 @@ func (s *MyTestSuite) TestFindWordByDictionary_WhenDataFromCrawler() {
 	s.Nil(err)
 	s.Equal(size, len(wordMeanings))
 }
+
+func (s *MyTestSuite) TestCreateFavoriteWordMeaning() {
+	userId := "user01"
+	wordMeaningId := "aaa01"
+	mockFavoriteWordMeaningId := "bbb01"
+
+	s.mockDatabaseRepository.EXPECT().
+		CreateFavoriteWordMeaning(mock.Anything, userId, wordMeaningId).
+		Return(mockFavoriteWordMeaningId, nil)
+
+	favoriteWordMeaningId, err := s.wordService.CreateFavoriteWordMeaning(userId, wordMeaningId)
+	s.Nil(err)
+	s.Equal(mockFavoriteWordMeaningId, favoriteWordMeaningId)
+}

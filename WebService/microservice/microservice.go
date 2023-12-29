@@ -50,3 +50,15 @@ func FindWordByDictionary(word, userId string) (*pb.FindWordByDictionaryResponse
 		},
 	)
 }
+
+func CreateFavoriteWordMeaning(
+	userId, wordMeaningId string,
+) (*pb.CreateFavoriteWordMeaningResponse, error) {
+	return wordServiceClient.CreateFavoriteWordMeaning(
+		context.Background(),
+		&pb.CreateFavoriteWordMeaningRequest{
+			UserId:        userId,
+			WordMeaningId: wordMeaningId,
+		},
+	)
+}

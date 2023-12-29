@@ -1,20 +1,49 @@
 package util
 
 import (
-	"encoding/json"
 	"fmt"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/log"
+
+	"github.com/kakurineuin/learn-english-microservices/web-service/config"
 )
 
-func GetJSONBody(c echo.Context) (map[string]interface{}, error) {
-	jsonBody := make(map[string]interface{})
-	err := json.NewDecoder(c.Request().Body).Decode(&jsonBody)
-	if err != nil {
-		log.Error(err)
-		return nil, fmt.Errorf("GetJSONBody failed! error: %w", err)
+// jwtCustomClaims are custom claims extending default ones.
+// See https://github.com/golang-jwt/jwt for more examples
+type JwtCustomClaims struct {
+	UserId   string `json:"userId"`
+	Username string `json:"username"`
+	Role     string `json:"role"`
+	jwt.RegisteredClaims
+}
+
+func GetJWTClaims(c echo.Context) *JwtCustomClaims {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*JwtCustomClaims)
+	return claims
+}
+
+func GetJWTToken(userId, username, role string) (string, error) {
+	// Set custom claims
+	claims := &JwtCustomClaims{
+		userId,
+		username,
+		role,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 72)),
+		},
 	}
 
-	return jsonBody, nil
+	// Create token with claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Generate encoded token and send it as response.
+	signedToken, err := token.SignedString([]byte(config.EnvJWTSecretKey()))
+	if err != nil {
+		return "", fmt.Errorf("getJWTToken failed! error: %w", err)
+	}
+
+	return signedToken, nil
 }

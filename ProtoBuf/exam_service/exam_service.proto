@@ -7,7 +7,7 @@ import "google/protobuf/timestamp.proto";
 option go_package = "./;pb";
 
 message Exam {
-  string id = 1;
+  string id = 1 [ json_name = "_id" ];
   string topic = 2;
   string description = 3;
   repeated string tags = 4;
@@ -56,7 +56,7 @@ message DeleteExamRequest {
 message DeleteExamResponse {}
 
 message Question {
-  string id = 1;
+  string id = 1 [ json_name = "_id" ];
   string exam_id = 2;
   string ask = 3;
   repeated string answers = 4;
@@ -104,7 +104,7 @@ message DeleteQuestionRequest {
 message DeleteQuestionResponse {}
 
 message ExamRecord {
-  string id = 1;
+  string id = 1 [ json_name = "_id" ];
   string exam_id = 2;
   int64 score = 3;
   string user_id = 4;

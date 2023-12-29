@@ -11,7 +11,24 @@ import (
 )
 
 type Endpoints struct {
-	FindWordByDictionary endpoint.Endpoint
+	FindWordByDictionary      endpoint.Endpoint
+	CreateFavoriteWordMeaning endpoint.Endpoint
+}
+
+// MakeAddEndpoint struct holds the endpoint response definition
+func MakeEndpoints(wordService service.WordService, logger log.Logger) Endpoints {
+	findWordByDictionaryEndpoint := makeFindWordByDictionaryEndpoint(wordService)
+	findWordByDictionaryEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "FindWordByDictionary"))(findWordByDictionaryEndpoint)
+
+	createFavoriteWordMeaningEndpoint := makeCreateFavoriteWordMeaningEndpoint(wordService)
+	createFavoriteWordMeaningEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "CreateFavoriteWordMeaning"))(createFavoriteWordMeaningEndpoint)
+
+	return Endpoints{
+		FindWordByDictionary:      findWordByDictionaryEndpoint,
+		CreateFavoriteWordMeaning: createFavoriteWordMeaningEndpoint,
+	}
 }
 
 type FindWordByDictionaryRequest struct {
@@ -23,17 +40,6 @@ type FindWordByDictionaryResponse struct {
 	WordMeanings []model.WordMeaning
 }
 
-// MakeAddEndpoint struct holds the endpoint response definition
-func MakeEndpoints(wordService service.WordService, logger log.Logger) Endpoints {
-	findWordByDictionaryEndpoint := makeFindWordByDictionaryEndpoint(wordService)
-	findWordByDictionaryEndpoint = LoggingMiddleware(
-		log.With(logger, "method", "FindWordByDictionary"))(findWordByDictionaryEndpoint)
-
-	return Endpoints{
-		FindWordByDictionary: findWordByDictionaryEndpoint,
-	}
-}
-
 func makeFindWordByDictionaryEndpoint(wordService service.WordService) endpoint.Endpoint {
 	return func(_ context.Context, request interface{}) (interface{}, error) {
 		req := request.(FindWordByDictionaryRequest)
@@ -42,5 +48,30 @@ func makeFindWordByDictionaryEndpoint(wordService service.WordService) endpoint.
 			return nil, err
 		}
 		return FindWordByDictionaryResponse{WordMeanings: wordMeangins}, nil
+	}
+}
+
+type CreateFavoriteWordMeaningRequest struct {
+	UserId        string
+	WordMeaningId string
+}
+
+type CreateFavoriteWordMeaningResponse struct {
+	FavoriteWordMeaningId string
+}
+
+func makeCreateFavoriteWordMeaningEndpoint(wordService service.WordService) endpoint.Endpoint {
+	return func(_ context.Context, request interface{}) (interface{}, error) {
+		req := request.(CreateFavoriteWordMeaningRequest)
+		favoriteWordMeaningId, err := wordService.CreateFavoriteWordMeaning(
+			req.UserId,
+			req.WordMeaningId,
+		)
+		if err != nil {
+			return nil, err
+		}
+		return CreateFavoriteWordMeaningResponse{
+			FavoriteWordMeaningId: favoriteWordMeaningId,
+		}, nil
 	}
 }

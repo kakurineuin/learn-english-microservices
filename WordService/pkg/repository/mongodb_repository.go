@@ -114,7 +114,7 @@ func (repo *MongoDBRepository) FindWordMeaningsByWordAndUserId(
 					"$favoriteWordMeanings._id",
 					0,
 				}}},
-				"",
+				primitive.NilObjectID.Hex(), // 沒有找到 favoriteWordMeaning
 			}},
 		}},
 	}}}

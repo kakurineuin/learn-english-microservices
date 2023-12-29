@@ -27,8 +27,17 @@ message Example {
   repeated Sentence examples = 2;
 }
 
+message CreateFavoriteWordMeaningRequest {
+  string user_id = 1;
+  string word_meaning_id = 2;
+}
+
+message CreateFavoriteWordMeaningResponse {
+  string favorite_word_meaning_id = 1;
+}
+
 message WordMeaning {
-  string id = 1;
+  string id = 1 [ json_name = "_id" ];
   string word = 2;
   string part_of_speech = 3;
   string gram = 4;
@@ -44,4 +53,6 @@ message WordMeaning {
 service WordService {
   rpc FindWordByDictionary(FindWordByDictionaryRequest)
       returns (FindWordByDictionaryResponse);
+  rpc CreateFavoriteWordMeaning(CreateFavoriteWordMeaningRequest)
+      returns (CreateFavoriteWordMeaningResponse);
 }

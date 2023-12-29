@@ -16,15 +16,8 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/web-service/handler/user"
 	"github.com/kakurineuin/learn-english-microservices/web-service/handler/word"
 	"github.com/kakurineuin/learn-english-microservices/web-service/microservice"
+	"github.com/kakurineuin/learn-english-microservices/web-service/util"
 )
-
-// func restricted(c echo.Context) error {
-// 	token := c.Get("user").(*jwt.Token)
-// 	claims := token.Claims.(*user.JwtCustomClaims)
-// 	username := claims.Username
-// 	role := claims.Role
-// 	return c.String(http.StatusOK, "Welcome "+username+"! role: "+role)
-// }
 
 func main() {
 	loadEnv()
@@ -98,11 +91,12 @@ func setupAPIHandlers(e *echo.Echo) {
 	// Configure middleware with the custom claims type
 	config := echojwt.Config{
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
-			return new(user.JwtCustomClaims)
+			return new(util.JwtCustomClaims)
 		},
 		SigningKey: []byte(config.EnvJWTSecretKey()),
 	}
 	restrictedApi.Use(echojwt.WithConfig(config))
 
 	restrictedApi.GET("/word/:word", word.FindWordMeanings)
+	restrictedApi.POST("/word/favorite", word.CreateFavoriteWordMeaning)
 }

@@ -12,7 +12,9 @@ import (
 )
 
 type GRPCServer struct {
-	findWordByDictionary gt.Handler
+	findWordByDictionary      gt.Handler
+	createFavoriteWordMeaning gt.Handler
+
 	pb.UnimplementedWordServiceServer
 }
 
@@ -23,6 +25,11 @@ func NewGRPCServer(endpointds endpoint.Endpoints, logger log.Logger) pb.WordServ
 			endpointds.FindWordByDictionary,
 			decodeFindWordByDictionaryRequest,
 			encodeFindWordByDictionaryResponse,
+		),
+		createFavoriteWordMeaning: gt.NewServer(
+			endpointds.CreateFavoriteWordMeaning,
+			decodeCreateFavoriteWordMeaningRequest,
+			encodeCreateFavoriteWordMeaningResponse,
 		),
 	}
 }
@@ -118,5 +125,46 @@ func encodeFindWordByDictionaryResponse(
 
 	return &pb.FindWordByDictionaryResponse{
 		WordMeanings: pbWordMeanings,
+	}, nil
+}
+
+func (s GRPCServer) CreateFavoriteWordMeaning(
+	ctx context.Context,
+	req *pb.CreateFavoriteWordMeaningRequest,
+) (*pb.CreateFavoriteWordMeaningResponse, error) {
+	_, resp, err := s.createFavoriteWordMeaning.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb.CreateFavoriteWordMeaningResponse), nil
+}
+
+func decodeCreateFavoriteWordMeaningRequest(
+	_ context.Context,
+	request interface{},
+) (interface{}, error) {
+	req, ok := request.(*pb.CreateFavoriteWordMeaningRequest)
+	if !ok {
+		return nil, errors.New("invalid request body")
+	}
+
+	return endpoint.CreateFavoriteWordMeaningRequest{
+		UserId:        req.UserId,
+		WordMeaningId: req.WordMeaningId,
+	}, nil
+}
+
+func encodeCreateFavoriteWordMeaningResponse(
+	_ context.Context,
+	response interface{},
+) (interface{}, error) {
+	resp, ok := response.(endpoint.CreateFavoriteWordMeaningResponse)
+	if !ok {
+		return nil, errors.New("invalid response body")
+	}
+
+	return &pb.CreateFavoriteWordMeaningResponse{
+		FavoriteWordMeaningId: resp.FavoriteWordMeaningId,
 	}, nil
 }

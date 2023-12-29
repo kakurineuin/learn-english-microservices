@@ -19,3 +19,21 @@ func (mw loggingMiddleware) FindWordByDictionary(
 	}()
 	return mw.next.FindWordByDictionary(word, userId)
 }
+
+func (mw loggingMiddleware) CreateFavoriteWordMeaning(
+	userId, wordMeaningId string,
+) (favoriteWordMeaningId string, err error) {
+	defer func() {
+		mw.logger.Log(
+			"method",
+			"CreateFavoriteWordMeaning",
+			"userId",
+			userId,
+			"wordMeaningId",
+			wordMeaningId,
+			"err",
+			err,
+		)
+	}()
+	return mw.next.CreateFavoriteWordMeaning(userId, wordMeaningId)
+}
