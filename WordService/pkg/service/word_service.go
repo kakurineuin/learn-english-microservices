@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/go-kit/log"
@@ -23,6 +24,10 @@ type WordService interface {
 	DeleteFavoriteWordMeaning(
 		favoriteWordMeaningId, userId string,
 	) error
+	FindFavoriteWordMeanings(
+		pageIndex, pageSize int64,
+		userId, word string,
+	) (total, pageCount int64, favoriteWordMeanings []model.WordMeaning, err error)
 }
 
 type wordService struct {
@@ -167,4 +172,41 @@ func (wordService wordService) DeleteFavoriteWordMeaning(
 	}
 
 	return nil
+}
+
+func (wordService wordService) FindFavoriteWordMeanings(
+	pageIndex, pageSize int64,
+	userId, word string,
+) (total, pageCount int64, favoriteWordMeanings []model.WordMeaning, err error) {
+	errorLogger := wordService.errorLogger
+	errorMessage := "FindFavoriteWordMeanings failed! error: %w"
+
+	skip := pageSize * pageIndex
+	limit := pageSize
+	databaseRepository := wordService.databaseRepository
+	favoriteWordMeanings, err = databaseRepository.FindFavoriteWordMeaningsByUserIdAndWord(
+		context.TODO(),
+		userId,
+		word,
+		skip,
+		limit,
+	)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return 0, 0, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	total, err = databaseRepository.CountFavoriteWordMeaningsByUserIdAndWord(
+		context.TODO(),
+		userId,
+		word,
+	)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return 0, 0, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	// PageCount
+	pageCount = int64(math.Ceil(float64(total) / float64(pageSize)))
+	return total, pageCount, favoriteWordMeanings, nil
 }

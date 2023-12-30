@@ -300,7 +300,15 @@ func (repo *MongoDBRepository) CountFavoriteWordMeaningsByUserIdAndWord(
 		return 0, err
 	}
 
-	return int64(results[0][0].Value.(int32)), nil
+	// const total = totalResult.length > 0 ? totalResult[0].total : 0;
+
+	if len(results) > 0 {
+		count = int64(results[0][0].Value.(int32))
+	} else {
+		count = 0
+	}
+
+	return count, nil
 }
 
 func (repo *MongoDBRepository) DeleteFavoriteWordMeaningById(

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Table,
   Thead,
@@ -40,7 +40,7 @@ function PaginationTable({
     page,
     canPreviousPage,
     canNextPage,
-    pageOptions,
+    // pageOptions,
     pageCount,
     gotoPage,
     nextPage,
@@ -54,23 +54,37 @@ function PaginationTable({
       manualPagination: true,
       pageCount: controlledPageCount,
     },
-    usePagination
+    usePagination,
   );
 
-  // 重新查詢並顯示第1頁
+  const [prevRefreshId, setPrevRefreshId] = useState(refreshId);
+
+  // TODO: 這是舊的寫法，測試 refreshId 功能沒問題後就刪除
+  // // 重新查詢並顯示第1頁
+  // useEffect(() => {
+  //   if (pageIndex === 0) {
+  //     fetchData(pageIndex, pageSize);
+  //   } else {
+  //     gotoPage(0);
+  //   }
+  //
+  //   // eslint-disable-next-line
+  // }, [refreshId]);
+
   useEffect(() => {
-    if (pageIndex === 0) {
-      fetchData(pageIndex, pageSize);
+    // 重新查詢並顯示第1頁
+    if (prevRefreshId !== refreshId) {
+      if (pageIndex === 0) {
+        fetchData(pageIndex, pageSize);
+      } else {
+        gotoPage(0);
+      }
+
+      setPrevRefreshId(refreshId);
     } else {
-      gotoPage(0);
+      fetchData(pageIndex, pageSize);
     }
-
-    // eslint-disable-next-line
-  }, [refreshId]);
-
-  useEffect(() => {
-    fetchData(pageIndex, pageSize);
-  }, [fetchData, pageIndex, pageSize]);
+  }, [fetchData, pageIndex, pageSize, refreshId]);
 
   return (
     <>
@@ -142,7 +156,7 @@ function PaginationTable({
           <span>
             Page{' '}
             <strong>
-              {pageIndex + 1} of {pageOptions.length}
+              {pageIndex + 1} of {pageCount}
             </strong>
           </span>
         </HStack>

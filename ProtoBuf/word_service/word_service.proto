@@ -43,6 +43,19 @@ message DeleteFavoriteWordMeaningRequest {
 
 message DeleteFavoriteWordMeaningResponse {}
 
+message FindFavoriteWordMeaningsRequest {
+  int64 page_index = 1;
+  int64 page_size = 2;
+  string user_id = 3;
+  string word = 4;
+}
+
+message FindFavoriteWordMeaningsResponse {
+  int64 total = 1;
+  int64 page_count = 2;
+  repeated WordMeaning favorite_word_meanings = 3;
+}
+
 message WordMeaning {
   string id = 1 [ json_name = "_id" ];
   string word = 2;
@@ -64,4 +77,6 @@ service WordService {
       returns (CreateFavoriteWordMeaningResponse);
   rpc DeleteFavoriteWordMeaning(DeleteFavoriteWordMeaningRequest)
       returns (DeleteFavoriteWordMeaningResponse);
+  rpc FindFavoriteWordMeanings(FindFavoriteWordMeaningsRequest)
+      returns (FindFavoriteWordMeaningsResponse);
 }

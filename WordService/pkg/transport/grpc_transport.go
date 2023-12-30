@@ -9,12 +9,14 @@ import (
 
 	"github.com/kakurineuin/learn-english-microservices/word-service/pb"
 	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/endpoint"
+	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/model"
 )
 
 type GRPCServer struct {
 	findWordByDictionary      gt.Handler
 	createFavoriteWordMeaning gt.Handler
 	deleteFavoriteWordMeaning gt.Handler
+	findFavoriteWordMeanings  gt.Handler
 
 	pb.UnimplementedWordServiceServer
 }
@@ -36,6 +38,11 @@ func NewGRPCServer(endpointds endpoint.Endpoints, logger log.Logger) pb.WordServ
 			endpointds.DeleteFavoriteWordMeaning,
 			decodeDeleteFavoriteWordMeaningRequest,
 			encodeDeleteFavoriteWordMeaningResponse,
+		),
+		findFavoriteWordMeanings: gt.NewServer(
+			endpointds.FindFavoriteWordMeanings,
+			decodeFindFavoriteWordMeaningsRequest,
+			encodeFindFavoriteWordMeaningsResponse,
 		),
 	}
 }
@@ -76,61 +83,8 @@ func encodeFindWordByDictionaryResponse(
 		return nil, errors.New("invalid response body")
 	}
 
-	pbWordMeanings := []*pb.WordMeaning{}
-
-	for _, wm := range resp.WordMeanings {
-		pbExamples := []*pb.Example{}
-
-		for _, example := range wm.Examples {
-			pbSentences := []*pb.Sentence{}
-
-			for _, sentence := range example.Examples {
-				pbSentences = append(pbSentences, &pb.Sentence{
-					AudioUrl: sentence.AudioUrl,
-					Text:     sentence.Text,
-				})
-			}
-
-			pbExamples = append(pbExamples, &pb.Example{
-				Pattern:  example.Pattern,
-				Examples: pbSentences,
-			})
-		}
-
-		id := ""
-
-		if !wm.Id.IsZero() {
-			id = wm.Id.Hex()
-		}
-
-		favoriteWordMeaningId := ""
-
-		if !wm.FavoriteWordMeaningId.IsZero() {
-			favoriteWordMeaningId = wm.FavoriteWordMeaningId.Hex()
-		}
-
-		pbWordMeaning := pb.WordMeaning{
-			Id:           id,
-			Word:         wm.Word,
-			PartOfSpeech: wm.PartOfSpeech,
-			Gram:         wm.Gram,
-			Pronunciation: &pb.Pronunciation{
-				Text:       wm.Pronunciation.Text,
-				UkAudioUrl: wm.Pronunciation.UkAudioUrl,
-				UsAudioUrl: wm.Pronunciation.UsAudioUrl,
-			},
-			DefGram:               wm.DefGram,
-			Definition:            wm.Definition,
-			Examples:              pbExamples,
-			OrderByNo:             wm.OrderByNo,
-			QueryByWords:          wm.QueryByWords,
-			FavoriteWordMeaningId: favoriteWordMeaningId,
-		}
-		pbWordMeanings = append(pbWordMeanings, &pbWordMeaning)
-	}
-
 	return &pb.FindWordByDictionaryResponse{
-		WordMeanings: pbWordMeanings,
+		WordMeanings: toPBWordMeanings(resp.WordMeanings),
 	}, nil
 }
 
@@ -212,4 +166,106 @@ func encodeDeleteFavoriteWordMeaningResponse(
 	}
 
 	return &pb.DeleteFavoriteWordMeaningResponse{}, nil
+}
+
+func (s GRPCServer) FindFavoriteWordMeanings(
+	ctx context.Context,
+	req *pb.FindFavoriteWordMeaningsRequest,
+) (*pb.FindFavoriteWordMeaningsResponse, error) {
+	_, resp, err := s.findFavoriteWordMeanings.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb.FindFavoriteWordMeaningsResponse), nil
+}
+
+func decodeFindFavoriteWordMeaningsRequest(
+	_ context.Context,
+	request interface{},
+) (interface{}, error) {
+	req, ok := request.(*pb.FindFavoriteWordMeaningsRequest)
+	if !ok {
+		return nil, errors.New("invalid request body")
+	}
+
+	return endpoint.FindFavoriteWordMeaningsRequest{
+		PageInde: req.PageIndex,
+		PageSize: req.PageSize,
+		UserId:   req.UserId,
+		Word:     req.Word,
+	}, nil
+}
+
+func encodeFindFavoriteWordMeaningsResponse(
+	_ context.Context,
+	response interface{},
+) (interface{}, error) {
+	resp, ok := response.(endpoint.FindFavoriteWordMeaningsResponse)
+	if !ok {
+		return nil, errors.New("invalid response body")
+	}
+
+	return &pb.FindFavoriteWordMeaningsResponse{
+		Total:                resp.Total,
+		PageCount:            resp.PageCount,
+		FavoriteWordMeanings: toPBWordMeanings(resp.FavoriteWordMeanings),
+	}, nil
+}
+
+func toPBWordMeanings(wordMeanings []model.WordMeaning) []*pb.WordMeaning {
+	pbWordMeanings := []*pb.WordMeaning{}
+
+	for _, wm := range wordMeanings {
+		pbExamples := []*pb.Example{}
+
+		for _, example := range wm.Examples {
+			pbSentences := []*pb.Sentence{}
+
+			for _, sentence := range example.Examples {
+				pbSentences = append(pbSentences, &pb.Sentence{
+					AudioUrl: sentence.AudioUrl,
+					Text:     sentence.Text,
+				})
+			}
+
+			pbExamples = append(pbExamples, &pb.Example{
+				Pattern:  example.Pattern,
+				Examples: pbSentences,
+			})
+		}
+
+		id := ""
+
+		if !wm.Id.IsZero() {
+			id = wm.Id.Hex()
+		}
+
+		favoriteWordMeaningId := ""
+
+		if !wm.FavoriteWordMeaningId.IsZero() {
+			favoriteWordMeaningId = wm.FavoriteWordMeaningId.Hex()
+		}
+
+		pbWordMeaning := pb.WordMeaning{
+			Id:           id,
+			Word:         wm.Word,
+			PartOfSpeech: wm.PartOfSpeech,
+			Gram:         wm.Gram,
+			Pronunciation: &pb.Pronunciation{
+				Text:       wm.Pronunciation.Text,
+				UkAudioUrl: wm.Pronunciation.UkAudioUrl,
+				UsAudioUrl: wm.Pronunciation.UsAudioUrl,
+			},
+			DefGram:               wm.DefGram,
+			Definition:            wm.Definition,
+			Examples:              pbExamples,
+			OrderByNo:             wm.OrderByNo,
+			QueryByWords:          wm.QueryByWords,
+			FavoriteWordMeaningId: favoriteWordMeaningId,
+		}
+		pbWordMeanings = append(pbWordMeanings, &pbWordMeaning)
+	}
+
+	return pbWordMeanings
 }

@@ -164,3 +164,35 @@ func (s *MyTestSuite) TestDeleteFavoriteWordMeaning() {
 	err := s.wordService.DeleteFavoriteWordMeaning(favoriteWordMeaningId, userId)
 	s.Nil(err)
 }
+
+func (s *MyTestSuite) TestFindFavoriteWordMeanings() {
+	userId := "user01"
+	word := "TestFindFavoriteWordMeanings"
+	pageIndex := int64(1)
+	pageSize := int64(10)
+	skip := pageSize * pageIndex
+	limit := pageSize
+	mockTotal := int64(13)
+
+	s.mockDatabaseRepository.EXPECT().
+		FindFavoriteWordMeaningsByUserIdAndWord(mock.Anything, userId, word, skip, limit).
+		Return([]model.WordMeaning{
+			{},
+			{},
+			{},
+		}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		CountFavoriteWordMeaningsByUserIdAndWord(mock.Anything, userId, word).
+		Return(mockTotal, nil)
+
+	total, pageCount, wordMeanings, err := s.wordService.FindFavoriteWordMeanings(
+		pageIndex,
+		pageSize,
+		userId,
+		word,
+	)
+	s.Nil(err)
+	s.Equal(total, mockTotal)
+	s.Equal(int64(2), pageCount)
+	s.Equal(3, len(wordMeanings))
+}

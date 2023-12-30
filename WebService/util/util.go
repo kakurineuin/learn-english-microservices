@@ -47,3 +47,9 @@ func GetJWTToken(userId, username, role string) (string, error) {
 
 	return signedToken, nil
 }
+
+func SendJSONError(c echo.Context, httpErrorStatus int) error {
+	return c.JSON(httpErrorStatus, echo.Map{
+		"message": "系統發生錯誤！",
+	})
+}

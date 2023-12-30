@@ -14,6 +14,7 @@ type Endpoints struct {
 	FindWordByDictionary      endpoint.Endpoint
 	CreateFavoriteWordMeaning endpoint.Endpoint
 	DeleteFavoriteWordMeaning endpoint.Endpoint
+	FindFavoriteWordMeanings  endpoint.Endpoint
 }
 
 // MakeAddEndpoint struct holds the endpoint response definition
@@ -30,10 +31,15 @@ func MakeEndpoints(wordService service.WordService, logger log.Logger) Endpoints
 	deleteFavoriteWordMeaningEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "DeleteFavoriteWordMeaning"))(deleteFavoriteWordMeaningEndpoint)
 
+	findFavoriteWordMeaningsEndpoint := makeFindFavoriteWordMeaningsEndpoint(wordService)
+	findFavoriteWordMeaningsEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "FindFavoriteWordMeanings"))(findFavoriteWordMeaningsEndpoint)
+
 	return Endpoints{
 		FindWordByDictionary:      findWordByDictionaryEndpoint,
 		CreateFavoriteWordMeaning: createFavoriteWordMeaningEndpoint,
 		DeleteFavoriteWordMeaning: deleteFavoriteWordMeaningEndpoint,
+		FindFavoriteWordMeanings:  findFavoriteWordMeaningsEndpoint,
 	}
 }
 
@@ -100,5 +106,38 @@ func makeDeleteFavoriteWordMeaningEndpoint(wordService service.WordService) endp
 			return nil, err
 		}
 		return DeleteFavoriteWordMeaningResponse{}, nil
+	}
+}
+
+type FindFavoriteWordMeaningsRequest struct {
+	PageInde int64
+	PageSize int64
+	UserId   string
+	Word     string
+}
+
+type FindFavoriteWordMeaningsResponse struct {
+	Total                int64
+	PageCount            int64
+	FavoriteWordMeanings []model.WordMeaning
+}
+
+func makeFindFavoriteWordMeaningsEndpoint(wordService service.WordService) endpoint.Endpoint {
+	return func(_ context.Context, request interface{}) (interface{}, error) {
+		req := request.(FindFavoriteWordMeaningsRequest)
+		total, pageCount, favoriteWordMeanings, err := wordService.FindFavoriteWordMeanings(
+			req.PageInde,
+			req.PageSize,
+			req.UserId,
+			req.Word,
+		)
+		if err != nil {
+			return nil, err
+		}
+		return FindFavoriteWordMeaningsResponse{
+			Total:                total,
+			PageCount:            pageCount,
+			FavoriteWordMeanings: favoriteWordMeanings,
+		}, nil
 	}
 }

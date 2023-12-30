@@ -74,3 +74,18 @@ func DeleteFavoriteWordMeaning(
 		},
 	)
 }
+
+func FindFavoriteWordMeanings(
+	pageIndex, pageSize int64,
+	userId, word string,
+) (*pb.FindFavoriteWordMeaningsResponse, error) {
+	return wordServiceClient.FindFavoriteWordMeanings(
+		context.Background(),
+		&pb.FindFavoriteWordMeaningsRequest{
+			PageIndex: pageIndex,
+			PageSize:  pageSize,
+			UserId:    userId,
+			Word:      word,
+		},
+	)
+}

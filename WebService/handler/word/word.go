@@ -1,6 +1,7 @@
 package word
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -12,9 +13,6 @@ import (
 
 func FindWordMeanings(c echo.Context) error {
 	errorMessage := "FindWordMeanings failed! error: %w"
-	emptyResult := echo.Map{
-		"wordMeanings": []string{},
-	}
 
 	word := c.Param("word")
 	userId := util.GetJWTClaims(c).UserId
@@ -23,7 +21,7 @@ func FindWordMeanings(c echo.Context) error {
 	microserviceResponse, err := microservice.FindWordByDictionary(word, userId)
 	if err != nil {
 		c.Logger().Errorf(errorMessage, err)
-		return c.JSON(http.StatusInternalServerError, emptyResult)
+		return util.SendJSONError(c, http.StatusInternalServerError)
 	}
 
 	result, err := protojson.MarshalOptions{
@@ -31,7 +29,7 @@ func FindWordMeanings(c echo.Context) error {
 	}.Marshal(microserviceResponse)
 	if err != nil {
 		c.Logger().Errorf(errorMessage, err)
-		return c.JSON(http.StatusInternalServerError, emptyResult)
+		return util.SendJSONError(c, http.StatusInternalServerError)
 	}
 
 	return c.JSONBlob(http.StatusOK, result)
@@ -43,14 +41,11 @@ func CreateFavoriteWordMeaning(c echo.Context) error {
 	}
 
 	errorMessage := "CreateFavoriteWordMeaning failed! error: %w"
-	emptyResult := echo.Map{
-		"favoriteWordMeaningId": "",
-	}
 
 	requestBody := new(RequestBody)
 	if err := c.Bind(&requestBody); err != nil {
 		c.Logger().Errorf(errorMessage, err)
-		return c.JSON(http.StatusBadRequest, emptyResult)
+		return util.SendJSONError(c, http.StatusBadRequest)
 	}
 
 	userId := util.GetJWTClaims(c).UserId
@@ -62,7 +57,7 @@ func CreateFavoriteWordMeaning(c echo.Context) error {
 	)
 	if err != nil {
 		c.Logger().Errorf(errorMessage, err)
-		return c.JSON(http.StatusInternalServerError, emptyResult)
+		return util.SendJSONError(c, http.StatusInternalServerError)
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
@@ -82,10 +77,51 @@ func DeleteFavoriteWordMeaning(c echo.Context) error {
 	)
 	if err != nil {
 		c.Logger().Errorf(errorMessage, err)
-		return c.JSON(http.StatusInternalServerError, echo.Map{
-			"message": "系統發生錯誤",
-		})
+		return util.SendJSONError(c, http.StatusInternalServerError)
 	}
 
 	return c.NoContent(http.StatusOK)
+}
+
+func FindFavoriteWordMeanings(c echo.Context) error {
+	errorMessage := "FindFavoriteWordMeanings failed! error: %w"
+
+	var (
+		pageIndex int64  = 0
+		pageSize  int64  = 0
+		word      string = ""
+	)
+
+	err := echo.QueryParamsBinder(c).
+		Int64("pageIndex", &pageIndex).
+		Int64("pageSize", &pageSize).
+		String("word", &word).
+		BindError() // returns first binding error
+	if err != nil {
+		c.Logger().Errorf(errorMessage, err)
+		return util.SendJSONError(c, http.StatusBadRequest)
+	}
+
+	userId := util.GetJWTClaims(c).UserId
+
+	microserviceResponse, err := microservice.FindFavoriteWordMeanings(
+		pageIndex,
+		pageSize,
+		userId,
+		word,
+	)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONError(c, http.StatusInternalServerError)
+	}
+
+	result, err := protojson.MarshalOptions{
+		EmitUnpopulated: true, // Zero value 的欄位不要省略
+	}.Marshal(microserviceResponse)
+	if err != nil {
+		c.Logger().Errorf(errorMessage, err)
+		return util.SendJSONError(c, http.StatusInternalServerError)
+	}
+
+	return c.JSONBlob(http.StatusOK, result)
 }
