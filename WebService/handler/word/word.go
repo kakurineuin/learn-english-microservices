@@ -20,7 +20,7 @@ func FindWordMeanings(c echo.Context) error {
 
 	microserviceResponse, err := microservice.FindWordByDictionary(word, userId)
 	if err != nil {
-		c.Logger().Errorf(errorMessage, err)
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONError(c, http.StatusInternalServerError)
 	}
 
@@ -28,7 +28,7 @@ func FindWordMeanings(c echo.Context) error {
 		EmitUnpopulated: true, // Zero value 的欄位不要省略
 	}.Marshal(microserviceResponse)
 	if err != nil {
-		c.Logger().Errorf(errorMessage, err)
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONError(c, http.StatusInternalServerError)
 	}
 
@@ -44,7 +44,7 @@ func CreateFavoriteWordMeaning(c echo.Context) error {
 
 	requestBody := new(RequestBody)
 	if err := c.Bind(&requestBody); err != nil {
-		c.Logger().Errorf(errorMessage, err)
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONError(c, http.StatusBadRequest)
 	}
 
@@ -56,7 +56,7 @@ func CreateFavoriteWordMeaning(c echo.Context) error {
 		requestBody.WordMeaningId,
 	)
 	if err != nil {
-		c.Logger().Errorf(errorMessage, err)
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONError(c, http.StatusInternalServerError)
 	}
 
@@ -76,7 +76,7 @@ func DeleteFavoriteWordMeaning(c echo.Context) error {
 		userId,
 	)
 	if err != nil {
-		c.Logger().Errorf(errorMessage, err)
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONError(c, http.StatusInternalServerError)
 	}
 
@@ -98,7 +98,7 @@ func FindFavoriteWordMeanings(c echo.Context) error {
 		String("word", &word).
 		BindError() // returns first binding error
 	if err != nil {
-		c.Logger().Errorf(errorMessage, err)
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONError(c, http.StatusBadRequest)
 	}
 
@@ -119,7 +119,33 @@ func FindFavoriteWordMeanings(c echo.Context) error {
 		EmitUnpopulated: true, // Zero value 的欄位不要省略
 	}.Marshal(microserviceResponse)
 	if err != nil {
-		c.Logger().Errorf(errorMessage, err)
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONError(c, http.StatusInternalServerError)
+	}
+
+	return c.JSONBlob(http.StatusOK, result)
+}
+
+func FindRandomFavoriteWordMeanings(c echo.Context) error {
+	errorMessage := "FindRandomFavoriteWordMeanings failed! error: %w"
+
+	userId := util.GetJWTClaims(c).UserId
+	var size int64 = 10
+
+	microserviceResponse, err := microservice.FindRandomFavoriteWordMeanings(
+		userId,
+		size,
+	)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONError(c, http.StatusInternalServerError)
+	}
+
+	result, err := protojson.MarshalOptions{
+		EmitUnpopulated: true, // Zero value 的欄位不要省略
+	}.Marshal(microserviceResponse)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONError(c, http.StatusInternalServerError)
 	}
 

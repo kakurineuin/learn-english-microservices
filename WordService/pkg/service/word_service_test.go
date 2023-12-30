@@ -196,3 +196,27 @@ func (s *MyTestSuite) TestFindFavoriteWordMeanings() {
 	s.Equal(int64(2), pageCount)
 	s.Equal(3, len(wordMeanings))
 }
+
+func (s *MyTestSuite) TestFindRandomFavoriteWordMeanings() {
+	userId := "user01"
+	word := ""
+	size := int64(10)
+	mockTotal := int64(13)
+	limit := int64(1)
+
+	s.mockDatabaseRepository.EXPECT().
+		FindFavoriteWordMeaningsByUserIdAndWord(mock.Anything, userId, word, mock.Anything, limit).
+		Return([]model.WordMeaning{
+			{},
+		}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		CountFavoriteWordMeaningsByUserIdAndWord(mock.Anything, userId, word).
+		Return(mockTotal, nil)
+
+	wordMeanings, err := s.wordService.FindRandomFavoriteWordMeanings(
+		userId,
+		size,
+	)
+	s.Nil(err)
+	s.EqualValues(min(mockTotal, size), len(wordMeanings))
+}

@@ -89,3 +89,15 @@ func FindFavoriteWordMeanings(
 		},
 	)
 }
+
+func FindRandomFavoriteWordMeanings(
+	userId string, size int64,
+) (*pb.FindRandomFavoriteWordMeaningsResponse, error) {
+	return wordServiceClient.FindRandomFavoriteWordMeanings(
+		context.Background(),
+		&pb.FindRandomFavoriteWordMeaningsRequest{
+			UserId: userId,
+			Size:   size,
+		},
+	)
+}

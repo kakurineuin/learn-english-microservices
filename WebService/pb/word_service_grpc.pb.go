@@ -26,6 +26,7 @@ type WordServiceClient interface {
 	CreateFavoriteWordMeaning(ctx context.Context, in *CreateFavoriteWordMeaningRequest, opts ...grpc.CallOption) (*CreateFavoriteWordMeaningResponse, error)
 	DeleteFavoriteWordMeaning(ctx context.Context, in *DeleteFavoriteWordMeaningRequest, opts ...grpc.CallOption) (*DeleteFavoriteWordMeaningResponse, error)
 	FindFavoriteWordMeanings(ctx context.Context, in *FindFavoriteWordMeaningsRequest, opts ...grpc.CallOption) (*FindFavoriteWordMeaningsResponse, error)
+	FindRandomFavoriteWordMeanings(ctx context.Context, in *FindRandomFavoriteWordMeaningsRequest, opts ...grpc.CallOption) (*FindRandomFavoriteWordMeaningsResponse, error)
 }
 
 type wordServiceClient struct {
@@ -72,6 +73,15 @@ func (c *wordServiceClient) FindFavoriteWordMeanings(ctx context.Context, in *Fi
 	return out, nil
 }
 
+func (c *wordServiceClient) FindRandomFavoriteWordMeanings(ctx context.Context, in *FindRandomFavoriteWordMeaningsRequest, opts ...grpc.CallOption) (*FindRandomFavoriteWordMeaningsResponse, error) {
+	out := new(FindRandomFavoriteWordMeaningsResponse)
+	err := c.cc.Invoke(ctx, "/pb.WordService/FindRandomFavoriteWordMeanings", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WordServiceServer is the server API for WordService service.
 // All implementations must embed UnimplementedWordServiceServer
 // for forward compatibility
@@ -80,6 +90,7 @@ type WordServiceServer interface {
 	CreateFavoriteWordMeaning(context.Context, *CreateFavoriteWordMeaningRequest) (*CreateFavoriteWordMeaningResponse, error)
 	DeleteFavoriteWordMeaning(context.Context, *DeleteFavoriteWordMeaningRequest) (*DeleteFavoriteWordMeaningResponse, error)
 	FindFavoriteWordMeanings(context.Context, *FindFavoriteWordMeaningsRequest) (*FindFavoriteWordMeaningsResponse, error)
+	FindRandomFavoriteWordMeanings(context.Context, *FindRandomFavoriteWordMeaningsRequest) (*FindRandomFavoriteWordMeaningsResponse, error)
 	mustEmbedUnimplementedWordServiceServer()
 }
 
@@ -98,6 +109,9 @@ func (UnimplementedWordServiceServer) DeleteFavoriteWordMeaning(context.Context,
 }
 func (UnimplementedWordServiceServer) FindFavoriteWordMeanings(context.Context, *FindFavoriteWordMeaningsRequest) (*FindFavoriteWordMeaningsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindFavoriteWordMeanings not implemented")
+}
+func (UnimplementedWordServiceServer) FindRandomFavoriteWordMeanings(context.Context, *FindRandomFavoriteWordMeaningsRequest) (*FindRandomFavoriteWordMeaningsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindRandomFavoriteWordMeanings not implemented")
 }
 func (UnimplementedWordServiceServer) mustEmbedUnimplementedWordServiceServer() {}
 
@@ -184,6 +198,24 @@ func _WordService_FindFavoriteWordMeanings_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WordService_FindRandomFavoriteWordMeanings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindRandomFavoriteWordMeaningsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WordServiceServer).FindRandomFavoriteWordMeanings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.WordService/FindRandomFavoriteWordMeanings",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WordServiceServer).FindRandomFavoriteWordMeanings(ctx, req.(*FindRandomFavoriteWordMeaningsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // WordService_ServiceDesc is the grpc.ServiceDesc for WordService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -206,6 +238,10 @@ var WordService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindFavoriteWordMeanings",
 			Handler:    _WordService_FindFavoriteWordMeanings_Handler,
+		},
+		{
+			MethodName: "FindRandomFavoriteWordMeanings",
+			Handler:    _WordService_FindRandomFavoriteWordMeanings_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

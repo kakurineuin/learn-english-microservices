@@ -78,3 +78,21 @@ func (mw loggingMiddleware) FindFavoriteWordMeanings(
 	}()
 	return mw.next.FindFavoriteWordMeanings(pageIndex, pageSize, userId, word)
 }
+
+func (mw loggingMiddleware) FindRandomFavoriteWordMeanings(
+	userId string, size int64,
+) (wordMeanings []model.WordMeaning, err error) {
+	defer func() {
+		mw.logger.Log(
+			"method",
+			"FindRandomFavoriteWordMeanings",
+			"userId",
+			userId,
+			"size",
+			size,
+			"err",
+			err,
+		)
+	}()
+	return mw.next.FindRandomFavoriteWordMeanings(userId, size)
+}

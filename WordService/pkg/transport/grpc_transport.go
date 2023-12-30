@@ -13,10 +13,11 @@ import (
 )
 
 type GRPCServer struct {
-	findWordByDictionary      gt.Handler
-	createFavoriteWordMeaning gt.Handler
-	deleteFavoriteWordMeaning gt.Handler
-	findFavoriteWordMeanings  gt.Handler
+	findWordByDictionary           gt.Handler
+	createFavoriteWordMeaning      gt.Handler
+	deleteFavoriteWordMeaning      gt.Handler
+	findFavoriteWordMeanings       gt.Handler
+	findRandomFavoriteWordMeanings gt.Handler
 
 	pb.UnimplementedWordServiceServer
 }
@@ -43,6 +44,11 @@ func NewGRPCServer(endpointds endpoint.Endpoints, logger log.Logger) pb.WordServ
 			endpointds.FindFavoriteWordMeanings,
 			decodeFindFavoriteWordMeaningsRequest,
 			encodeFindFavoriteWordMeaningsResponse,
+		),
+		findRandomFavoriteWordMeanings: gt.NewServer(
+			endpointds.FindRandomFavoriteWordMeanings,
+			decodeFindRandomFavoriteWordMeaningsRequest,
+			encodeFindRandomFavoriteWordMeaningsResponse,
 		),
 	}
 }
@@ -209,6 +215,47 @@ func encodeFindFavoriteWordMeaningsResponse(
 	return &pb.FindFavoriteWordMeaningsResponse{
 		Total:                resp.Total,
 		PageCount:            resp.PageCount,
+		FavoriteWordMeanings: toPBWordMeanings(resp.FavoriteWordMeanings),
+	}, nil
+}
+
+func (s GRPCServer) FindRandomFavoriteWordMeanings(
+	ctx context.Context,
+	req *pb.FindRandomFavoriteWordMeaningsRequest,
+) (*pb.FindRandomFavoriteWordMeaningsResponse, error) {
+	_, resp, err := s.findRandomFavoriteWordMeanings.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb.FindRandomFavoriteWordMeaningsResponse), nil
+}
+
+func decodeFindRandomFavoriteWordMeaningsRequest(
+	_ context.Context,
+	request interface{},
+) (interface{}, error) {
+	req, ok := request.(*pb.FindRandomFavoriteWordMeaningsRequest)
+	if !ok {
+		return nil, errors.New("invalid request body")
+	}
+
+	return endpoint.FindRandomFavoriteWordMeaningsRequest{
+		UserId: req.UserId,
+		Size:   req.Size,
+	}, nil
+}
+
+func encodeFindRandomFavoriteWordMeaningsResponse(
+	_ context.Context,
+	response interface{},
+) (interface{}, error) {
+	resp, ok := response.(endpoint.FindRandomFavoriteWordMeaningsResponse)
+	if !ok {
+		return nil, errors.New("invalid response body")
+	}
+
+	return &pb.FindRandomFavoriteWordMeaningsResponse{
 		FavoriteWordMeanings: toPBWordMeanings(resp.FavoriteWordMeanings),
 	}, nil
 }

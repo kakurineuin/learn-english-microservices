@@ -11,10 +11,11 @@ import (
 )
 
 type Endpoints struct {
-	FindWordByDictionary      endpoint.Endpoint
-	CreateFavoriteWordMeaning endpoint.Endpoint
-	DeleteFavoriteWordMeaning endpoint.Endpoint
-	FindFavoriteWordMeanings  endpoint.Endpoint
+	FindWordByDictionary           endpoint.Endpoint
+	CreateFavoriteWordMeaning      endpoint.Endpoint
+	DeleteFavoriteWordMeaning      endpoint.Endpoint
+	FindFavoriteWordMeanings       endpoint.Endpoint
+	FindRandomFavoriteWordMeanings endpoint.Endpoint
 }
 
 // MakeAddEndpoint struct holds the endpoint response definition
@@ -35,11 +36,25 @@ func MakeEndpoints(wordService service.WordService, logger log.Logger) Endpoints
 	findFavoriteWordMeaningsEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "FindFavoriteWordMeanings"))(findFavoriteWordMeaningsEndpoint)
 
+	findRandomFavoriteWordMeaningsEndpoint := makeFindRandomFavoriteWordMeaningsEndpoint(
+		wordService,
+	)
+	findRandomFavoriteWordMeaningsEndpoint = LoggingMiddleware(
+		log.With(
+			logger,
+			"method",
+			"FindRandomFavoriteWordMeanings",
+		),
+	)(
+		findRandomFavoriteWordMeaningsEndpoint,
+	)
+
 	return Endpoints{
-		FindWordByDictionary:      findWordByDictionaryEndpoint,
-		CreateFavoriteWordMeaning: createFavoriteWordMeaningEndpoint,
-		DeleteFavoriteWordMeaning: deleteFavoriteWordMeaningEndpoint,
-		FindFavoriteWordMeanings:  findFavoriteWordMeaningsEndpoint,
+		FindWordByDictionary:           findWordByDictionaryEndpoint,
+		CreateFavoriteWordMeaning:      createFavoriteWordMeaningEndpoint,
+		DeleteFavoriteWordMeaning:      deleteFavoriteWordMeaningEndpoint,
+		FindFavoriteWordMeanings:       findFavoriteWordMeaningsEndpoint,
+		FindRandomFavoriteWordMeanings: findRandomFavoriteWordMeaningsEndpoint,
 	}
 }
 
@@ -137,6 +152,31 @@ func makeFindFavoriteWordMeaningsEndpoint(wordService service.WordService) endpo
 		return FindFavoriteWordMeaningsResponse{
 			Total:                total,
 			PageCount:            pageCount,
+			FavoriteWordMeanings: favoriteWordMeanings,
+		}, nil
+	}
+}
+
+type FindRandomFavoriteWordMeaningsRequest struct {
+	UserId string
+	Size   int64
+}
+
+type FindRandomFavoriteWordMeaningsResponse struct {
+	FavoriteWordMeanings []model.WordMeaning
+}
+
+func makeFindRandomFavoriteWordMeaningsEndpoint(wordService service.WordService) endpoint.Endpoint {
+	return func(_ context.Context, request interface{}) (interface{}, error) {
+		req := request.(FindRandomFavoriteWordMeaningsRequest)
+		favoriteWordMeanings, err := wordService.FindRandomFavoriteWordMeanings(
+			req.UserId,
+			req.Size,
+		)
+		if err != nil {
+			return nil, err
+		}
+		return FindRandomFavoriteWordMeaningsResponse{
 			FavoriteWordMeanings: favoriteWordMeanings,
 		}, nil
 	}

@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -24,7 +25,7 @@ func CreateUser(c echo.Context) error {
 
 	requestBody := new(RequestBody)
 	if err := c.Bind(&requestBody); err != nil {
-		c.Logger().Errorf(errorMessage, err)
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return c.JSON(http.StatusBadRequest, echo.Map{
 			"message": "請求參數不正確",
 		})
@@ -42,7 +43,7 @@ func CreateUser(c echo.Context) error {
 			"message": "此使用者名稱已被註冊",
 		})
 	} else if err != mongo.ErrNoDocuments {
-		c.Logger().Errorf(errorMessage, err)
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"message": "系統發生錯誤",
 		})
@@ -51,7 +52,7 @@ func CreateUser(c echo.Context) error {
 	// Password Hashing
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	if err != nil {
-		c.Logger().Errorf(errorMessage, err)
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"message": "系統發生錯誤",
 		})
@@ -65,7 +66,7 @@ func CreateUser(c echo.Context) error {
 	}
 	_, err = usersCollection.InsertOne(context.TODO(), user)
 	if err != nil {
-		c.Logger().Errorf(errorMessage, err)
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"message": "系統發生錯誤",
 		})
@@ -74,7 +75,7 @@ func CreateUser(c echo.Context) error {
 	// 產生 JWT
 	token, err := util.GetJWTToken(user.Id.Hex(), username, user.Role)
 	if err != nil {
-		c.Logger().Errorf(errorMessage, err)
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"message": "系統發生錯誤",
 		})
@@ -95,7 +96,7 @@ func Login(c echo.Context) error {
 
 	requestBody := new(RequestBody)
 	if err := c.Bind(&requestBody); err != nil {
-		c.Logger().Errorf(errorMessage, err)
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return c.JSON(http.StatusBadRequest, echo.Map{
 			"message": "請求參數不正確",
 		})
@@ -118,7 +119,7 @@ func Login(c echo.Context) error {
 		}
 
 		// DB error
-		c.Logger().Errorf(errorMessage, err)
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"message": "系統發生錯誤",
 		})
@@ -135,7 +136,7 @@ func Login(c echo.Context) error {
 	// 產生 JWT
 	token, err := util.GetJWTToken(user.Id.Hex(), username, user.Role)
 	if err != nil {
-		c.Logger().Errorf(errorMessage, err)
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return c.JSON(http.StatusInternalServerError, echo.Map{
 			"message": "系統發生錯誤",
 		})

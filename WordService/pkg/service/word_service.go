@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
@@ -28,6 +30,9 @@ type WordService interface {
 		pageIndex, pageSize int64,
 		userId, word string,
 	) (total, pageCount int64, favoriteWordMeanings []model.WordMeaning, err error)
+	FindRandomFavoriteWordMeanings(
+		userId string, size int64,
+	) (wordMeanings []model.WordMeaning, err error)
 }
 
 type wordService struct {
@@ -209,4 +214,59 @@ func (wordService wordService) FindFavoriteWordMeanings(
 	// PageCount
 	pageCount = int64(math.Ceil(float64(total) / float64(pageSize)))
 	return total, pageCount, favoriteWordMeanings, nil
+}
+
+func (wordService wordService) FindRandomFavoriteWordMeanings(
+	userId string, size int64,
+) (wordMeanings []model.WordMeaning, err error) {
+	errorLogger := wordService.errorLogger
+	errorMessage := "FindRandomFavoriteWordMeanings failed! error: %w"
+
+	databaseRepository := wordService.databaseRepository
+	total, err := databaseRepository.CountFavoriteWordMeaningsByUserIdAndWord(
+		context.TODO(),
+		userId,
+		"",
+	)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return nil, fmt.Errorf(errorMessage, err)
+	}
+
+	// 總數是零，表示使用者還沒新增喜歡的單字解釋
+	if total == 0 {
+		return []model.WordMeaning{}, nil
+	}
+
+	indexes := []int64{}
+
+	for i := int64(0); i < total; i++ {
+		indexes = append(indexes, i)
+	}
+
+	// 將 indexes 隨機洗牌，然後根據洗牌後的 indexes 順序去查詢，達到隨機排序的效果
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	rng.Shuffle(len(indexes), func(i, j int) {
+		indexes[i], indexes[j] = indexes[j], indexes[i]
+	})
+
+	maxQueryTotal := min(total, size)
+
+	for i := int64(0); i < maxQueryTotal; i++ {
+		findWordMeanings, err := databaseRepository.FindFavoriteWordMeaningsByUserIdAndWord(
+			context.TODO(),
+			userId,
+			"",
+			indexes[i],
+			1,
+		)
+		if err != nil {
+			errorLogger.Log("err", err)
+			return nil, fmt.Errorf(errorMessage, err)
+		}
+
+		wordMeanings = append(wordMeanings, findWordMeanings[0])
+	}
+
+	return wordMeanings, nil
 }

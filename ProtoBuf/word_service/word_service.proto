@@ -56,6 +56,15 @@ message FindFavoriteWordMeaningsResponse {
   repeated WordMeaning favorite_word_meanings = 3;
 }
 
+message FindRandomFavoriteWordMeaningsRequest {
+  string user_id = 1;
+  int64 size = 2;
+}
+
+message FindRandomFavoriteWordMeaningsResponse {
+  repeated WordMeaning favorite_word_meanings = 1;
+}
+
 message WordMeaning {
   string id = 1 [ json_name = "_id" ];
   string word = 2;
@@ -79,4 +88,6 @@ service WordService {
       returns (DeleteFavoriteWordMeaningResponse);
   rpc FindFavoriteWordMeanings(FindFavoriteWordMeaningsRequest)
       returns (FindFavoriteWordMeaningsResponse);
+  rpc FindRandomFavoriteWordMeanings(FindRandomFavoriteWordMeaningsRequest)
+      returns (FindRandomFavoriteWordMeaningsResponse);
 }

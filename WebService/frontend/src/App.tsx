@@ -11,6 +11,7 @@ import SignUp from './routes/SignUp';
 import SignIn from './routes/SignIn';
 import WordManager from './routes/WordManager';
 import FavoriteWordMeaningManager from './routes/FavoriteWordMeaningManager';
+import WordCard from './routes/WordCard';
 
 axios.defaults.baseURL = `${import.meta.env.VITE_BACKEND_URL}/api`;
 axios.defaults.withCredentials = true;
@@ -57,6 +58,10 @@ function App() {
         {
           path: '/restricted/word/favorite',
           element: <FavoriteWordMeaningManager />,
+        },
+        {
+          path: '/restricted/word/card',
+          element: <WordCard />,
         },
       ],
     },
