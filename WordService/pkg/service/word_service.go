@@ -13,11 +13,16 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/repository"
 )
 
+var unauthorizedOperationError = fmt.Errorf("Unauthorized operation")
+
 type WordService interface {
 	FindWordByDictionary(word, userId string) ([]model.WordMeaning, error)
 	CreateFavoriteWordMeaning(
 		userId, wordMeaningId string,
 	) (favoriteWordMeaningId string, err error)
+	DeleteFavoriteWordMeaning(
+		favoriteWordMeaningId, userId string,
+	) error
 }
 
 type wordService struct {
@@ -120,4 +125,46 @@ func (wordService wordService) CreateFavoriteWordMeaning(
 	}
 
 	return favoriteWordMeaningId, nil
+}
+
+func (wordService wordService) DeleteFavoriteWordMeaning(
+	favoriteWordMeaningId, userId string,
+) error {
+	errorLogger := wordService.errorLogger
+	errorMessage := "DeleteFavoriteWordMeaning failed! error: %w"
+
+	databaseRepository := wordService.databaseRepository
+
+	favoriteWordMeaning, err := databaseRepository.GetFavoriteWordMeaningById(
+		context.TODO(),
+		favoriteWordMeaningId,
+	)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	if favoriteWordMeaning == nil {
+		err = fmt.Errorf("FavoriteWordMeaning not found by id: %s", favoriteWordMeaningId)
+		errorLogger.Log("err", err)
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	// 檢查不能刪除別人的資料
+	if favoriteWordMeaning.UserId != userId {
+		err = unauthorizedOperationError
+		errorLogger.Log("err", err)
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	_, err = databaseRepository.DeleteFavoriteWordMeaningById(
+		context.TODO(),
+		favoriteWordMeaningId,
+	)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return fmt.Errorf(errorMessage, err)
+	}
+
+	return nil
 }

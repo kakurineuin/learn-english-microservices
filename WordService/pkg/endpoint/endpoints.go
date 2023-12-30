@@ -13,6 +13,7 @@ import (
 type Endpoints struct {
 	FindWordByDictionary      endpoint.Endpoint
 	CreateFavoriteWordMeaning endpoint.Endpoint
+	DeleteFavoriteWordMeaning endpoint.Endpoint
 }
 
 // MakeAddEndpoint struct holds the endpoint response definition
@@ -25,9 +26,14 @@ func MakeEndpoints(wordService service.WordService, logger log.Logger) Endpoints
 	createFavoriteWordMeaningEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "CreateFavoriteWordMeaning"))(createFavoriteWordMeaningEndpoint)
 
+	deleteFavoriteWordMeaningEndpoint := makeDeleteFavoriteWordMeaningEndpoint(wordService)
+	deleteFavoriteWordMeaningEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "DeleteFavoriteWordMeaning"))(deleteFavoriteWordMeaningEndpoint)
+
 	return Endpoints{
 		FindWordByDictionary:      findWordByDictionaryEndpoint,
 		CreateFavoriteWordMeaning: createFavoriteWordMeaningEndpoint,
+		DeleteFavoriteWordMeaning: deleteFavoriteWordMeaningEndpoint,
 	}
 }
 
@@ -73,5 +79,26 @@ func makeCreateFavoriteWordMeaningEndpoint(wordService service.WordService) endp
 		return CreateFavoriteWordMeaningResponse{
 			FavoriteWordMeaningId: favoriteWordMeaningId,
 		}, nil
+	}
+}
+
+type DeleteFavoriteWordMeaningRequest struct {
+	FavoriteWordMeaningId string
+	UserId                string
+}
+
+type DeleteFavoriteWordMeaningResponse struct{}
+
+func makeDeleteFavoriteWordMeaningEndpoint(wordService service.WordService) endpoint.Endpoint {
+	return func(_ context.Context, request interface{}) (interface{}, error) {
+		req := request.(DeleteFavoriteWordMeaningRequest)
+		err := wordService.DeleteFavoriteWordMeaning(
+			req.FavoriteWordMeaningId,
+			req.UserId,
+		)
+		if err != nil {
+			return nil, err
+		}
+		return DeleteFavoriteWordMeaningResponse{}, nil
 	}
 }

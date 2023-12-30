@@ -31,4 +31,12 @@ type DatabaseRepository interface {
 		ctx context.Context,
 		userId, wordMeaningId string,
 	) (favoriteWordMeaningId string, err error)
+	GetFavoriteWordMeaningById(
+		ctx context.Context,
+		favoriteWordMeaningId string,
+	) (favoriteWordMeaning *model.FavoriteWordMeaning, err error)
+	DeleteFavoriteWordMeaningById(
+		ctx context.Context,
+		favoriteWordMeaningId string,
+	) (deletedCount int64, err error)
 }

@@ -22,12 +22,13 @@ const DATABASE = "learnEnglish_test"
 
 type MyTestSuite struct {
 	suite.Suite
-	repo                  DatabaseRepository
-	uri                   string
-	ctx                   context.Context
-	mongodbContainer      *mongodb.MongoDBContainer
-	client                *mongo.Client
-	wordMeaningCollection *mongo.Collection
+	repo                          DatabaseRepository
+	uri                           string
+	ctx                           context.Context
+	mongodbContainer              *mongodb.MongoDBContainer
+	client                        *mongo.Client
+	wordMeaningCollection         *mongo.Collection
+	favoriteWordMeaningCollection *mongo.Collection
 }
 
 func TestMyTestSuite(t *testing.T) {
@@ -67,6 +68,7 @@ func (s *MyTestSuite) SetupSuite() {
 
 	s.client = client
 	s.wordMeaningCollection = client.Database(DATABASE).Collection("wordmeanings")
+	s.favoriteWordMeaningCollection = client.Database(DATABASE).Collection("favoritewordmeanings")
 }
 
 // run once, after test suite methods
@@ -218,4 +220,38 @@ func (s *MyTestSuite) TestCreateFavoriteWordMeaning() {
 	favoriteWordMeaningId, err := s.repo.CreateFavoriteWordMeaning(ctx, userId, wordMeaningId)
 	s.Nil(err)
 	s.NotEmpty(favoriteWordMeaningId)
+}
+
+func (s *MyTestSuite) TestGetFavoriteWordMeaningById() {
+	ctx := context.TODO()
+
+	userId := "user01"
+	wordMeaningId := primitive.NewObjectID()
+	result, err := s.favoriteWordMeaningCollection.InsertOne(ctx, model.FavoriteWordMeaning{
+		UserId:        userId,
+		WordMeaningId: wordMeaningId,
+	})
+	s.Nil(err)
+	favoriteWordMeaningId := result.InsertedID.(primitive.ObjectID).Hex()
+
+	favoriteWordMeaning, err := s.repo.GetFavoriteWordMeaningById(ctx, favoriteWordMeaningId)
+	s.Nil(err)
+	s.NotEmpty(favoriteWordMeaning)
+}
+
+func (s *MyTestSuite) TestDeleteFavoriteWordMeaningById() {
+	ctx := context.TODO()
+
+	userId := "user01"
+	wordMeaningId := primitive.NewObjectID()
+	result, err := s.favoriteWordMeaningCollection.InsertOne(ctx, model.FavoriteWordMeaning{
+		UserId:        userId,
+		WordMeaningId: wordMeaningId,
+	})
+	s.Nil(err)
+	favoriteWordMeaningId := result.InsertedID.(primitive.ObjectID).Hex()
+
+	deletedCount, err := s.repo.DeleteFavoriteWordMeaningById(ctx, favoriteWordMeaningId)
+	s.Nil(err)
+	s.Equal(int64(1), deletedCount)
 }

@@ -62,3 +62,15 @@ func CreateFavoriteWordMeaning(
 		},
 	)
 }
+
+func DeleteFavoriteWordMeaning(
+	favoriteWordMeaningId, userId string,
+) (*pb.DeleteFavoriteWordMeaningResponse, error) {
+	return wordServiceClient.DeleteFavoriteWordMeaning(
+		context.Background(),
+		&pb.DeleteFavoriteWordMeaningRequest{
+			FavoriteWordMeaningId: favoriteWordMeaningId,
+			UserId:                userId,
+		},
+	)
+}

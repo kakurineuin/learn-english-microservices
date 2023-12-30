@@ -185,6 +185,63 @@ func (_c *MockDatabaseRepository_CreateWordMeanings_Call) RunAndReturn(run func(
 	return _c
 }
 
+// DeleteFavoriteWordMeaningById provides a mock function with given fields: ctx, favoriteWordMeaningId
+func (_m *MockDatabaseRepository) DeleteFavoriteWordMeaningById(ctx context.Context, favoriteWordMeaningId string) (int64, error) {
+	ret := _m.Called(ctx, favoriteWordMeaningId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteFavoriteWordMeaningById")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+		return rf(ctx, favoriteWordMeaningId)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+		r0 = rf(ctx, favoriteWordMeaningId)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, favoriteWordMeaningId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteFavoriteWordMeaningById'
+type MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call struct {
+	*mock.Call
+}
+
+// DeleteFavoriteWordMeaningById is a helper method to define mock.On call
+//   - ctx context.Context
+//   - favoriteWordMeaningId string
+func (_e *MockDatabaseRepository_Expecter) DeleteFavoriteWordMeaningById(ctx interface{}, favoriteWordMeaningId interface{}) *MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call {
+	return &MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call{Call: _e.mock.On("DeleteFavoriteWordMeaningById", ctx, favoriteWordMeaningId)}
+}
+
+func (_c *MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call) Run(run func(ctx context.Context, favoriteWordMeaningId string)) *MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call) Return(deletedCount int64, err error) *MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call {
+	_c.Call.Return(deletedCount, err)
+	return _c
+}
+
+func (_c *MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call) RunAndReturn(run func(context.Context, string) (int64, error)) *MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DisconnectDB provides a mock function with given fields:
 func (_m *MockDatabaseRepository) DisconnectDB() error {
 	ret := _m.Called()
@@ -286,6 +343,65 @@ func (_c *MockDatabaseRepository_FindWordMeaningsByWordAndUserId_Call) Return(wo
 }
 
 func (_c *MockDatabaseRepository_FindWordMeaningsByWordAndUserId_Call) RunAndReturn(run func(context.Context, string, string) ([]model.WordMeaning, error)) *MockDatabaseRepository_FindWordMeaningsByWordAndUserId_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetFavoriteWordMeaningById provides a mock function with given fields: ctx, favoriteWordMeaningId
+func (_m *MockDatabaseRepository) GetFavoriteWordMeaningById(ctx context.Context, favoriteWordMeaningId string) (*model.FavoriteWordMeaning, error) {
+	ret := _m.Called(ctx, favoriteWordMeaningId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetFavoriteWordMeaningById")
+	}
+
+	var r0 *model.FavoriteWordMeaning
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*model.FavoriteWordMeaning, error)); ok {
+		return rf(ctx, favoriteWordMeaningId)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *model.FavoriteWordMeaning); ok {
+		r0 = rf(ctx, favoriteWordMeaningId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.FavoriteWordMeaning)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, favoriteWordMeaningId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockDatabaseRepository_GetFavoriteWordMeaningById_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetFavoriteWordMeaningById'
+type MockDatabaseRepository_GetFavoriteWordMeaningById_Call struct {
+	*mock.Call
+}
+
+// GetFavoriteWordMeaningById is a helper method to define mock.On call
+//   - ctx context.Context
+//   - favoriteWordMeaningId string
+func (_e *MockDatabaseRepository_Expecter) GetFavoriteWordMeaningById(ctx interface{}, favoriteWordMeaningId interface{}) *MockDatabaseRepository_GetFavoriteWordMeaningById_Call {
+	return &MockDatabaseRepository_GetFavoriteWordMeaningById_Call{Call: _e.mock.On("GetFavoriteWordMeaningById", ctx, favoriteWordMeaningId)}
+}
+
+func (_c *MockDatabaseRepository_GetFavoriteWordMeaningById_Call) Run(run func(ctx context.Context, favoriteWordMeaningId string)) *MockDatabaseRepository_GetFavoriteWordMeaningById_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockDatabaseRepository_GetFavoriteWordMeaningById_Call) Return(favoriteWordMeaning *model.FavoriteWordMeaning, err error) *MockDatabaseRepository_GetFavoriteWordMeaningById_Call {
+	_c.Call.Return(favoriteWordMeaning, err)
+	return _c
+}
+
+func (_c *MockDatabaseRepository_GetFavoriteWordMeaningById_Call) RunAndReturn(run func(context.Context, string) (*model.FavoriteWordMeaning, error)) *MockDatabaseRepository_GetFavoriteWordMeaningById_Call {
 	_c.Call.Return(run)
 	return _c
 }

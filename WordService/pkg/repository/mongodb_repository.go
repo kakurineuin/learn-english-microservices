@@ -160,6 +160,55 @@ func (repo *MongoDBRepository) CreateFavoriteWordMeaning(
 	return result.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
+func (repo *MongoDBRepository) GetFavoriteWordMeaningById(
+	ctx context.Context,
+	favoriteWordMeaningId string,
+) (favoriteWordMeaning *model.FavoriteWordMeaning, err error) {
+	id, err := primitive.ObjectIDFromHex(favoriteWordMeaningId)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.D{
+		{"_id", id},
+	}
+	var result model.FavoriteWordMeaning
+	collection := repo.getCollection(FAVORITE_WORD_MEANING_COLLECTION)
+	err = collection.FindOne(ctx, filter).Decode(&result)
+
+	if err != nil {
+		// 查無資料不視為錯誤
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+func (repo *MongoDBRepository) DeleteFavoriteWordMeaningById(
+	ctx context.Context,
+	favoriteWordMeaningId string,
+) (deletedCount int64, err error) {
+	id, err := primitive.ObjectIDFromHex(favoriteWordMeaningId)
+	if err != nil {
+		return 0, err
+	}
+
+	filter := bson.D{
+		{"_id", id},
+	}
+	collection := repo.getCollection(FAVORITE_WORD_MEANING_COLLECTION)
+	result, err := collection.DeleteOne(ctx, filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.DeletedCount, nil
+}
+
 func (repo *MongoDBRepository) WithTransaction(
 	transactoinFunc transactionFunc,
 ) (interface{}, error) {

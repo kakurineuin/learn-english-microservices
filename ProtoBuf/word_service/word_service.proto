@@ -36,6 +36,13 @@ message CreateFavoriteWordMeaningResponse {
   string favorite_word_meaning_id = 1;
 }
 
+message DeleteFavoriteWordMeaningRequest {
+  string favorite_word_meaning_id = 1;
+  string user_id = 2;
+}
+
+message DeleteFavoriteWordMeaningResponse {}
+
 message WordMeaning {
   string id = 1 [ json_name = "_id" ];
   string word = 2;
@@ -55,4 +62,6 @@ service WordService {
       returns (FindWordByDictionaryResponse);
   rpc CreateFavoriteWordMeaning(CreateFavoriteWordMeaningRequest)
       returns (CreateFavoriteWordMeaningResponse);
+  rpc DeleteFavoriteWordMeaning(DeleteFavoriteWordMeaningRequest)
+      returns (DeleteFavoriteWordMeaningResponse);
 }

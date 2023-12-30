@@ -9,6 +9,7 @@ import (
 	"github.com/go-kit/log/level"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/crawler"
 	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/model"
@@ -144,4 +145,22 @@ func (s *MyTestSuite) TestCreateFavoriteWordMeaning() {
 	favoriteWordMeaningId, err := s.wordService.CreateFavoriteWordMeaning(userId, wordMeaningId)
 	s.Nil(err)
 	s.Equal(mockFavoriteWordMeaningId, favoriteWordMeaningId)
+}
+
+func (s *MyTestSuite) TestDeleteFavoriteWordMeaning() {
+	userId := "user01"
+	favoriteWordMeaningId := primitive.NewObjectID().Hex()
+
+	s.mockDatabaseRepository.EXPECT().
+		GetFavoriteWordMeaningById(mock.Anything, favoriteWordMeaningId).
+		Return(&model.FavoriteWordMeaning{
+			UserId:        userId,
+			WordMeaningId: primitive.NewObjectID(),
+		}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		DeleteFavoriteWordMeaningById(mock.Anything, favoriteWordMeaningId).
+		Return(int64(1), nil)
+
+	err := s.wordService.DeleteFavoriteWordMeaning(favoriteWordMeaningId, userId)
+	s.Nil(err)
 }

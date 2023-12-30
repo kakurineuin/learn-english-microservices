@@ -115,7 +115,7 @@ function WordInfo({
     dispatch(loaderActions.toggleLoading());
 
     try {
-      await axios.delete(`/word/favorite/${favoriteId}`);
+      await axios.delete(`/restricted/word/favorite/${favoriteId}`);
       setFavoriteId('');
       toast({
         title: '刪除最愛的單字解釋成功。',

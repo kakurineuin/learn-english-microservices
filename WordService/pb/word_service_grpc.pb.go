@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type WordServiceClient interface {
 	FindWordByDictionary(ctx context.Context, in *FindWordByDictionaryRequest, opts ...grpc.CallOption) (*FindWordByDictionaryResponse, error)
 	CreateFavoriteWordMeaning(ctx context.Context, in *CreateFavoriteWordMeaningRequest, opts ...grpc.CallOption) (*CreateFavoriteWordMeaningResponse, error)
+	DeleteFavoriteWordMeaning(ctx context.Context, in *DeleteFavoriteWordMeaningRequest, opts ...grpc.CallOption) (*DeleteFavoriteWordMeaningResponse, error)
 }
 
 type wordServiceClient struct {
@@ -52,12 +53,22 @@ func (c *wordServiceClient) CreateFavoriteWordMeaning(ctx context.Context, in *C
 	return out, nil
 }
 
+func (c *wordServiceClient) DeleteFavoriteWordMeaning(ctx context.Context, in *DeleteFavoriteWordMeaningRequest, opts ...grpc.CallOption) (*DeleteFavoriteWordMeaningResponse, error) {
+	out := new(DeleteFavoriteWordMeaningResponse)
+	err := c.cc.Invoke(ctx, "/pb.WordService/DeleteFavoriteWordMeaning", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WordServiceServer is the server API for WordService service.
 // All implementations must embed UnimplementedWordServiceServer
 // for forward compatibility
 type WordServiceServer interface {
 	FindWordByDictionary(context.Context, *FindWordByDictionaryRequest) (*FindWordByDictionaryResponse, error)
 	CreateFavoriteWordMeaning(context.Context, *CreateFavoriteWordMeaningRequest) (*CreateFavoriteWordMeaningResponse, error)
+	DeleteFavoriteWordMeaning(context.Context, *DeleteFavoriteWordMeaningRequest) (*DeleteFavoriteWordMeaningResponse, error)
 	mustEmbedUnimplementedWordServiceServer()
 }
 
@@ -70,6 +81,9 @@ func (UnimplementedWordServiceServer) FindWordByDictionary(context.Context, *Fin
 }
 func (UnimplementedWordServiceServer) CreateFavoriteWordMeaning(context.Context, *CreateFavoriteWordMeaningRequest) (*CreateFavoriteWordMeaningResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateFavoriteWordMeaning not implemented")
+}
+func (UnimplementedWordServiceServer) DeleteFavoriteWordMeaning(context.Context, *DeleteFavoriteWordMeaningRequest) (*DeleteFavoriteWordMeaningResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteFavoriteWordMeaning not implemented")
 }
 func (UnimplementedWordServiceServer) mustEmbedUnimplementedWordServiceServer() {}
 
@@ -120,6 +134,24 @@ func _WordService_CreateFavoriteWordMeaning_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WordService_DeleteFavoriteWordMeaning_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteFavoriteWordMeaningRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WordServiceServer).DeleteFavoriteWordMeaning(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.WordService/DeleteFavoriteWordMeaning",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WordServiceServer).DeleteFavoriteWordMeaning(ctx, req.(*DeleteFavoriteWordMeaningRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // WordService_ServiceDesc is the grpc.ServiceDesc for WordService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +166,10 @@ var WordService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateFavoriteWordMeaning",
 			Handler:    _WordService_CreateFavoriteWordMeaning_Handler,
+		},
+		{
+			MethodName: "DeleteFavoriteWordMeaning",
+			Handler:    _WordService_DeleteFavoriteWordMeaning_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

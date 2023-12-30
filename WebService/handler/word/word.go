@@ -69,3 +69,23 @@ func CreateFavoriteWordMeaning(c echo.Context) error {
 		"favoriteWordMeaningId": microserviceResponse.FavoriteWordMeaningId,
 	})
 }
+
+func DeleteFavoriteWordMeaning(c echo.Context) error {
+	errorMessage := "DeleteFavoriteWordMeaning failed! error: %w"
+	favoriteWordMeaningId := c.Param("favoriteWordMeaningId")
+	userId := util.GetJWTClaims(c).UserId
+	c.Logger().Infof("favoriteWordMeaningId: %s, userId: %s", favoriteWordMeaningId, userId)
+
+	_, err := microservice.DeleteFavoriteWordMeaning(
+		favoriteWordMeaningId,
+		userId,
+	)
+	if err != nil {
+		c.Logger().Errorf(errorMessage, err)
+		return c.JSON(http.StatusInternalServerError, echo.Map{
+			"message": "系統發生錯誤",
+		})
+	}
+
+	return c.NoContent(http.StatusOK)
+}

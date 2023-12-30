@@ -14,6 +14,7 @@ import (
 type GRPCServer struct {
 	findWordByDictionary      gt.Handler
 	createFavoriteWordMeaning gt.Handler
+	deleteFavoriteWordMeaning gt.Handler
 
 	pb.UnimplementedWordServiceServer
 }
@@ -30,6 +31,11 @@ func NewGRPCServer(endpointds endpoint.Endpoints, logger log.Logger) pb.WordServ
 			endpointds.CreateFavoriteWordMeaning,
 			decodeCreateFavoriteWordMeaningRequest,
 			encodeCreateFavoriteWordMeaningResponse,
+		),
+		deleteFavoriteWordMeaning: gt.NewServer(
+			endpointds.DeleteFavoriteWordMeaning,
+			decodeDeleteFavoriteWordMeaningRequest,
+			encodeDeleteFavoriteWordMeaningResponse,
 		),
 	}
 }
@@ -167,4 +173,43 @@ func encodeCreateFavoriteWordMeaningResponse(
 	return &pb.CreateFavoriteWordMeaningResponse{
 		FavoriteWordMeaningId: resp.FavoriteWordMeaningId,
 	}, nil
+}
+
+func (s GRPCServer) DeleteFavoriteWordMeaning(
+	ctx context.Context,
+	req *pb.DeleteFavoriteWordMeaningRequest,
+) (*pb.DeleteFavoriteWordMeaningResponse, error) {
+	_, resp, err := s.deleteFavoriteWordMeaning.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb.DeleteFavoriteWordMeaningResponse), nil
+}
+
+func decodeDeleteFavoriteWordMeaningRequest(
+	_ context.Context,
+	request interface{},
+) (interface{}, error) {
+	req, ok := request.(*pb.DeleteFavoriteWordMeaningRequest)
+	if !ok {
+		return nil, errors.New("invalid request body")
+	}
+
+	return endpoint.DeleteFavoriteWordMeaningRequest{
+		FavoriteWordMeaningId: req.FavoriteWordMeaningId,
+		UserId:                req.UserId,
+	}, nil
+}
+
+func encodeDeleteFavoriteWordMeaningResponse(
+	_ context.Context,
+	response interface{},
+) (interface{}, error) {
+	_, ok := response.(endpoint.DeleteFavoriteWordMeaningResponse)
+	if !ok {
+		return nil, errors.New("invalid response body")
+	}
+
+	return &pb.DeleteFavoriteWordMeaningResponse{}, nil
 }

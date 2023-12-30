@@ -37,3 +37,21 @@ func (mw loggingMiddleware) CreateFavoriteWordMeaning(
 	}()
 	return mw.next.CreateFavoriteWordMeaning(userId, wordMeaningId)
 }
+
+func (mw loggingMiddleware) DeleteFavoriteWordMeaning(
+	favoriteWordMeaningId, userId string,
+) (err error) {
+	defer func() {
+		mw.logger.Log(
+			"method",
+			"DeleteFavoriteWordMeaning",
+			"favoriteWordMeaningId",
+			favoriteWordMeaningId,
+			"userId",
+			userId,
+			"err",
+			err,
+		)
+	}()
+	return mw.next.DeleteFavoriteWordMeaning(favoriteWordMeaningId, userId)
+}

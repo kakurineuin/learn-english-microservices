@@ -99,4 +99,5 @@ func setupAPIHandlers(e *echo.Echo) {
 
 	restrictedApi.GET("/word/:word", word.FindWordMeanings)
 	restrictedApi.POST("/word/favorite", word.CreateFavoriteWordMeaning)
+	restrictedApi.DELETE("/word/favorite/:favoriteWordMeaningId", word.DeleteFavoriteWordMeaning)
 }
