@@ -233,8 +233,23 @@ func (repo *MongoDBRepository) FindFavoriteWordMeaningsByUserIdAndWord(
 		return nil, err
 	}
 
-	if err = cursor.All(ctx, &wordMeanings); err != nil {
+	type result struct {
+		Id            primitive.ObjectID `bson:"_id,omitempty"`
+		UserId        string             `bson:"userId"`
+		WordMeaningId primitive.ObjectID `bson:"wordMeaningId"`
+		WordMeaning   model.WordMeaning  `bson:"wordMeaning"`
+		CreatedAt     time.Time          `bson:"createdAt"`
+		UpdatedAt     time.Time          `bson:"updatedAt"`
+	}
+
+	var results []result
+	if err = cursor.All(ctx, &results); err != nil {
 		return nil, err
+	}
+
+	for i := range results {
+		results[i].WordMeaning.FavoriteWordMeaningId = results[i].Id
+		wordMeanings = append(wordMeanings, results[i].WordMeaning)
 	}
 
 	return wordMeanings, nil
