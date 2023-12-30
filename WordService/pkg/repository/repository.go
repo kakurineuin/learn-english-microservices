@@ -35,6 +35,15 @@ type DatabaseRepository interface {
 		ctx context.Context,
 		favoriteWordMeaningId string,
 	) (favoriteWordMeaning *model.FavoriteWordMeaning, err error)
+	FindFavoriteWordMeaningsByUserIdAndWord(
+		ctx context.Context,
+		userId, word string,
+		skip, limit int64,
+	) (wordMeanings []model.WordMeaning, err error)
+	CountFavoriteWordMeaningsByUserIdAndWord(
+		ctx context.Context,
+		userId, word string,
+	) (count int64, err error)
 	DeleteFavoriteWordMeaningById(
 		ctx context.Context,
 		favoriteWordMeaningId string,

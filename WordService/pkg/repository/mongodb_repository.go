@@ -188,6 +188,106 @@ func (repo *MongoDBRepository) GetFavoriteWordMeaningById(
 	return &result, nil
 }
 
+func (repo *MongoDBRepository) FindFavoriteWordMeaningsByUserIdAndWord(
+	ctx context.Context,
+	userId, word string,
+	skip, limit int64,
+) (wordMeanings []model.WordMeaning, err error) {
+	matchWord := bson.D{{}}
+
+	if word != "" {
+		matchWord = bson.D{{"wordMeaning.queryByWords", word}}
+	}
+
+	matchStage := bson.D{{"$match", bson.D{{"userId", userId}}}}
+	lookupStage := bson.D{{
+		"$lookup", bson.D{
+			{"from", "wordmeanings"},
+			{"localField", "wordMeaningId"},
+			{"foreignField", "_id"},
+			{"as", "wordMeaning"},
+		},
+	}}
+	unwindStage := bson.D{{"$unwind", "$wordMeaning"}}
+	matchWordStage := bson.D{{"$match", matchWord}}
+	sortStage := bson.D{{"$sort", bson.D{{"wordMeaning.word", 1}, {"wordMeaning.orderByNo", 1}}}}
+	skipStage := bson.D{{"$skip", skip}}
+	limitStage := bson.D{{"$limit", limit}}
+
+	collection := repo.getCollection(FAVORITE_WORD_MEANING_COLLECTION)
+
+	// pass the pipeline to the Aggregate() method
+	cursor, err := collection.Aggregate(
+		ctx,
+		mongo.Pipeline{
+			matchStage,
+			lookupStage,
+			unwindStage,
+			matchWordStage,
+			sortStage,
+			skipStage,
+			limitStage,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cursor.All(ctx, &wordMeanings); err != nil {
+		return nil, err
+	}
+
+	return wordMeanings, nil
+}
+
+func (repo *MongoDBRepository) CountFavoriteWordMeaningsByUserIdAndWord(
+	ctx context.Context,
+	userId, word string,
+) (count int64, err error) {
+	matchWord := bson.D{{}}
+
+	if word != "" {
+		matchWord = bson.D{{"wordMeaning.queryByWords", word}}
+	}
+
+	matchStage := bson.D{{"$match", bson.D{{"userId", userId}}}}
+	lookupStage := bson.D{{
+		"$lookup", bson.D{
+			{"from", "wordmeanings"},
+			{"localField", "wordMeaningId"},
+			{"foreignField", "_id"},
+			{"as", "wordMeaning"},
+		},
+	}}
+	unwindStage := bson.D{{"$unwind", "$wordMeaning"}}
+	matchWordStage := bson.D{{"$match", matchWord}}
+	countStage := bson.D{{"$count", "total"}}
+
+	collection := repo.getCollection(FAVORITE_WORD_MEANING_COLLECTION)
+
+	// pass the pipeline to the Aggregate() method
+	cursor, err := collection.Aggregate(
+		ctx,
+		mongo.Pipeline{
+			matchStage,
+			lookupStage,
+			unwindStage,
+			matchWordStage,
+			countStage,
+		},
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	var results []bson.D
+	if err = cursor.All(ctx, &results); err != nil {
+		return 0, err
+	}
+
+	return int64(results[0][0].Value.(int32)), nil
+}
+
 func (repo *MongoDBRepository) DeleteFavoriteWordMeaningById(
 	ctx context.Context,
 	favoriteWordMeaningId string,

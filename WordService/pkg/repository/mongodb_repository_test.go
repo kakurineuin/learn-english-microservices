@@ -239,6 +239,148 @@ func (s *MyTestSuite) TestGetFavoriteWordMeaningById() {
 	s.NotEmpty(favoriteWordMeaning)
 }
 
+func (s *MyTestSuite) TestFindFavoriteWordMeaningsByUserIdAndWord() {
+	ctx := context.TODO()
+
+	userId := "user01"
+	word := "TestFindFavoriteWordMeaningsByUserIdAndWord"
+	now := time.Now()
+	size := 30
+	wordMeaningDocuments := []interface{}{}
+
+	for i := 0; i < size; i++ {
+		wordMeaningDocuments = append(wordMeaningDocuments, model.WordMeaning{
+			Word:         word,
+			PartOfSpeech: "partOfSpeech",
+			Gram:         "gram",
+			Pronunciation: model.Pronunciation{
+				Text:       "text",
+				UkAudioUrl: "uk",
+				UsAudioUrl: "us",
+			},
+			DefGram:    "defGram",
+			Definition: fmt.Sprintf("this is a definition %d", i+1),
+			Examples: []model.Example{
+				{
+					Pattern: "pattern",
+					Examples: []model.Sentence{
+						{
+							AudioUrl: "audioUrl",
+							Text:     "text",
+						},
+					},
+				},
+			},
+			OrderByNo:             int64(i + 1),
+			QueryByWords:          []string{word},
+			FavoriteWordMeaningId: primitive.NewObjectID(),
+			CreatedAt:             now,
+			UpdatedAt:             now,
+		})
+	}
+
+	result, err := s.wordMeaningCollection.InsertMany(ctx, wordMeaningDocuments)
+	s.Nil(err)
+	s.Equal(size, len(result.InsertedIDs))
+
+	favoriteWordMeaningDocuments := []interface{}{}
+
+	for i := 0; i < size; i++ {
+		favoriteWordMeaningDocuments = append(
+			favoriteWordMeaningDocuments,
+			model.FavoriteWordMeaning{
+				UserId:        userId,
+				WordMeaningId: result.InsertedIDs[i].(primitive.ObjectID),
+			},
+		)
+	}
+
+	result2, err := s.favoriteWordMeaningCollection.InsertMany(ctx, favoriteWordMeaningDocuments)
+	s.Nil(err)
+	s.Equal(size, len(result2.InsertedIDs))
+
+	skip := int64(10)
+	limit := int64(10)
+	wordMeanings, err := s.repo.FindFavoriteWordMeaningsByUserIdAndWord(
+		ctx,
+		userId,
+		word,
+		skip,
+		limit,
+	)
+	s.Nil(err)
+	s.Equal(int(limit), len(wordMeanings))
+}
+
+func (s *MyTestSuite) TestCountFavoriteWordMeaningsByUserIdAndWord() {
+	ctx := context.TODO()
+
+	userId := "user01"
+	word := "TestCountFavoriteWordMeaningsByUserIdAndWord"
+	now := time.Now()
+	size := 30
+	wordMeaningDocuments := []interface{}{}
+
+	for i := 0; i < size; i++ {
+		wordMeaningDocuments = append(wordMeaningDocuments, model.WordMeaning{
+			Word:         word,
+			PartOfSpeech: "partOfSpeech",
+			Gram:         "gram",
+			Pronunciation: model.Pronunciation{
+				Text:       "text",
+				UkAudioUrl: "uk",
+				UsAudioUrl: "us",
+			},
+			DefGram:    "defGram",
+			Definition: fmt.Sprintf("this is a definition %d", i+1),
+			Examples: []model.Example{
+				{
+					Pattern: "pattern",
+					Examples: []model.Sentence{
+						{
+							AudioUrl: "audioUrl",
+							Text:     "text",
+						},
+					},
+				},
+			},
+			OrderByNo:             int64(i + 1),
+			QueryByWords:          []string{word},
+			FavoriteWordMeaningId: primitive.NewObjectID(),
+			CreatedAt:             now,
+			UpdatedAt:             now,
+		})
+	}
+
+	result, err := s.wordMeaningCollection.InsertMany(ctx, wordMeaningDocuments)
+	s.Nil(err)
+	s.Equal(size, len(result.InsertedIDs))
+
+	favoriteWordMeaningDocuments := []interface{}{}
+
+	for i := 0; i < size; i++ {
+		favoriteWordMeaningDocuments = append(
+			favoriteWordMeaningDocuments,
+			model.FavoriteWordMeaning{
+				UserId:        userId,
+				WordMeaningId: result.InsertedIDs[i].(primitive.ObjectID),
+			},
+		)
+	}
+
+	result2, err := s.favoriteWordMeaningCollection.InsertMany(ctx, favoriteWordMeaningDocuments)
+	s.Nil(err)
+	s.Equal(size, len(result2.InsertedIDs))
+
+	count, err := s.repo.CountFavoriteWordMeaningsByUserIdAndWord(
+		ctx,
+		userId,
+		word,
+	)
+	s.Nil(err)
+	s.Equal(int64(size), count)
+}
+
 func (s *MyTestSuite) TestDeleteFavoriteWordMeaningById() {
 	ctx := context.TODO()
 

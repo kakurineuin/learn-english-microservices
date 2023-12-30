@@ -68,6 +68,64 @@ func (_c *MockDatabaseRepository_ConnectDB_Call) RunAndReturn(run func(string) e
 	return _c
 }
 
+// CountFavoriteWordMeaningsByUserIdAndWord provides a mock function with given fields: ctx, userId, word
+func (_m *MockDatabaseRepository) CountFavoriteWordMeaningsByUserIdAndWord(ctx context.Context, userId string, word string) (int64, error) {
+	ret := _m.Called(ctx, userId, word)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountFavoriteWordMeaningsByUserIdAndWord")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (int64, error)); ok {
+		return rf(ctx, userId, word)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) int64); ok {
+		r0 = rf(ctx, userId, word)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, userId, word)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountFavoriteWordMeaningsByUserIdAndWord'
+type MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call struct {
+	*mock.Call
+}
+
+// CountFavoriteWordMeaningsByUserIdAndWord is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userId string
+//   - word string
+func (_e *MockDatabaseRepository_Expecter) CountFavoriteWordMeaningsByUserIdAndWord(ctx interface{}, userId interface{}, word interface{}) *MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call {
+	return &MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call{Call: _e.mock.On("CountFavoriteWordMeaningsByUserIdAndWord", ctx, userId, word)}
+}
+
+func (_c *MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call) Run(run func(ctx context.Context, userId string, word string)) *MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(string))
+	})
+	return _c
+}
+
+func (_c *MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call) Return(count int64, err error) *MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call {
+	_c.Call.Return(count, err)
+	return _c
+}
+
+func (_c *MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call) RunAndReturn(run func(context.Context, string, string) (int64, error)) *MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateFavoriteWordMeaning provides a mock function with given fields: ctx, userId, wordMeaningId
 func (_m *MockDatabaseRepository) CreateFavoriteWordMeaning(ctx context.Context, userId string, wordMeaningId string) (string, error) {
 	ret := _m.Called(ctx, userId, wordMeaningId)
@@ -283,6 +341,68 @@ func (_c *MockDatabaseRepository_DisconnectDB_Call) Return(_a0 error) *MockDatab
 }
 
 func (_c *MockDatabaseRepository_DisconnectDB_Call) RunAndReturn(run func() error) *MockDatabaseRepository_DisconnectDB_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FindFavoriteWordMeaningsByUserIdAndWord provides a mock function with given fields: ctx, userId, word, skip, limit
+func (_m *MockDatabaseRepository) FindFavoriteWordMeaningsByUserIdAndWord(ctx context.Context, userId string, word string, skip int64, limit int64) ([]model.WordMeaning, error) {
+	ret := _m.Called(ctx, userId, word, skip, limit)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindFavoriteWordMeaningsByUserIdAndWord")
+	}
+
+	var r0 []model.WordMeaning
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, int64, int64) ([]model.WordMeaning, error)); ok {
+		return rf(ctx, userId, word, skip, limit)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, int64, int64) []model.WordMeaning); ok {
+		r0 = rf(ctx, userId, word, skip, limit)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]model.WordMeaning)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, int64, int64) error); ok {
+		r1 = rf(ctx, userId, word, skip, limit)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindFavoriteWordMeaningsByUserIdAndWord'
+type MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call struct {
+	*mock.Call
+}
+
+// FindFavoriteWordMeaningsByUserIdAndWord is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userId string
+//   - word string
+//   - skip int64
+//   - limit int64
+func (_e *MockDatabaseRepository_Expecter) FindFavoriteWordMeaningsByUserIdAndWord(ctx interface{}, userId interface{}, word interface{}, skip interface{}, limit interface{}) *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call {
+	return &MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call{Call: _e.mock.On("FindFavoriteWordMeaningsByUserIdAndWord", ctx, userId, word, skip, limit)}
+}
+
+func (_c *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call) Run(run func(ctx context.Context, userId string, word string, skip int64, limit int64)) *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(int64), args[4].(int64))
+	})
+	return _c
+}
+
+func (_c *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call) Return(wordMeanings []model.WordMeaning, err error) *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call {
+	_c.Call.Return(wordMeanings, err)
+	return _c
+}
+
+func (_c *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call) RunAndReturn(run func(context.Context, string, string, int64, int64) ([]model.WordMeaning, error)) *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call {
 	_c.Call.Return(run)
 	return _c
 }
