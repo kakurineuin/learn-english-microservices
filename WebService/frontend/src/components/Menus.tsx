@@ -48,6 +48,9 @@ function Menus() {
       position: 'top',
       variant: 'subtle',
     });
+
+    // 轉向首頁
+    navigate('/');
   };
 
   return (
