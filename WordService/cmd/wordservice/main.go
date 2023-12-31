@@ -18,7 +18,7 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/transport"
 )
 
-const PORT = ":8090"
+const PORT = ":8091"
 
 func main() {
 	logger := log.NewJSONLogger(os.Stdout)

@@ -96,13 +96,13 @@ export const sessionSlice = createSlice({
 });
 
 function setUser(state: any, action: PayloadAction<User>) {
-  const token = action.payload.token;
-  localStorage.setItem('token', token);
-  const decoded = jwtDecode<MyJwtPayload>(token);
+  const myToken = action.payload.token;
+  localStorage.setItem('token', myToken);
+  const decoded = jwtDecode<MyJwtPayload>(myToken);
   state.user = {
     name: decoded.username,
     role: decoded.role,
-    token,
+    token: myToken,
   };
 }
 

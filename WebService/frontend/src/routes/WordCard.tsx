@@ -6,13 +6,12 @@ import {
   UnorderedList,
   useToast,
 } from '@chakra-ui/react';
-import _ from 'lodash';
 import axios, { AxiosError } from 'axios';
+import { useEffect, useState } from 'react';
 import PageHeading from '../components/PageHeading';
 import FlippableCardList from '../components/word/card/FlippableCardList';
 import { WordMeaning } from '../models/WordMeaning';
 import ShowText from '../components/ShowText';
-import { useEffect, useState } from 'react';
 import { useAppDispatch } from '../store/hooks';
 import { loaderActions } from '../store/slices/loaderSlice';
 

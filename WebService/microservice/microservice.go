@@ -9,15 +9,32 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/web-service/pb"
 )
 
-const WORD_SERVER_ADDRESS = "localhost:8090"
+const (
+	EXAM_SERVER_ADDRESS = "localhost:8090"
+	WORD_SERVER_ADDRESS = "localhost:8091"
+)
 
 var (
 	connections       = []*grpc.ClientConn{}
+	examServiceClient pb.ExamServiceClient
 	wordServiceClient pb.WordServiceClient
 )
 
 func Connect() error {
+	// ExamService
 	conn, err := grpc.Dial(
+		EXAM_SERVER_ADDRESS,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return err
+	}
+
+	connections = append(connections, conn)
+	examServiceClient = pb.NewExamServiceClient(conn)
+
+	// WordService
+	conn, err = grpc.Dial(
 		WORD_SERVER_ADDRESS,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
@@ -39,6 +56,37 @@ func Disconnect() error {
 	}
 
 	return nil
+}
+
+func CreateExam(
+	topic,
+	description string,
+	isPublic bool,
+	userId string,
+) (*pb.CreateExamResponse, error) {
+	return examServiceClient.CreateExam(
+		context.Background(),
+		&pb.CreateExamRequest{
+			Topic:       topic,
+			Description: description,
+			IsPublic:    isPublic,
+			UserId:      userId,
+		},
+	)
+}
+
+func FindExams(
+	pageIndex, pageSize int64,
+	userId string,
+) (*pb.FindExamsResponse, error) {
+	return examServiceClient.FindExams(
+		context.Background(),
+		&pb.FindExamsRequest{
+			PageIndex: pageIndex,
+			PageSize:  pageSize,
+			UserId:    userId,
+		},
+	)
 }
 
 func FindWordByDictionary(word, userId string) (*pb.FindWordByDictionaryResponse, error) {

@@ -2,8 +2,8 @@ import { Provider } from 'react-redux';
 import { ChakraProvider } from '@chakra-ui/react';
 import axios from 'axios';
 import { HotkeysProvider } from 'react-hotkeys-hook';
-import { setupStore } from './store/store';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { setupStore } from './store/store';
 import theme from './themes/theme';
 import Root from './routes/Root';
 import Home from './routes/Home';
@@ -12,6 +12,7 @@ import SignIn from './routes/SignIn';
 import WordManager from './routes/WordManager';
 import FavoriteWordMeaningManager from './routes/FavoriteWordMeaningManager';
 import WordCard from './routes/WordCard';
+import ExamManager from './routes/ExamManager';
 
 axios.defaults.baseURL = `${import.meta.env.VITE_BACKEND_URL}/api`;
 axios.defaults.withCredentials = true;
@@ -22,14 +23,12 @@ axios.interceptors.request.use(
     const token = localStorage.getItem('token');
 
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(error),
 );
 
 function App() {
@@ -50,6 +49,10 @@ function App() {
         {
           path: '/signin',
           element: <SignIn />,
+        },
+        {
+          path: '/restricted/exam',
+          element: <ExamManager />,
         },
         {
           path: '/restricted/word',

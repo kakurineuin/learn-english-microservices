@@ -5,18 +5,18 @@ import {
 } from '@reduxjs/toolkit';
 import { loaderReducer } from './slices/loaderSlice';
 import { sessionReducer } from './slices/sessionSlice';
-// import { examManagerReducer } from './slices/examManagerSlice';
+import { examManagerReducer } from './slices/examManagerSlice';
 // import { questionManagerReducer } from './slices/questionManagerSlice';
-// import { askFormReducer } from './slices/askFormSlice';
+import { askFormReducer } from './slices/askFormSlice';
 // import { examRecordManagerReducer } from './slices/examRecordManagerSlice';
 
 // Create the root reducer independently to obtain the RootState type
 const rootReducer = combineReducers({
   loader: loaderReducer,
   session: sessionReducer,
-  // examManager: examManagerReducer,
+  examManager: examManagerReducer,
   // questionManager: questionManagerReducer,
-  // askForm: askFormReducer,
+  askForm: askFormReducer,
   // examRecordManager: examRecordManagerReducer,
 });
 

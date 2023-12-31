@@ -13,6 +13,7 @@ import (
 
 	"github.com/kakurineuin/learn-english-microservices/web-service/config"
 	"github.com/kakurineuin/learn-english-microservices/web-service/database"
+	"github.com/kakurineuin/learn-english-microservices/web-service/handler/exam"
 	"github.com/kakurineuin/learn-english-microservices/web-service/handler/user"
 	"github.com/kakurineuin/learn-english-microservices/web-service/handler/word"
 	"github.com/kakurineuin/learn-english-microservices/web-service/microservice"
@@ -96,6 +97,9 @@ func setupAPIHandlers(e *echo.Echo) {
 		SigningKey: []byte(config.EnvJWTSecretKey()),
 	}
 	restrictedApi.Use(echojwt.WithConfig(config))
+
+	restrictedApi.GET("/exam", exam.FindExams)
+	restrictedApi.POST("/exam", exam.CreateExam)
 
 	restrictedApi.GET("/word/:word", word.FindWordMeanings)
 	restrictedApi.POST("/word/favorite", word.CreateFavoriteWordMeaning)

@@ -84,7 +84,7 @@ function PaginationTable({
     } else {
       fetchData(pageIndex, pageSize);
     }
-  }, [fetchData, pageIndex, pageSize, refreshId]);
+  }, [fetchData, pageIndex, pageSize, refreshId, gotoPage, prevRefreshId]);
 
   return (
     <>

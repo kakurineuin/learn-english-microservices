@@ -1,11 +1,9 @@
 function Loader() {
   return (
-    <>
-      <div>
-        <div className="overlay" />
-        <div className="loader" />
-      </div>
-    </>
+    <div>
+      <div className="overlay" />
+      <div className="loader" />
+    </div>
   );
 }
 

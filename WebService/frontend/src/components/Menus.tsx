@@ -21,9 +21,9 @@ function Menus() {
   const homeClickHandler = () => {
     navigate('/');
   };
-  // const examClickHandler = () => {
-  //   navigate('/restricted/exam');
-  // };
+  const examClickHandler = () => {
+    navigate('/restricted/exam');
+  };
   const wordClickHandler = () => {
     navigate('/restricted/word');
   };
@@ -107,18 +107,15 @@ function Menus() {
           首頁
         </Button>
 
-        {
-          // TODO: 補上
-          // <Button
-          //   colorScheme="teal"
-          //   variant="outline"
-          //   mr="2"
-          //   isDisabled={!username}
-          //   onClick={examClickHandler}
-          // >
-          //   測驗管理 {!username && '(請先登入)'}
-          // </Button>
-        }
+        <Button
+          colorScheme="teal"
+          variant="outline"
+          mr="2"
+          isDisabled={!user}
+          onClick={examClickHandler}
+        >
+          測驗管理 {!user && '(請先登入)'}
+        </Button>
 
         <Button
           colorScheme="teal"
