@@ -89,6 +89,25 @@ func FindExams(
 	)
 }
 
+func UpdateExam(
+	examId,
+	topic,
+	description string,
+	isPublic bool,
+	userId string,
+) (*pb.UpdateExamResponse, error) {
+	return examServiceClient.UpdateExam(
+		context.Background(),
+		&pb.UpdateExamRequest{
+			ExamId:      examId,
+			Topic:       topic,
+			Description: description,
+			IsPublic:    isPublic,
+			UserId:      userId,
+		},
+	)
+}
+
 func FindWordByDictionary(word, userId string) (*pb.FindWordByDictionaryResponse, error) {
 	return wordServiceClient.FindWordByDictionary(
 		context.Background(),

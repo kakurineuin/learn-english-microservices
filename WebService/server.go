@@ -100,6 +100,7 @@ func setupAPIHandlers(e *echo.Echo) {
 
 	restrictedApi.GET("/exam", exam.FindExams)
 	restrictedApi.POST("/exam", exam.CreateExam)
+	restrictedApi.PATCH("/exam", exam.UpdateExam)
 
 	restrictedApi.GET("/word/:word", word.FindWordMeanings)
 	restrictedApi.POST("/word/favorite", word.CreateFavoriteWordMeaning)

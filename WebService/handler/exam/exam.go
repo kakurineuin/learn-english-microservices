@@ -23,7 +23,7 @@ func CreateExam(c echo.Context) error {
 	requestBody := new(RequestBody)
 	if err := c.Bind(&requestBody); err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONError(c, http.StatusBadRequest)
+		return util.SendJSONBadRequest(c)
 	}
 
 	userId := util.GetJWTClaims(c).UserId
@@ -36,7 +36,7 @@ func CreateExam(c echo.Context) error {
 	)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONError(c, http.StatusInternalServerError)
+		return util.SendJSONInternalServerError(c)
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
@@ -58,7 +58,7 @@ func FindExams(c echo.Context) error {
 		BindError() // returns first binding error
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONError(c, http.StatusBadRequest)
+		return util.SendJSONBadRequest(c)
 	}
 
 	userId := util.GetJWTClaims(c).UserId
@@ -70,7 +70,7 @@ func FindExams(c echo.Context) error {
 	)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONError(c, http.StatusInternalServerError)
+		return util.SendJSONInternalServerError(c)
 	}
 
 	result, err := protojson.MarshalOptions{
@@ -78,8 +78,43 @@ func FindExams(c echo.Context) error {
 	}.Marshal(microserviceResponse)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONError(c, http.StatusInternalServerError)
+		return util.SendJSONInternalServerError(c)
 	}
 
 	return c.JSONBlob(http.StatusOK, result)
+}
+
+func UpdateExam(c echo.Context) error {
+	type RequestBody struct {
+		ExamId      string `json:"_id"`
+		Topic       string `json:"topic"`
+		Description string `json:"description"`
+		IsPublic    bool   `json:"isPublic"`
+	}
+
+	errorMessage := "UpdateExam failed! error: %w"
+
+	requestBody := new(RequestBody)
+	if err := c.Bind(&requestBody); err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONBadRequest(c)
+	}
+
+	userId := util.GetJWTClaims(c).UserId
+
+	microserviceResponse, err := microservice.UpdateExam(
+		requestBody.ExamId,
+		requestBody.Topic,
+		requestBody.Description,
+		requestBody.IsPublic,
+		userId,
+	)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONInternalServerError(c)
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"examId": microserviceResponse.ExamId,
+	})
 }

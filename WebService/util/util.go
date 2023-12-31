@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -48,8 +49,14 @@ func GetJWTToken(userId, username, role string) (string, error) {
 	return signedToken, nil
 }
 
-func SendJSONError(c echo.Context, httpErrorStatus int) error {
-	return c.JSON(httpErrorStatus, echo.Map{
+func SendJSONBadRequest(c echo.Context) error {
+	return c.JSON(http.StatusBadRequest, echo.Map{
+		"message": "請求參數錯誤！",
+	})
+}
+
+func SendJSONInternalServerError(c echo.Context) error {
+	return c.JSON(http.StatusInternalServerError, echo.Map{
 		"message": "系統發生錯誤！",
 	})
 }

@@ -21,7 +21,7 @@ func FindWordMeanings(c echo.Context) error {
 	microserviceResponse, err := microservice.FindWordByDictionary(word, userId)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONError(c, http.StatusInternalServerError)
+		return util.SendJSONInternalServerError(c)
 	}
 
 	result, err := protojson.MarshalOptions{
@@ -29,7 +29,7 @@ func FindWordMeanings(c echo.Context) error {
 	}.Marshal(microserviceResponse)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONError(c, http.StatusInternalServerError)
+		return util.SendJSONInternalServerError(c)
 	}
 
 	return c.JSONBlob(http.StatusOK, result)
@@ -45,7 +45,7 @@ func CreateFavoriteWordMeaning(c echo.Context) error {
 	requestBody := new(RequestBody)
 	if err := c.Bind(&requestBody); err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONError(c, http.StatusBadRequest)
+		return util.SendJSONBadRequest(c)
 	}
 
 	userId := util.GetJWTClaims(c).UserId
@@ -57,7 +57,7 @@ func CreateFavoriteWordMeaning(c echo.Context) error {
 	)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONError(c, http.StatusInternalServerError)
+		return util.SendJSONInternalServerError(c)
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
@@ -77,7 +77,7 @@ func DeleteFavoriteWordMeaning(c echo.Context) error {
 	)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONError(c, http.StatusInternalServerError)
+		return util.SendJSONInternalServerError(c)
 	}
 
 	return c.NoContent(http.StatusOK)
@@ -99,7 +99,7 @@ func FindFavoriteWordMeanings(c echo.Context) error {
 		BindError() // returns first binding error
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONError(c, http.StatusBadRequest)
+		return util.SendJSONBadRequest(c)
 	}
 
 	userId := util.GetJWTClaims(c).UserId
@@ -112,7 +112,7 @@ func FindFavoriteWordMeanings(c echo.Context) error {
 	)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONError(c, http.StatusInternalServerError)
+		return util.SendJSONInternalServerError(c)
 	}
 
 	result, err := protojson.MarshalOptions{
@@ -120,7 +120,7 @@ func FindFavoriteWordMeanings(c echo.Context) error {
 	}.Marshal(microserviceResponse)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONError(c, http.StatusInternalServerError)
+		return util.SendJSONInternalServerError(c)
 	}
 
 	return c.JSONBlob(http.StatusOK, result)
@@ -138,7 +138,7 @@ func FindRandomFavoriteWordMeanings(c echo.Context) error {
 	)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONError(c, http.StatusInternalServerError)
+		return util.SendJSONInternalServerError(c)
 	}
 
 	result, err := protojson.MarshalOptions{
@@ -146,7 +146,7 @@ func FindRandomFavoriteWordMeanings(c echo.Context) error {
 	}.Marshal(microserviceResponse)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONError(c, http.StatusInternalServerError)
+		return util.SendJSONInternalServerError(c)
 	}
 
 	return c.JSONBlob(http.StatusOK, result)

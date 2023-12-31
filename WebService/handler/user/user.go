@@ -7,6 +7,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 
@@ -26,9 +27,7 @@ func CreateUser(c echo.Context) error {
 	requestBody := new(RequestBody)
 	if err := c.Bind(&requestBody); err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"message": "請求參數不正確",
-		})
+		return util.SendJSONBadRequest(c)
 	}
 
 	username := requestBody.Username
@@ -44,18 +43,14 @@ func CreateUser(c echo.Context) error {
 		})
 	} else if err != mongo.ErrNoDocuments {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return c.JSON(http.StatusInternalServerError, echo.Map{
-			"message": "系統發生錯誤",
-		})
+		return util.SendJSONInternalServerError(c)
 	}
 
 	// Password Hashing
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return c.JSON(http.StatusInternalServerError, echo.Map{
-			"message": "系統發生錯誤",
-		})
+		return util.SendJSONInternalServerError(c)
 	}
 
 	encryptedPassword := string(bytes)
@@ -64,21 +59,18 @@ func CreateUser(c echo.Context) error {
 		Password: encryptedPassword,
 		Role:     "user",
 	}
-	_, err = usersCollection.InsertOne(context.TODO(), user)
+	result, err := usersCollection.InsertOne(context.TODO(), user)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return c.JSON(http.StatusInternalServerError, echo.Map{
-			"message": "系統發生錯誤",
-		})
+		return util.SendJSONInternalServerError(c)
 	}
+	userId := result.InsertedID.(primitive.ObjectID).Hex()
 
 	// 產生 JWT
-	token, err := util.GetJWTToken(user.Id.Hex(), username, user.Role)
+	token, err := util.GetJWTToken(userId, username, user.Role)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return c.JSON(http.StatusInternalServerError, echo.Map{
-			"message": "系統發生錯誤",
-		})
+		return util.SendJSONInternalServerError(c)
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
@@ -97,9 +89,7 @@ func Login(c echo.Context) error {
 	requestBody := new(RequestBody)
 	if err := c.Bind(&requestBody); err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return c.JSON(http.StatusBadRequest, echo.Map{
-			"message": "請求參數不正確",
-		})
+		return util.SendJSONBadRequest(c)
 	}
 
 	username := requestBody.Username
@@ -120,9 +110,7 @@ func Login(c echo.Context) error {
 
 		// DB error
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return c.JSON(http.StatusInternalServerError, echo.Map{
-			"message": "系統發生錯誤",
-		})
+		return util.SendJSONInternalServerError(c)
 	}
 
 	// 檢查密碼
@@ -137,9 +125,7 @@ func Login(c echo.Context) error {
 	token, err := util.GetJWTToken(user.Id.Hex(), username, user.Role)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return c.JSON(http.StatusInternalServerError, echo.Map{
-			"message": "系統發生錯誤",
-		})
+		return util.SendJSONInternalServerError(c)
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
