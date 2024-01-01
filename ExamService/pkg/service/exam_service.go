@@ -20,8 +20,8 @@ type ExamInfo struct {
 	Topic         string
 	Description   string
 	IsPublic      bool
-	QuestionCount int64
-	RecordCount   int64
+	QuestionCount int32
+	RecordCount   int32
 }
 
 type ExamService interface {
@@ -29,26 +29,26 @@ type ExamService interface {
 	CreateExam(topic, description string, isPublic bool, userId string) (string, error)
 	UpdateExam(examId, topic, description string, isPublic bool, userId string) (string, error)
 	FindExams(
-		pageIndex, pageSize int64,
+		pageIndex, pageSize int32,
 		userId string,
-	) (total, pageCount int64, exams []model.Exam, err error)
+	) (total, pageCount int32, exams []model.Exam, err error)
 	DeleteExam(examId, userId string) error
 
 	// Question
 	CreateQuestion(examId, ask string, answers []string, userId string) (string, error)
 	UpdateQuestion(questionId, ask string, answers []string, userId string) (string, error)
 	FindQuestions(
-		pageIndex, pageSize int64,
+		pageIndex, pageSize int32,
 		examId, userId string,
-	) (total, pageCount int64, questions []model.Question, err error)
+	) (total, pageCount int32, questions []model.Question, err error)
 	DeleteQuestion(questionId, userId string) error
 
 	// ExamRecord
-	CreateExamRecord(examId string, score int64, wrongQuestionIds []string, userId string) error
+	CreateExamRecord(examId string, score int32, wrongQuestionIds []string, userId string) error
 	FindExamRecords(
-		pageIndex, pageSize int64,
+		pageIndex, pageSize int32,
 		examId, userId string,
-	) (total, pageCount int64, examRecords []model.ExamRecord, err error)
+	) (total, pageCount int32, examRecords []model.ExamRecord, err error)
 
 	// ExamInfo
 	FindExamInfos(userId string, isPublic bool) (examInfos []ExamInfo, err error)
@@ -135,9 +135,9 @@ func (examService examService) UpdateExam(
 }
 
 func (examService examService) FindExams(
-	pageIndex, pageSize int64,
+	pageIndex, pageSize int32,
 	userId string,
-) (total, pageCount int64, exams []model.Exam, err error) {
+) (total, pageCount int32, exams []model.Exam, err error) {
 	logger := examService.logger
 	errorLogger := examService.errorLogger
 	errorMessage := "FindExams failed: %w"
@@ -158,7 +158,7 @@ func (examService examService) FindExams(
 	}
 
 	// PageCount
-	pageCount = int64(math.Ceil(float64(total) / float64(pageSize)))
+	pageCount = int32(math.Ceil(float64(total) / float64(pageSize)))
 	logger.Log("total", total, "pageCount", pageCount, "exams size", len(exams))
 	return
 }
@@ -322,9 +322,9 @@ func (examService examService) UpdateQuestion(
 }
 
 func (examService examService) FindQuestions(
-	pageIndex, pageSize int64,
+	pageIndex, pageSize int32,
 	examId, userId string,
-) (total, pageCount int64, questions []model.Question, err error) {
+) (total, pageCount int32, questions []model.Question, err error) {
 	logger := examService.logger
 	errorLogger := examService.errorLogger
 	errorMessage := "FindQuestions failed: %w"
@@ -366,7 +366,7 @@ func (examService examService) FindQuestions(
 	}
 
 	// PageCount
-	pageCount = int64(math.Ceil(float64(total) / float64(pageSize)))
+	pageCount = int32(math.Ceil(float64(total) / float64(pageSize)))
 	logger.Log("total", total, "pageCount", pageCount, "questions size", len(questions))
 	return
 }
@@ -422,7 +422,7 @@ func (examService examService) DeleteQuestion(
 }
 
 func (examService examService) CreateExamRecord(
-	examId string, score int64, wrongQuestionIds []string, userId string,
+	examId string, score int32, wrongQuestionIds []string, userId string,
 ) error {
 	errorLogger := examService.errorLogger
 	errorMessage := "CreateExamRecord failed: %w"
@@ -483,24 +483,25 @@ func (examService examService) CreateExamRecord(
 }
 
 func (examService examService) FindExamRecords(
-	pageIndex, pageSize int64,
+	pageIndex, pageSize int32,
 	examId, userId string,
-) (total, pageCount int64, examRecords []model.ExamRecord, err error) {
+) (total, pageCount int32, examRecords []model.ExamRecord, err error) {
 	logger := examService.logger
 	errorLogger := examService.errorLogger
 	errorMessage := "FindExamRecords failed: %w"
 
 	databaseRepository := examService.databaseRepository
 	skip := pageSize * pageIndex
+	limit := pageSize
 	examRecords, err = databaseRepository.FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc(
-		context.TODO(), examId, userId, skip, pageSize)
+		context.TODO(), examId, userId, skip, limit)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return 0, 0, nil, fmt.Errorf(errorMessage, err)
 	}
 
 	// Total
-	total, err = databaseRepository.CountExamRecordsByExamIdAndUserId(
+	count, err := databaseRepository.CountExamRecordsByExamIdAndUserId(
 		context.TODO(),
 		examId,
 		userId,
@@ -509,9 +510,10 @@ func (examService examService) FindExamRecords(
 		errorLogger.Log("err", err)
 		return 0, 0, nil, fmt.Errorf(errorMessage, err)
 	}
+	total = int32(count)
 
 	// PageCount
-	pageCount = int64(math.Ceil(float64(total) / float64(pageSize)))
+	pageCount = int32(math.Ceil(float64(total) / float64(pageSize)))
 	logger.Log("total", total, "pageCount", pageCount, "examRecords size", len(examRecords))
 	return
 }

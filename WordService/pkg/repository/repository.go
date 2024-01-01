@@ -38,14 +38,14 @@ type DatabaseRepository interface {
 	FindFavoriteWordMeaningsByUserIdAndWord(
 		ctx context.Context,
 		userId, word string,
-		skip, limit int64,
+		skip, limit int32,
 	) (wordMeanings []model.WordMeaning, err error)
 	CountFavoriteWordMeaningsByUserIdAndWord(
 		ctx context.Context,
 		userId, word string,
-	) (count int64, err error)
+	) (count int32, err error)
 	DeleteFavoriteWordMeaningById(
 		ctx context.Context,
 		favoriteWordMeaningId string,
-	) (deletedCount int64, err error)
+	) (deletedCount int32, err error)
 }

@@ -245,7 +245,7 @@ func (s *MyTestSuite) TestDeleteExamById() {
 
 	deletedCount, err := s.repo.DeleteExamById(ctx, examId)
 	s.Nil(err)
-	s.Equal(int64(1), deletedCount)
+	s.Equal(int32(1), deletedCount)
 }
 
 func (s *MyTestSuite) TestCountExamsByUserId() {
@@ -269,7 +269,7 @@ func (s *MyTestSuite) TestCountExamsByUserId() {
 
 	count, err := s.repo.CountExamsByUserId(ctx, userId)
 	s.Nil(err)
-	s.Equal(int64(size), count)
+	s.Equal(int32(size), count)
 }
 
 func (s *MyTestSuite) TestCreateQuestion() {
@@ -366,7 +366,7 @@ func (s *MyTestSuite) TestDeleteQuestionById() {
 
 	deletedCount, err := s.repo.DeleteQuestionById(ctx, questionId)
 	s.Nil(err)
-	s.Equal(int64(1), deletedCount)
+	s.Equal(int32(1), deletedCount)
 }
 
 func (s *MyTestSuite) TestDeleteQuestionsByExamId() {
@@ -389,7 +389,7 @@ func (s *MyTestSuite) TestDeleteQuestionsByExamId() {
 
 	deletedCount, err := s.repo.DeleteQuestionsByExamId(ctx, examId)
 	s.Nil(err)
-	s.Equal(int64(size), deletedCount)
+	s.Equal(int32(size), deletedCount)
 }
 
 func (s *MyTestSuite) TestCountQuestionsByExamId() {
@@ -413,7 +413,7 @@ func (s *MyTestSuite) TestCountQuestionsByExamId() {
 
 	count, err := s.repo.CountQuestionsByExamId(ctx, examId)
 	s.Nil(err)
-	s.Equal(int64(size), count)
+	s.Equal(int32(size), count)
 }
 
 func (s *MyTestSuite) TestDeleteAnswerWrongsByQuestionId() {
@@ -437,7 +437,7 @@ func (s *MyTestSuite) TestDeleteAnswerWrongsByQuestionId() {
 
 	deletedCount, err := s.repo.DeleteAnswerWrongsByQuestionId(ctx, questionId)
 	s.Nil(err)
-	s.Equal(int64(size), deletedCount)
+	s.Equal(int32(size), deletedCount)
 }
 
 func (s *MyTestSuite) TestDeleteAnswerWrongsByExamId() {
@@ -460,7 +460,7 @@ func (s *MyTestSuite) TestDeleteAnswerWrongsByExamId() {
 
 	deletedCount, err := s.repo.DeleteAnswerWrongsByExamId(ctx, examId)
 	s.Nil(err)
-	s.Equal(int64(size), deletedCount)
+	s.Equal(int32(size), deletedCount)
 }
 
 func (s *MyTestSuite) TestUpsertAnswerWrongByTimesPlusOne() {
@@ -477,8 +477,8 @@ func (s *MyTestSuite) TestUpsertAnswerWrongByTimesPlusOne() {
 		userId,
 	)
 	s.Nil(err)
-	s.Equal(int64(0), modifiedCount)
-	s.Equal(int64(1), upsertedCount)
+	s.Equal(int32(0), modifiedCount)
+	s.Equal(int32(1), upsertedCount)
 
 	modifiedCount, upsertedCount, err = s.repo.UpsertAnswerWrongByTimesPlusOne(
 		ctx,
@@ -487,8 +487,8 @@ func (s *MyTestSuite) TestUpsertAnswerWrongByTimesPlusOne() {
 		userId,
 	)
 	s.Nil(err)
-	s.Equal(int64(1), modifiedCount)
-	s.Equal(int64(0), upsertedCount)
+	s.Equal(int32(1), modifiedCount)
+	s.Equal(int32(0), upsertedCount)
 }
 
 func (s *MyTestSuite) TestDeleteExamRecordsByExamId() {
@@ -510,7 +510,7 @@ func (s *MyTestSuite) TestDeleteExamRecordsByExamId() {
 
 	deletedCount, err := s.repo.DeleteExamRecordsByExamId(ctx, examId)
 	s.Nil(err)
-	s.Equal(int64(size), deletedCount)
+	s.Equal(int32(size), deletedCount)
 }
 
 func (s *MyTestSuite) TestCreateExamRecord() {
@@ -573,7 +573,7 @@ func (s *MyTestSuite) TestCountExamRecordsByExamIdAndUserId() {
 
 	count, err := s.repo.CountExamRecordsByExamIdAndUserId(ctx, examId, userId)
 	s.Nil(err)
-	s.Equal(int64(size), count)
+	s.Equal(int32(size), count)
 }
 
 // testcontainers mongodb 不支援交易功能，所以註解此測試

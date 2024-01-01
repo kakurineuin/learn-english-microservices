@@ -69,22 +69,22 @@ func (_c *MockDatabaseRepository_ConnectDB_Call) RunAndReturn(run func(string) e
 }
 
 // CountFavoriteWordMeaningsByUserIdAndWord provides a mock function with given fields: ctx, userId, word
-func (_m *MockDatabaseRepository) CountFavoriteWordMeaningsByUserIdAndWord(ctx context.Context, userId string, word string) (int64, error) {
+func (_m *MockDatabaseRepository) CountFavoriteWordMeaningsByUserIdAndWord(ctx context.Context, userId string, word string) (int32, error) {
 	ret := _m.Called(ctx, userId, word)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CountFavoriteWordMeaningsByUserIdAndWord")
 	}
 
-	var r0 int64
+	var r0 int32
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) (int64, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (int32, error)); ok {
 		return rf(ctx, userId, word)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) int64); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) int32); ok {
 		r0 = rf(ctx, userId, word)
 	} else {
-		r0 = ret.Get(0).(int64)
+		r0 = ret.Get(0).(int32)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
@@ -116,12 +116,12 @@ func (_c *MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call) 
 	return _c
 }
 
-func (_c *MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call) Return(count int64, err error) *MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call {
+func (_c *MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call) Return(count int32, err error) *MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call {
 	_c.Call.Return(count, err)
 	return _c
 }
 
-func (_c *MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call) RunAndReturn(run func(context.Context, string, string) (int64, error)) *MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call {
+func (_c *MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call) RunAndReturn(run func(context.Context, string, string) (int32, error)) *MockDatabaseRepository_CountFavoriteWordMeaningsByUserIdAndWord_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -244,22 +244,22 @@ func (_c *MockDatabaseRepository_CreateWordMeanings_Call) RunAndReturn(run func(
 }
 
 // DeleteFavoriteWordMeaningById provides a mock function with given fields: ctx, favoriteWordMeaningId
-func (_m *MockDatabaseRepository) DeleteFavoriteWordMeaningById(ctx context.Context, favoriteWordMeaningId string) (int64, error) {
+func (_m *MockDatabaseRepository) DeleteFavoriteWordMeaningById(ctx context.Context, favoriteWordMeaningId string) (int32, error) {
 	ret := _m.Called(ctx, favoriteWordMeaningId)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteFavoriteWordMeaningById")
 	}
 
-	var r0 int64
+	var r0 int32
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (int64, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) (int32, error)); ok {
 		return rf(ctx, favoriteWordMeaningId)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) int64); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) int32); ok {
 		r0 = rf(ctx, favoriteWordMeaningId)
 	} else {
-		r0 = ret.Get(0).(int64)
+		r0 = ret.Get(0).(int32)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
@@ -290,12 +290,12 @@ func (_c *MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call) Run(run fun
 	return _c
 }
 
-func (_c *MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call) Return(deletedCount int64, err error) *MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call {
+func (_c *MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call) Return(deletedCount int32, err error) *MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call {
 	_c.Call.Return(deletedCount, err)
 	return _c
 }
 
-func (_c *MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call) RunAndReturn(run func(context.Context, string) (int64, error)) *MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call {
+func (_c *MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call) RunAndReturn(run func(context.Context, string) (int32, error)) *MockDatabaseRepository_DeleteFavoriteWordMeaningById_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -346,7 +346,7 @@ func (_c *MockDatabaseRepository_DisconnectDB_Call) RunAndReturn(run func() erro
 }
 
 // FindFavoriteWordMeaningsByUserIdAndWord provides a mock function with given fields: ctx, userId, word, skip, limit
-func (_m *MockDatabaseRepository) FindFavoriteWordMeaningsByUserIdAndWord(ctx context.Context, userId string, word string, skip int64, limit int64) ([]model.WordMeaning, error) {
+func (_m *MockDatabaseRepository) FindFavoriteWordMeaningsByUserIdAndWord(ctx context.Context, userId string, word string, skip int32, limit int32) ([]model.WordMeaning, error) {
 	ret := _m.Called(ctx, userId, word, skip, limit)
 
 	if len(ret) == 0 {
@@ -355,10 +355,10 @@ func (_m *MockDatabaseRepository) FindFavoriteWordMeaningsByUserIdAndWord(ctx co
 
 	var r0 []model.WordMeaning
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, int64, int64) ([]model.WordMeaning, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, int32, int32) ([]model.WordMeaning, error)); ok {
 		return rf(ctx, userId, word, skip, limit)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, int64, int64) []model.WordMeaning); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, int32, int32) []model.WordMeaning); ok {
 		r0 = rf(ctx, userId, word, skip, limit)
 	} else {
 		if ret.Get(0) != nil {
@@ -366,7 +366,7 @@ func (_m *MockDatabaseRepository) FindFavoriteWordMeaningsByUserIdAndWord(ctx co
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string, string, int64, int64) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, int32, int32) error); ok {
 		r1 = rf(ctx, userId, word, skip, limit)
 	} else {
 		r1 = ret.Error(1)
@@ -384,15 +384,15 @@ type MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call struct 
 //   - ctx context.Context
 //   - userId string
 //   - word string
-//   - skip int64
-//   - limit int64
+//   - skip int32
+//   - limit int32
 func (_e *MockDatabaseRepository_Expecter) FindFavoriteWordMeaningsByUserIdAndWord(ctx interface{}, userId interface{}, word interface{}, skip interface{}, limit interface{}) *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call {
 	return &MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call{Call: _e.mock.On("FindFavoriteWordMeaningsByUserIdAndWord", ctx, userId, word, skip, limit)}
 }
 
-func (_c *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call) Run(run func(ctx context.Context, userId string, word string, skip int64, limit int64)) *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call {
+func (_c *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call) Run(run func(ctx context.Context, userId string, word string, skip int32, limit int32)) *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(int64), args[4].(int64))
+		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(int32), args[4].(int32))
 	})
 	return _c
 }
@@ -402,7 +402,7 @@ func (_c *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call) R
 	return _c
 }
 
-func (_c *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call) RunAndReturn(run func(context.Context, string, string, int64, int64) ([]model.WordMeaning, error)) *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call {
+func (_c *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call) RunAndReturn(run func(context.Context, string, string, int32, int32) ([]model.WordMeaning, error)) *MockDatabaseRepository_FindFavoriteWordMeaningsByUserIdAndWord_Call {
 	_c.Call.Return(run)
 	return _c
 }

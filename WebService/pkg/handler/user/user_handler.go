@@ -6,23 +6,38 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/kakurineuin/learn-english-microservices/web-service/database"
-	"github.com/kakurineuin/learn-english-microservices/web-service/model/user"
-	"github.com/kakurineuin/learn-english-microservices/web-service/util"
+	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/model"
+	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/repository"
+	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/util"
 )
 
-func CreateUser(c echo.Context) error {
+var utilGetJWTToken = util.GetJWTToken
+
+type UserHandler interface {
+	CreateUser(c echo.Context) error
+	Login(c echo.Context) error
+}
+
+type userHandler struct {
+	databaseRepository repository.DatabaseRepository
+}
+
+func NewHandler(databaseRepository repository.DatabaseRepository) UserHandler {
+	return &userHandler{
+		databaseRepository: databaseRepository,
+	}
+}
+
+func (handler userHandler) CreateUser(c echo.Context) error {
 	type RequestBody struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
 	}
 
 	errorMessage := "CreateUser failed! error: %w"
+	databaseRepository := handler.databaseRepository
 
 	requestBody := new(RequestBody)
 	if err := c.Bind(&requestBody); err != nil {
@@ -34,16 +49,15 @@ func CreateUser(c echo.Context) error {
 	password := requestBody.Password
 
 	// 檢查使用者名稱是否已被註冊
-	var findUser user.User
-	usersCollection := database.GetCollection("users")
-	err := usersCollection.FindOne(context.TODO(), bson.D{{"username", username}}).Decode(&findUser)
-	if err == nil {
+	findUser, err := databaseRepository.GetUserByUsername(context.TODO(), username)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONInternalServerError(c)
+	}
+	if findUser != nil {
 		return c.JSON(http.StatusConflict, echo.Map{
 			"message": "此使用者名稱已被註冊",
 		})
-	} else if err != mongo.ErrNoDocuments {
-		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONInternalServerError(c)
 	}
 
 	// Password Hashing
@@ -54,20 +68,19 @@ func CreateUser(c echo.Context) error {
 	}
 
 	encryptedPassword := string(bytes)
-	user := &user.User{
+	user := model.User{
 		Username: username,
 		Password: encryptedPassword,
 		Role:     "user",
 	}
-	result, err := usersCollection.InsertOne(context.TODO(), user)
+	userId, err := databaseRepository.CreateUser(context.TODO(), user)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONInternalServerError(c)
 	}
-	userId := result.InsertedID.(primitive.ObjectID).Hex()
 
 	// 產生 JWT
-	token, err := util.GetJWTToken(userId, username, user.Role)
+	token, err := utilGetJWTToken(userId, username, user.Role)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONInternalServerError(c)
@@ -78,13 +91,14 @@ func CreateUser(c echo.Context) error {
 	})
 }
 
-func Login(c echo.Context) error {
+func (handler userHandler) Login(c echo.Context) error {
 	type RequestBody struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
 	}
 
 	errorMessage := "Login failed! error: %w"
+	databaseRepository := handler.databaseRepository
 
 	requestBody := new(RequestBody)
 	if err := c.Bind(&requestBody); err != nil {
@@ -96,33 +110,36 @@ func Login(c echo.Context) error {
 	password := requestBody.Password
 
 	// Check user by MongoDB
-	var user user.User
-	usersCollection := database.GetCollection("users")
-	err := usersCollection.FindOne(context.TODO(), bson.D{{"username", username}}).Decode(&user)
+	user, err := databaseRepository.GetUserByUsername(context.TODO(), username)
 	if err != nil {
-
-		// 查無此帳號，表示使用者輸入錯誤的帳號
-		if err == mongo.ErrNoDocuments {
-			return c.JSON(http.StatusUnauthorized, echo.Map{
-				"message": "帳號錯誤",
-			})
-		}
-
-		// DB error
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONInternalServerError(c)
 	}
 
+	fmt.Printf("================ user: %v", user)
+	fmt.Println()
+
+	// 查無此帳號，表示使用者輸入錯誤的帳號
+	if user == nil {
+		fmt.Println("================ 1")
+		return c.JSON(http.StatusUnauthorized, echo.Map{
+			"message": "帳號錯誤",
+		})
+	}
+
+	fmt.Println("================ 2")
+
 	// 檢查密碼
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
+		fmt.Println("================ 3")
 		return c.JSON(http.StatusUnauthorized, echo.Map{
 			"message": "密碼錯誤",
 		})
 	}
 
 	// 產生 JWT
-	token, err := util.GetJWTToken(user.Id.Hex(), username, user.Role)
+	token, err := utilGetJWTToken(user.Id.Hex(), username, user.Role)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONInternalServerError(c)

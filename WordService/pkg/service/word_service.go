@@ -27,11 +27,11 @@ type WordService interface {
 		favoriteWordMeaningId, userId string,
 	) error
 	FindFavoriteWordMeanings(
-		pageIndex, pageSize int64,
+		pageIndex, pageSize int32,
 		userId, word string,
-	) (total, pageCount int64, favoriteWordMeanings []model.WordMeaning, err error)
+	) (total, pageCount int32, favoriteWordMeanings []model.WordMeaning, err error)
 	FindRandomFavoriteWordMeanings(
-		userId string, size int64,
+		userId string, size int32,
 	) (wordMeanings []model.WordMeaning, err error)
 }
 
@@ -180,9 +180,9 @@ func (wordService wordService) DeleteFavoriteWordMeaning(
 }
 
 func (wordService wordService) FindFavoriteWordMeanings(
-	pageIndex, pageSize int64,
+	pageIndex, pageSize int32,
 	userId, word string,
-) (total, pageCount int64, favoriteWordMeanings []model.WordMeaning, err error) {
+) (total, pageCount int32, favoriteWordMeanings []model.WordMeaning, err error) {
 	errorLogger := wordService.errorLogger
 	errorMessage := "FindFavoriteWordMeanings failed! error: %w"
 
@@ -212,12 +212,12 @@ func (wordService wordService) FindFavoriteWordMeanings(
 	}
 
 	// PageCount
-	pageCount = int64(math.Ceil(float64(total) / float64(pageSize)))
+	pageCount = int32(math.Ceil(float64(total) / float64(pageSize)))
 	return total, pageCount, favoriteWordMeanings, nil
 }
 
 func (wordService wordService) FindRandomFavoriteWordMeanings(
-	userId string, size int64,
+	userId string, size int32,
 ) (wordMeanings []model.WordMeaning, err error) {
 	errorLogger := wordService.errorLogger
 	errorMessage := "FindRandomFavoriteWordMeanings failed! error: %w"
@@ -238,9 +238,9 @@ func (wordService wordService) FindRandomFavoriteWordMeanings(
 		return []model.WordMeaning{}, nil
 	}
 
-	indexes := []int64{}
+	indexes := []int32{}
 
-	for i := int64(0); i < total; i++ {
+	for i := int32(0); i < total; i++ {
 		indexes = append(indexes, i)
 	}
 
@@ -252,7 +252,7 @@ func (wordService wordService) FindRandomFavoriteWordMeanings(
 
 	maxQueryTotal := min(total, size)
 
-	for i := int64(0); i < maxQueryTotal; i++ {
+	for i := int32(0); i < maxQueryTotal; i++ {
 		findWordMeanings, err := databaseRepository.FindFavoriteWordMeaningsByUserIdAndWord(
 			context.TODO(),
 			userId,

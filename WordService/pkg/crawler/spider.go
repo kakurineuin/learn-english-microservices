@@ -31,7 +31,7 @@ func (mySpider spider) FindWordMeaningsFromDictionary(
 	wordMeangins := []model.WordMeaning{}
 
 	// 排序用的編號
-	var orderByNo int64 = 0
+	var orderByNo int32 = 0
 
 	c := colly.NewCollector(
 		colly.AllowedDomains(LONGMAN_DICTIONARY_DOMAIN),

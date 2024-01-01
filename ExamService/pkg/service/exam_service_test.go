@@ -15,11 +15,6 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/repository"
 )
 
-const (
-	EXAM_ID     = "6585ebdb460ab3291a0e555f"
-	QUESTION_ID = "6585fc6430ca10723a6453b8"
-)
-
 type MyTestSuite struct {
 	suite.Suite
 	examService            examService
@@ -42,13 +37,11 @@ func (s *MyTestSuite) SetupSuite() {
 		"caller",
 		gokitlog.DefaultCaller,
 	)
-	mockDatabaseRepository := repository.NewMockDatabaseRepository(s.T())
 	s.examService = examService{
 		logger:             logger,
 		errorLogger:        level.Error(logger),
-		databaseRepository: mockDatabaseRepository,
+		databaseRepository: nil,
 	}
-	s.mockDatabaseRepository = mockDatabaseRepository
 }
 
 // run once, after test suite methods
@@ -59,6 +52,11 @@ func (s *MyTestSuite) TearDownSuite() {
 // run before each test
 func (s *MyTestSuite) SetupTest() {
 	log.Println("SetupTest()")
+
+	// Reset mock，避免在不同測試方法之間互相影響
+	mockDatabaseRepository := repository.NewMockDatabaseRepository(s.T())
+	s.examService.databaseRepository = mockDatabaseRepository
+	s.mockDatabaseRepository = mockDatabaseRepository
 }
 
 // run after each test
@@ -77,8 +75,12 @@ func (s *MyTestSuite) AfterTest(suiteName, testName string) {
 }
 
 func (s *MyTestSuite) TestCreateExam() {
-	s.mockDatabaseRepository.EXPECT().CreateExam(mock.Anything, mock.Anything).Return("exam01", nil)
+	// Setup
+	s.mockDatabaseRepository.EXPECT().
+		CreateExam(mock.Anything, mock.Anything).
+		Return("exam01", nil)
 
+	// Test
 	examId, err := s.examService.CreateExam(
 		"topic01",
 		"desc01",
@@ -90,88 +92,119 @@ func (s *MyTestSuite) TestCreateExam() {
 }
 
 func (s *MyTestSuite) TestUpdateExam() {
+	// Setup
 	userId := "user01"
-	id, err := primitive.ObjectIDFromHex(EXAM_ID)
+	id := primitive.NewObjectID()
+	examId := id.Hex()
 
-	s.mockDatabaseRepository.EXPECT().GetExamById(mock.Anything, EXAM_ID).Return(&model.Exam{
-		Id:          id,
-		Topic:       "topic01",
-		Description: "desc01",
-		Tags:        []string{"t01"},
-		IsPublic:    true,
-		UserId:      userId,
-	}, nil)
-	s.mockDatabaseRepository.EXPECT().UpdateExam(mock.Anything, mock.Anything).Return(nil)
+	s.mockDatabaseRepository.EXPECT().
+		GetExamById(mock.Anything, examId).
+		Return(&model.Exam{
+			Id:          id,
+			Topic:       "topic01",
+			Description: "desc01",
+			Tags:        []string{"t01"},
+			IsPublic:    true,
+			UserId:      userId,
+		}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		UpdateExam(mock.Anything, mock.Anything).
+		Return(nil)
 
-	examId, err := s.examService.UpdateExam(
-		EXAM_ID,
+	// Test
+	resultExamId, err := s.examService.UpdateExam(
+		examId,
 		"topic02",
 		"desc02",
 		false,
 		userId,
 	)
 	s.Nil(err)
-	s.Equal(EXAM_ID, examId)
+	s.Equal(examId, resultExamId)
 }
 
 func (s *MyTestSuite) TestFindExams() {
+	// Setup
 	userId := "user01"
 
-	var pageIndex int64 = 0
-	var pageSize int64 = 10
-	s.mockDatabaseRepository.EXPECT().FindExamsByUserIdOrderByUpdateAtDesc(
-		mock.Anything,
-		userId,
-		pageIndex*pageSize,
-		pageSize,
-	).Return([]model.Exam{
-		{},
-		{},
-		{},
-	}, nil)
+	var pageIndex int32 = 0
+	var pageSize int32 = 10
+	s.mockDatabaseRepository.EXPECT().
+		FindExamsByUserIdOrderByUpdateAtDesc(
+			mock.Anything,
+			userId,
+			pageIndex*pageSize,
+			pageSize,
+		).
+		Return([]model.Exam{
+			{},
+			{},
+			{},
+		}, nil)
 
-	var expectedTotal int64 = 3
+	var expectedTotal int32 = 3
 	s.mockDatabaseRepository.EXPECT().
 		CountExamsByUserId(mock.Anything, userId).
 		Return(expectedTotal, nil)
 
+	// Test
 	total, pageCount, exams, err := s.examService.FindExams(pageIndex, pageSize, userId)
 	s.Nil(err)
 	s.Equal(expectedTotal, total)
-	s.Equal(int64(1), pageCount)
+	s.Equal(int32(1), pageCount)
 	s.Equal(3, len(exams))
 }
 
 func (s *MyTestSuite) TestDeleteExam() {
+	// Setup
 	userId := "user01"
 
-	id, err := primitive.ObjectIDFromHex(EXAM_ID)
-	s.Nil(err)
+	id := primitive.NewObjectID()
+	examId := id.Hex()
 
-	s.mockDatabaseRepository.EXPECT().GetExamById(mock.Anything, EXAM_ID).Return(&model.Exam{
-		Id:          id,
-		Topic:       "topic01",
-		Description: "desc01",
-		Tags:        []string{"t01"},
-		IsPublic:    true,
-		UserId:      userId,
-	}, nil)
-	s.mockDatabaseRepository.EXPECT().WithTransaction(mock.Anything).Return(nil, nil)
+	s.mockDatabaseRepository.EXPECT().
+		GetExamById(mock.Anything, examId).
+		Return(&model.Exam{
+			Id:          id,
+			Topic:       "topic01",
+			Description: "desc01",
+			Tags:        []string{"t01"},
+			IsPublic:    true,
+			UserId:      userId,
+		}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		WithTransaction(mock.Anything).
+		Return(nil, nil)
 
-	err = s.examService.DeleteExam(EXAM_ID, userId)
+	// Test
+	err := s.examService.DeleteExam(examId, userId)
 	s.Nil(err)
 }
 
 func (s *MyTestSuite) TestCreateQuestion() {
+	// Setup
 	userId := "user01"
 	expectedQuestionId := "q01"
+	id := primitive.NewObjectID()
+	examId := id.Hex()
 
+	s.mockDatabaseRepository.EXPECT().
+		GetExamById(mock.Anything, examId).
+		Return(&model.Exam{
+			Id:          id,
+			Topic:       "topic01",
+			Description: "desc01",
+			Tags:        []string{"t01"},
+			IsPublic:    true,
+			UserId:      userId,
+		}, nil)
 	s.mockDatabaseRepository.EXPECT().
 		CreateQuestion(mock.Anything, mock.Anything).
 		Return(expectedQuestionId, nil)
 
+	// Test
 	questionId, err := s.examService.CreateQuestion(
-		EXAM_ID,
+		id.Hex(),
 		"ask",
 		[]string{"a01", "a02"},
 		userId)
@@ -180,16 +213,18 @@ func (s *MyTestSuite) TestCreateQuestion() {
 }
 
 func (s *MyTestSuite) TestUpdaetQuestion() {
+	// Setup
 	userId := "user01"
 
-	id, err := primitive.ObjectIDFromHex(QUESTION_ID)
-	s.Nil(err)
+	id := primitive.NewObjectID()
+	questionId := id.Hex()
+	examId := "exam01"
 
 	s.mockDatabaseRepository.EXPECT().
-		GetQuestionById(mock.Anything, QUESTION_ID).
+		GetQuestionById(mock.Anything, questionId).
 		Return(&model.Question{
 			Id:      id,
-			ExamId:  EXAM_ID,
+			ExamId:  examId,
 			Ask:     "ask01",
 			Answers: []string{"a01", "a02"},
 			UserId:  userId,
@@ -198,82 +233,110 @@ func (s *MyTestSuite) TestUpdaetQuestion() {
 		WithTransaction(mock.Anything).
 		Return(nil, nil)
 
-	questionId, err := s.examService.UpdateQuestion(
-		QUESTION_ID,
+	// Test
+	resultQuestionId, err := s.examService.UpdateQuestion(
+		questionId,
 		"ask02",
 		[]string{"b01", "b02"},
 		userId)
 	s.Nil(err)
-	s.Equal(QUESTION_ID, questionId)
+	s.Equal(questionId, resultQuestionId)
 }
 
 func (s *MyTestSuite) TestFindQuestions() {
+	// Setup
 	userId := "user01"
-	var pageIndex int64 = 2
-	var pageSize int64 = 10
+	var pageIndex int32 = 2
+	var pageSize int32 = 10
 	skip := pageIndex * pageSize
 	limit := pageSize
-	var expectedTotal int64 = 23
+	var expectedTotal int32 = 23
+
+	id := primitive.NewObjectID()
+	examId := id.Hex()
 
 	s.mockDatabaseRepository.EXPECT().
-		FindQuestionsByExamIdOrderByUpdateAtDesc(mock.Anything, EXAM_ID, skip, limit).
+		GetExamById(mock.Anything, examId).
+		Return(&model.Exam{
+			Id:          id,
+			Topic:       "topic01",
+			Description: "desc01",
+			Tags:        []string{"t01"},
+			IsPublic:    true,
+			UserId:      userId,
+		}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		FindQuestionsByExamIdOrderByUpdateAtDesc(mock.Anything, examId, skip, limit).
 		Return([]model.Question{
 			{},
 			{},
 			{},
 		}, nil)
 	s.mockDatabaseRepository.EXPECT().
-		CountQuestionsByExamId(mock.Anything, EXAM_ID).
+		CountQuestionsByExamId(mock.Anything, examId).
 		Return(expectedTotal, nil)
 
+	// Test
 	total, pageCount, questions, err := s.examService.FindQuestions(
 		pageIndex,
 		pageSize,
-		EXAM_ID,
+		examId,
 		userId,
 	)
 	s.Nil(err)
 	s.Equal(expectedTotal, total)
-	s.Equal(int64(3), pageCount)
+	s.Equal(int32(3), pageCount)
 	s.Equal(3, len(questions))
 }
 
 func (s *MyTestSuite) TestDeleteQuestion() {
+	// Setup
 	userId := "user01"
-	id, err := primitive.ObjectIDFromHex(QUESTION_ID)
-	s.Nil(err)
+	id := primitive.NewObjectID()
+	questionId := id.Hex()
+	examId := "exam01"
 
 	s.mockDatabaseRepository.EXPECT().
-		GetQuestionById(mock.Anything, QUESTION_ID).
+		GetQuestionById(mock.Anything, questionId).
 		Return(&model.Question{
 			Id:      id,
-			ExamId:  EXAM_ID,
+			ExamId:  examId,
 			Ask:     "ask02",
 			Answers: []string{"b01", "b02"},
 			UserId:  userId,
 		}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		WithTransaction(mock.Anything).
+		Return(nil, nil)
 
-	err = s.examService.DeleteQuestion(QUESTION_ID, userId)
+	// Test
+	err := s.examService.DeleteQuestion(questionId, userId)
 	s.Nil(err)
 }
 
 func (s *MyTestSuite) TestCreateExamRecord() {
+	// Setup
 	userId := "user01"
-	id, err := primitive.ObjectIDFromHex(EXAM_ID)
-	s.Nil(err)
+	id := primitive.NewObjectID()
+	examId := id.Hex()
 
-	s.mockDatabaseRepository.EXPECT().GetExamById(mock.Anything, EXAM_ID).Return(&model.Exam{
-		Id:          id,
-		Topic:       "topic",
-		Description: "desc",
-		Tags:        []string{"a01"},
-		IsPublic:    true,
-		UserId:      userId,
-	}, nil)
-	s.mockDatabaseRepository.EXPECT().WithTransaction(mock.Anything).Return(nil, nil)
+	s.mockDatabaseRepository.EXPECT().
+		GetExamById(mock.Anything, examId).
+		Return(&model.Exam{
+			Id:          id,
+			Topic:       "topic",
+			Description: "desc",
+			Tags:        []string{"a01"},
+			IsPublic:    true,
+			UserId:      userId,
+		}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		WithTransaction(mock.Anything).
+		Return(nil, nil)
 
-	err = s.examService.CreateExamRecord(
-		EXAM_ID,
+	// Test
+	err := s.examService.CreateExamRecord(
+		examId,
 		10,
 		[]string{"question01", "question02", "quesiton03"},
 		userId,
@@ -282,6 +345,7 @@ func (s *MyTestSuite) TestCreateExamRecord() {
 }
 
 func (s *MyTestSuite) TestFindExamInfos() {
+	// Setup
 	userId := "user01"
 	isPublic := true
 
@@ -294,10 +358,10 @@ func (s *MyTestSuite) TestFindExamInfos() {
 	s.Nil(err)
 
 	var (
-		questionCount1 int64 = 10
-		questionCount2 int64 = 20
-		recordCount1   int64 = 1
-		recordCount2   int64 = 2
+		questionCount1 int32 = 10
+		questionCount2 int32 = 20
+		recordCount1   int32 = 1
+		recordCount2   int32 = 2
 	)
 
 	s.mockDatabaseRepository.EXPECT().
@@ -333,6 +397,7 @@ func (s *MyTestSuite) TestFindExamInfos() {
 		CountExamRecordsByExamIdAndUserId(mock.Anything, examId2, userId).
 		Return(recordCount2, nil)
 
+	// Test
 	examInfos, err := s.examService.FindExamInfos(userId, isPublic)
 	s.Nil(err)
 	s.Equal(2, len(examInfos))

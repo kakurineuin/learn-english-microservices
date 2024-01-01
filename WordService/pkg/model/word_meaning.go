@@ -31,7 +31,7 @@ type WordMeaning struct {
 	DefGram       string             `json:"defGram"       bson:"defGram"`
 	Definition    string             `json:"definition"    bson:"definition"`
 	Examples      []Example          `json:"examples"      bson:"examples"`
-	OrderByNo     int64              `json:"orderByNo"     bson:"orderByNo"`
+	OrderByNo     int32              `json:"orderByNo"     bson:"orderByNo"`
 	QueryByWords  []string           `json:"queryByWords"  bson:"queryByWords"`
 
 	// 只有前端會用此屬性 favoriteWordMeaningId，不用保存到 DB

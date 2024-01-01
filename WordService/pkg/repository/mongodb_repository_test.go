@@ -151,7 +151,7 @@ func (s *MyTestSuite) TestCreateWordMeanings() {
 					},
 				},
 			},
-			OrderByNo:             int64(i + 1),
+			OrderByNo:             int32(i + 1),
 			QueryByWords:          []string{"test"},
 			FavoriteWordMeaningId: primitive.NewObjectID(),
 			CreatedAt:             now,
@@ -196,7 +196,7 @@ func (s *MyTestSuite) TestFindWordMeaningsByWordAndUserId() {
 					},
 				},
 			},
-			OrderByNo:             int64(i + 1),
+			OrderByNo:             int32(i + 1),
 			QueryByWords:          []string{word},
 			FavoriteWordMeaningId: primitive.NewObjectID(),
 			CreatedAt:             now,
@@ -271,7 +271,7 @@ func (s *MyTestSuite) TestFindFavoriteWordMeaningsByUserIdAndWord() {
 					},
 				},
 			},
-			OrderByNo:             int64(i + 1),
+			OrderByNo:             int32(i + 1),
 			QueryByWords:          []string{word},
 			FavoriteWordMeaningId: primitive.NewObjectID(),
 			CreatedAt:             now,
@@ -299,8 +299,8 @@ func (s *MyTestSuite) TestFindFavoriteWordMeaningsByUserIdAndWord() {
 	s.Nil(err)
 	s.Equal(size, len(result2.InsertedIDs))
 
-	skip := int64(10)
-	limit := int64(10)
+	skip := int32(10)
+	limit := int32(10)
 	wordMeanings, err := s.repo.FindFavoriteWordMeaningsByUserIdAndWord(
 		ctx,
 		userId,
@@ -344,7 +344,7 @@ func (s *MyTestSuite) TestCountFavoriteWordMeaningsByUserIdAndWord() {
 					},
 				},
 			},
-			OrderByNo:             int64(i + 1),
+			OrderByNo:             int32(i + 1),
 			QueryByWords:          []string{word},
 			FavoriteWordMeaningId: primitive.NewObjectID(),
 			CreatedAt:             now,
@@ -378,7 +378,7 @@ func (s *MyTestSuite) TestCountFavoriteWordMeaningsByUserIdAndWord() {
 		word,
 	)
 	s.Nil(err)
-	s.Equal(int64(size), count)
+	s.Equal(int32(size), count)
 }
 
 func (s *MyTestSuite) TestDeleteFavoriteWordMeaningById() {
@@ -395,5 +395,5 @@ func (s *MyTestSuite) TestDeleteFavoriteWordMeaningById() {
 
 	deletedCount, err := s.repo.DeleteFavoriteWordMeaningById(ctx, favoriteWordMeaningId)
 	s.Nil(err)
-	s.Equal(int64(1), deletedCount)
+	s.Equal(int32(1), deletedCount)
 }

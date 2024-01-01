@@ -8,7 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 
-	"github.com/kakurineuin/learn-english-microservices/web-service/config"
+	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/config"
 )
 
 // jwtCustomClaims are custom claims extending default ones.

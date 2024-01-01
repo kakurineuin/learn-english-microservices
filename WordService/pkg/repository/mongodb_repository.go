@@ -191,7 +191,7 @@ func (repo *MongoDBRepository) GetFavoriteWordMeaningById(
 func (repo *MongoDBRepository) FindFavoriteWordMeaningsByUserIdAndWord(
 	ctx context.Context,
 	userId, word string,
-	skip, limit int64,
+	skip, limit int32,
 ) (wordMeanings []model.WordMeaning, err error) {
 	matchWord := bson.D{{}}
 
@@ -258,7 +258,7 @@ func (repo *MongoDBRepository) FindFavoriteWordMeaningsByUserIdAndWord(
 func (repo *MongoDBRepository) CountFavoriteWordMeaningsByUserIdAndWord(
 	ctx context.Context,
 	userId, word string,
-) (count int64, err error) {
+) (count int32, err error) {
 	matchWord := bson.D{{}}
 
 	if word != "" {
@@ -303,7 +303,7 @@ func (repo *MongoDBRepository) CountFavoriteWordMeaningsByUserIdAndWord(
 	// const total = totalResult.length > 0 ? totalResult[0].total : 0;
 
 	if len(results) > 0 {
-		count = int64(results[0][0].Value.(int32))
+		count = results[0][0].Value.(int32)
 	} else {
 		count = 0
 	}
@@ -314,7 +314,7 @@ func (repo *MongoDBRepository) CountFavoriteWordMeaningsByUserIdAndWord(
 func (repo *MongoDBRepository) DeleteFavoriteWordMeaningById(
 	ctx context.Context,
 	favoriteWordMeaningId string,
-) (deletedCount int64, err error) {
+) (deletedCount int32, err error) {
 	id, err := primitive.ObjectIDFromHex(favoriteWordMeaningId)
 	if err != nil {
 		return 0, err
@@ -329,7 +329,7 @@ func (repo *MongoDBRepository) DeleteFavoriteWordMeaningById(
 		return 0, err
 	}
 
-	return result.DeletedCount, nil
+	return int32(result.DeletedCount), nil
 }
 
 func (repo *MongoDBRepository) WithTransaction(

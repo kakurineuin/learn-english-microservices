@@ -1,4 +1,4 @@
-package word
+package model
 
 import (
 	"time"

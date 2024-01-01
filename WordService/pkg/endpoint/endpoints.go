@@ -125,15 +125,15 @@ func makeDeleteFavoriteWordMeaningEndpoint(wordService service.WordService) endp
 }
 
 type FindFavoriteWordMeaningsRequest struct {
-	PageInde int64
-	PageSize int64
+	PageInde int32
+	PageSize int32
 	UserId   string
 	Word     string
 }
 
 type FindFavoriteWordMeaningsResponse struct {
-	Total                int64
-	PageCount            int64
+	Total                int32
+	PageCount            int32
 	FavoriteWordMeanings []model.WordMeaning
 }
 
@@ -159,7 +159,7 @@ func makeFindFavoriteWordMeaningsEndpoint(wordService service.WordService) endpo
 
 type FindRandomFavoriteWordMeaningsRequest struct {
 	UserId string
-	Size   int64
+	Size   int32
 }
 
 type FindRandomFavoriteWordMeaningsResponse struct {

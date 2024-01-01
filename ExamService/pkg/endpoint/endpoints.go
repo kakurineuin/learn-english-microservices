@@ -138,14 +138,14 @@ func makeUpdateExamEndpoint(examService service.ExamService) endpoint.Endpoint {
 }
 
 type FindExamsRequest struct {
-	PageIndex int64
-	PageSize  int64
+	PageIndex int32
+	PageSize  int32
 	UserId    string
 }
 
 type FindExamsResponse struct {
-	Total     int64
-	PageCount int64
+	Total     int32
+	PageCount int32
 	Exams     []model.Exam
 }
 
@@ -233,15 +233,15 @@ func makeUpdateQuestionEndpoint(examService service.ExamService) endpoint.Endpoi
 }
 
 type FindQuestionsRequest struct {
-	PageIndex int64
-	PageSize  int64
+	PageIndex int32
+	PageSize  int32
 	ExamId    string
 	UserId    string
 }
 
 type FindQuestionsResponse struct {
-	Total     int64
-	PageCount int64
+	Total     int32
+	PageCount int32
 	Questions []model.Question
 }
 
@@ -286,7 +286,7 @@ func makeDeleteQuestionEndpoint(examService service.ExamService) endpoint.Endpoi
 
 type CreateExamRecordRequest struct {
 	ExamId           string
-	Score            int64
+	Score            int32
 	WrongQuestionIds []string
 	UserId           string
 }
@@ -306,15 +306,15 @@ func makeCreateExamRecordEndpoint(examService service.ExamService) endpoint.Endp
 }
 
 type FindExamRecordsRequest struct {
-	PageIndex int64
-	PageSize  int64
+	PageIndex int32
+	PageSize  int32
 	ExamId    string
 	UserId    string
 }
 
 type FindExamRecordsResponse struct {
-	Total       int64
-	PageCount   int64
+	Total       int32
+	PageCount   int32
 	ExamRecords []model.ExamRecord
 }
 

@@ -57,9 +57,9 @@ func (mw loggingMiddleware) DeleteFavoriteWordMeaning(
 }
 
 func (mw loggingMiddleware) FindFavoriteWordMeanings(
-	pageIndex, pageSize int64,
+	pageIndex, pageSize int32,
 	userId, word string,
-) (total, pageCount int64, favoriteWordMeanings []model.WordMeaning, err error) {
+) (total, pageCount int32, favoriteWordMeanings []model.WordMeaning, err error) {
 	defer func() {
 		mw.logger.Log(
 			"method",
@@ -80,7 +80,7 @@ func (mw loggingMiddleware) FindFavoriteWordMeanings(
 }
 
 func (mw loggingMiddleware) FindRandomFavoriteWordMeanings(
-	userId string, size int64,
+	userId string, size int32,
 ) (wordMeanings []model.WordMeaning, err error) {
 	defer func() {
 		mw.logger.Log(

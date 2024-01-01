@@ -44,8 +44,8 @@ func (mw loggingMiddleware) UpdateExam(
 }
 
 func (mw loggingMiddleware) FindExams(
-	pageIndex, pageSize int64, userId string,
-) (total, pageCount int64, exams []model.Exam, err error) {
+	pageIndex, pageSize int32, userId string,
+) (total, pageCount int32, exams []model.Exam, err error) {
 	defer func() {
 		mw.logger.Log(
 			"method", "FindExams",
@@ -101,8 +101,8 @@ func (mw loggingMiddleware) UpdateQuestion(
 }
 
 func (mw loggingMiddleware) FindQuestions(
-	pageIndex, pageSize int64, examId, userId string,
-) (total, pageCount int64, questions []model.Question, err error) {
+	pageIndex, pageSize int32, examId, userId string,
+) (total, pageCount int32, questions []model.Question, err error) {
 	defer func() {
 		mw.logger.Log(
 			"method", "FindQuestions",
@@ -127,7 +127,7 @@ func (mw loggingMiddleware) DeleteQuestion(questionId, userId string) (err error
 }
 
 func (mw loggingMiddleware) CreateExamRecord(
-	examId string, score int64, wrongQuestionIds []string, userId string,
+	examId string, score int32, wrongQuestionIds []string, userId string,
 ) (err error) {
 	defer func() {
 		mw.logger.Log(
@@ -142,8 +142,8 @@ func (mw loggingMiddleware) CreateExamRecord(
 }
 
 func (mw loggingMiddleware) FindExamRecords(
-	pageIndex, pageSize int64, examId, userId string,
-) (total, pageCount int64, examRecords []model.ExamRecord, err error) {
+	pageIndex, pageSize int32, examId, userId string,
+) (total, pageCount int32, examRecords []model.ExamRecord, err error) {
 	defer func() {
 		mw.logger.Log(
 			"method", "FindExamRecords",

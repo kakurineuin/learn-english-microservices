@@ -7,11 +7,30 @@ import (
 	"github.com/labstack/echo/v4"
 	"google.golang.org/protobuf/encoding/protojson"
 
-	"github.com/kakurineuin/learn-english-microservices/web-service/microservice"
-	"github.com/kakurineuin/learn-english-microservices/web-service/util"
+	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/microservice/examservice"
+	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/util"
 )
 
-func CreateExam(c echo.Context) error {
+// For mock at test
+var utilGetJWTClaims = util.GetJWTClaims
+
+type ExamHandler interface {
+	CreateExam(c echo.Context) error
+	FindExams(c echo.Context) error
+	UpdateExam(c echo.Context) error
+}
+
+type examHandler struct {
+	examServce examservice.ExamService
+}
+
+func NewHandler(examServce examservice.ExamService) ExamHandler {
+	return &examHandler{
+		examServce: examServce,
+	}
+}
+
+func (handler examHandler) CreateExam(c echo.Context) error {
 	type RequestBody struct {
 		Topic       string `json:"topic"`
 		Description string `json:"description"`
@@ -26,9 +45,9 @@ func CreateExam(c echo.Context) error {
 		return util.SendJSONBadRequest(c)
 	}
 
-	userId := util.GetJWTClaims(c).UserId
+	userId := utilGetJWTClaims(c).UserId
 
-	microserviceResponse, err := microservice.CreateExam(
+	microserviceResponse, err := handler.examServce.CreateExam(
 		requestBody.Topic,
 		requestBody.Description,
 		requestBody.IsPublic,
@@ -44,26 +63,26 @@ func CreateExam(c echo.Context) error {
 	})
 }
 
-func FindExams(c echo.Context) error {
+func (handler examHandler) FindExams(c echo.Context) error {
 	errorMessage := "FindExams failed! error: %w"
 
 	var (
-		pageIndex int64 = 0
-		pageSize  int64 = 0
+		pageIndex int32 = 0
+		pageSize  int32 = 0
 	)
 
 	err := echo.QueryParamsBinder(c).
-		Int64("pageIndex", &pageIndex).
-		Int64("pageSize", &pageSize).
+		Int32("pageIndex", &pageIndex).
+		Int32("pageSize", &pageSize).
 		BindError() // returns first binding error
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONBadRequest(c)
 	}
 
-	userId := util.GetJWTClaims(c).UserId
+	userId := utilGetJWTClaims(c).UserId
 
-	microserviceResponse, err := microservice.FindExams(
+	microserviceResponse, err := handler.examServce.FindExams(
 		pageIndex,
 		pageSize,
 		userId,
@@ -84,7 +103,7 @@ func FindExams(c echo.Context) error {
 	return c.JSONBlob(http.StatusOK, result)
 }
 
-func UpdateExam(c echo.Context) error {
+func (handler examHandler) UpdateExam(c echo.Context) error {
 	type RequestBody struct {
 		ExamId      string `json:"_id"`
 		Topic       string `json:"topic"`
@@ -100,9 +119,9 @@ func UpdateExam(c echo.Context) error {
 		return util.SendJSONBadRequest(c)
 	}
 
-	userId := util.GetJWTClaims(c).UserId
+	userId := utilGetJWTClaims(c).UserId
 
-	microserviceResponse, err := microservice.UpdateExam(
+	microserviceResponse, err := handler.examServce.UpdateExam(
 		requestBody.ExamId,
 		requestBody.Topic,
 		requestBody.Description,

@@ -39,16 +39,12 @@ func (s *MyTestSuite) SetupSuite() {
 		"caller",
 		gokitlog.DefaultCaller,
 	)
-	mockDatabaseRepository := repository.NewMockDatabaseRepository(s.T())
-	mockSpider := crawler.NewMockSpider(s.T())
 	s.wordService = wordService{
 		logger:             logger,
 		errorLogger:        level.Error(logger),
-		databaseRepository: mockDatabaseRepository,
-		spider:             mockSpider,
+		databaseRepository: nil,
+		spider:             nil,
 	}
-	s.mockDatabaseRepository = mockDatabaseRepository
-	s.mockSpider = mockSpider
 }
 
 // run once, after test suite methods
@@ -59,6 +55,15 @@ func (s *MyTestSuite) TearDownSuite() {
 // run before each test
 func (s *MyTestSuite) SetupTest() {
 	log.Println("SetupTest()")
+
+	// Reset mock，避免在不同測試方法之間互相影響
+	mockDatabaseRepository := repository.NewMockDatabaseRepository(s.T())
+	s.wordService.databaseRepository = mockDatabaseRepository
+	s.mockDatabaseRepository = mockDatabaseRepository
+
+	mockSpider := crawler.NewMockSpider(s.T())
+	s.wordService.spider = mockSpider
+	s.mockSpider = mockSpider
 }
 
 // run after each test
@@ -77,6 +82,7 @@ func (s *MyTestSuite) AfterTest(suiteName, testName string) {
 }
 
 func (s *MyTestSuite) TestFindWordByDictionary_WhenDataFromDB() {
+	// Setup
 	word := "test"
 	userId := "user01"
 	mockWordMeanings := []model.WordMeaning{
@@ -96,12 +102,14 @@ func (s *MyTestSuite) TestFindWordByDictionary_WhenDataFromDB() {
 		FindWordMeaningsByWordAndUserId(mock.Anything, word, userId).
 		Return(mockWordMeanings, nil)
 
+	// Test
 	wordMeanings, err := s.wordService.FindWordByDictionary(word, userId)
 	s.Nil(err)
 	s.Equal(size, len(wordMeanings))
 }
 
 func (s *MyTestSuite) TestFindWordByDictionary_WhenDataFromCrawler() {
+	// Setup
 	word := "test"
 	userId := "user01"
 	mockWordMeanings := []model.WordMeaning{
@@ -119,7 +127,8 @@ func (s *MyTestSuite) TestFindWordByDictionary_WhenDataFromCrawler() {
 
 	s.mockDatabaseRepository.EXPECT().
 		FindWordMeaningsByWordAndUserId(mock.Anything, word, userId).
-		Return(nil, nil).Once()
+		Return(nil, nil).
+		Once()
 	s.mockSpider.EXPECT().FindWordMeaningsFromDictionary(word).Return(mockWordMeanings, nil)
 	s.mockDatabaseRepository.EXPECT().
 		CreateWordMeanings(mock.Anything, mockWordMeanings).
@@ -128,12 +137,14 @@ func (s *MyTestSuite) TestFindWordByDictionary_WhenDataFromCrawler() {
 		FindWordMeaningsByWordAndUserId(mock.Anything, word, userId).
 		Return(mockWordMeanings, nil)
 
+	// Test
 	wordMeanings, err := s.wordService.FindWordByDictionary(word, userId)
 	s.Nil(err)
 	s.Equal(size, len(wordMeanings))
 }
 
 func (s *MyTestSuite) TestCreateFavoriteWordMeaning() {
+	// Setup
 	userId := "user01"
 	wordMeaningId := "aaa01"
 	mockFavoriteWordMeaningId := "bbb01"
@@ -142,12 +153,14 @@ func (s *MyTestSuite) TestCreateFavoriteWordMeaning() {
 		CreateFavoriteWordMeaning(mock.Anything, userId, wordMeaningId).
 		Return(mockFavoriteWordMeaningId, nil)
 
+	// Test
 	favoriteWordMeaningId, err := s.wordService.CreateFavoriteWordMeaning(userId, wordMeaningId)
 	s.Nil(err)
 	s.Equal(mockFavoriteWordMeaningId, favoriteWordMeaningId)
 }
 
 func (s *MyTestSuite) TestDeleteFavoriteWordMeaning() {
+	// Setup
 	userId := "user01"
 	favoriteWordMeaningId := primitive.NewObjectID().Hex()
 
@@ -159,20 +172,22 @@ func (s *MyTestSuite) TestDeleteFavoriteWordMeaning() {
 		}, nil)
 	s.mockDatabaseRepository.EXPECT().
 		DeleteFavoriteWordMeaningById(mock.Anything, favoriteWordMeaningId).
-		Return(int64(1), nil)
+		Return(int32(1), nil)
 
+	// Test
 	err := s.wordService.DeleteFavoriteWordMeaning(favoriteWordMeaningId, userId)
 	s.Nil(err)
 }
 
 func (s *MyTestSuite) TestFindFavoriteWordMeanings() {
+	// Setup
 	userId := "user01"
 	word := "TestFindFavoriteWordMeanings"
-	pageIndex := int64(1)
-	pageSize := int64(10)
+	pageIndex := int32(1)
+	pageSize := int32(10)
 	skip := pageSize * pageIndex
 	limit := pageSize
-	mockTotal := int64(13)
+	mockTotal := int32(13)
 
 	s.mockDatabaseRepository.EXPECT().
 		FindFavoriteWordMeaningsByUserIdAndWord(mock.Anything, userId, word, skip, limit).
@@ -185,6 +200,7 @@ func (s *MyTestSuite) TestFindFavoriteWordMeanings() {
 		CountFavoriteWordMeaningsByUserIdAndWord(mock.Anything, userId, word).
 		Return(mockTotal, nil)
 
+	// Test
 	total, pageCount, wordMeanings, err := s.wordService.FindFavoriteWordMeanings(
 		pageIndex,
 		pageSize,
@@ -193,16 +209,17 @@ func (s *MyTestSuite) TestFindFavoriteWordMeanings() {
 	)
 	s.Nil(err)
 	s.Equal(total, mockTotal)
-	s.Equal(int64(2), pageCount)
+	s.Equal(int32(2), pageCount)
 	s.Equal(3, len(wordMeanings))
 }
 
 func (s *MyTestSuite) TestFindRandomFavoriteWordMeanings() {
+	// Setup
 	userId := "user01"
 	word := ""
-	size := int64(10)
-	mockTotal := int64(13)
-	limit := int64(1)
+	size := int32(10)
+	mockTotal := int32(13)
+	limit := int32(1)
 
 	s.mockDatabaseRepository.EXPECT().
 		FindFavoriteWordMeaningsByUserIdAndWord(mock.Anything, userId, word, mock.Anything, limit).
@@ -213,6 +230,7 @@ func (s *MyTestSuite) TestFindRandomFavoriteWordMeanings() {
 		CountFavoriteWordMeaningsByUserIdAndWord(mock.Anything, userId, word).
 		Return(mockTotal, nil)
 
+	// Test
 	wordMeanings, err := s.wordService.FindRandomFavoriteWordMeanings(
 		userId,
 		size,

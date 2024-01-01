@@ -138,12 +138,12 @@ func (repo *MongoDBRepository) GetExamById(
 func (repo *MongoDBRepository) FindExamsByUserIdOrderByUpdateAtDesc(
 	ctx context.Context,
 	userId string,
-	skip, limit int64,
+	skip, limit int32,
 ) (exams []model.Exam, err error) {
 	collection := repo.getCollection(EXAM_COLLECTION)
 	filter := bson.D{{"userId", userId}}
 	sort := bson.D{{"updatedAt", -1}} // descending
-	opts := options.Find().SetSort(sort).SetSkip(skip).SetLimit(limit)
+	opts := options.Find().SetSort(sort).SetSkip(int64(skip)).SetLimit(int64(limit))
 	cursor, err := collection.Find(ctx, filter, opts)
 	if err != nil {
 		return nil, err
@@ -183,7 +183,7 @@ func (repo *MongoDBRepository) FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc(
 func (repo *MongoDBRepository) DeleteExamById(
 	ctx context.Context,
 	examId string,
-) (deletedCount int64, err error) {
+) (deletedCount int32, err error) {
 	id, err := primitive.ObjectIDFromHex(examId)
 	if err != nil {
 		return 0, err
@@ -198,21 +198,21 @@ func (repo *MongoDBRepository) DeleteExamById(
 		return 0, err
 	}
 
-	return result.DeletedCount, nil
+	return int32(result.DeletedCount), nil
 }
 
 func (repo *MongoDBRepository) CountExamsByUserId(
 	ctx context.Context,
 	userId string,
-) (count int64, err error) {
+) (count int32, err error) {
 	collection := repo.getCollection(EXAM_COLLECTION)
 	filter := bson.D{{"userId", userId}}
-	count, err = collection.CountDocuments(ctx, filter)
+	result, err := collection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, err
 	}
 
-	return count, nil
+	return int32(result), nil
 }
 
 func (repo *MongoDBRepository) CreateQuestion(
@@ -290,14 +290,14 @@ func (repo *MongoDBRepository) GetQuestionById(
 func (repo *MongoDBRepository) FindQuestionsByExamIdOrderByUpdateAtDesc(
 	ctx context.Context,
 	examId string,
-	skip, limit int64,
+	skip, limit int32,
 ) (questions []model.Question, err error) {
 	collection := repo.getCollection(QUESTION_COLLECTION)
 	filter := bson.D{
 		{"examId", examId},
 	}
 	sort := bson.D{{"updatedAt", -1}} // descending
-	opts := options.Find().SetSort(sort).SetSkip(skip).SetLimit(limit)
+	opts := options.Find().SetSort(sort).SetSkip(int64(skip)).SetLimit(int64(limit))
 	cursor, err := collection.Find(ctx, filter, opts)
 	if err != nil {
 		return nil, err
@@ -313,7 +313,7 @@ func (repo *MongoDBRepository) FindQuestionsByExamIdOrderByUpdateAtDesc(
 func (repo *MongoDBRepository) DeleteQuestionById(
 	ctx context.Context,
 	questionId string,
-) (deletedCount int64, err error) {
+) (deletedCount int32, err error) {
 	id, err := primitive.ObjectIDFromHex(questionId)
 	if err != nil {
 		return 0, err
@@ -328,13 +328,13 @@ func (repo *MongoDBRepository) DeleteQuestionById(
 		return 0, err
 	}
 
-	return result.DeletedCount, nil
+	return int32(result.DeletedCount), nil
 }
 
 func (repo *MongoDBRepository) DeleteQuestionsByExamId(
 	ctx context.Context,
 	examId string,
-) (deletedCount int64, err error) {
+) (deletedCount int32, err error) {
 	filter := bson.D{
 		{"examId", examId},
 	}
@@ -344,29 +344,29 @@ func (repo *MongoDBRepository) DeleteQuestionsByExamId(
 		return 0, err
 	}
 
-	return result.DeletedCount, nil
+	return int32(result.DeletedCount), nil
 }
 
 func (repo *MongoDBRepository) CountQuestionsByExamId(
 	ctx context.Context,
 	examId string,
-) (count int64, err error) {
+) (count int32, err error) {
 	collection := repo.getCollection(QUESTION_COLLECTION)
 	filter := bson.D{
 		{"examId", examId},
 	}
-	count, err = collection.CountDocuments(ctx, filter)
+	result, err := collection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, err
 	}
 
-	return count, nil
+	return int32(result), nil
 }
 
 func (repo *MongoDBRepository) DeleteAnswerWrongsByQuestionId(
 	ctx context.Context,
 	questionId string,
-) (deletedCount int64, err error) {
+) (deletedCount int32, err error) {
 	filter := bson.D{
 		{"questionId", questionId},
 	}
@@ -376,13 +376,13 @@ func (repo *MongoDBRepository) DeleteAnswerWrongsByQuestionId(
 		return 0, err
 	}
 
-	return result.DeletedCount, nil
+	return int32(result.DeletedCount), nil
 }
 
 func (repo *MongoDBRepository) DeleteAnswerWrongsByExamId(
 	ctx context.Context,
 	examId string,
-) (deletedCount int64, err error) {
+) (deletedCount int32, err error) {
 	filter := bson.D{
 		{"examId", examId},
 	}
@@ -392,13 +392,13 @@ func (repo *MongoDBRepository) DeleteAnswerWrongsByExamId(
 		return 0, err
 	}
 
-	return result.DeletedCount, nil
+	return int32(result.DeletedCount), nil
 }
 
 func (repo *MongoDBRepository) UpsertAnswerWrongByTimesPlusOne(
 	ctx context.Context,
 	examId, questionId, userId string,
-) (modifiedCount, upsertedCount int64, err error) {
+) (modifiedCount, upsertedCount int32, err error) {
 	filter := bson.D{
 		{"examId", examId},
 		{"questionId", questionId},
@@ -421,13 +421,13 @@ func (repo *MongoDBRepository) UpsertAnswerWrongByTimesPlusOne(
 		return 0, 0, err
 	}
 
-	return result.ModifiedCount, result.UpsertedCount, nil
+	return int32(result.ModifiedCount), int32(result.UpsertedCount), nil
 }
 
 func (repo *MongoDBRepository) DeleteExamRecordsByExamId(
 	ctx context.Context,
 	examId string,
-) (deletedCount int64, err error) {
+) (deletedCount int32, err error) {
 	filter := bson.D{
 		{"examId", examId},
 	}
@@ -437,7 +437,7 @@ func (repo *MongoDBRepository) DeleteExamRecordsByExamId(
 		return 0, err
 	}
 
-	return result.DeletedCount, nil
+	return int32(result.DeletedCount), nil
 }
 
 func (repo *MongoDBRepository) CreateExamRecord(
@@ -461,7 +461,7 @@ func (repo *MongoDBRepository) CreateExamRecord(
 func (repo *MongoDBRepository) FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc(
 	ctx context.Context,
 	examId, userId string,
-	skip, limit int64,
+	skip, limit int32,
 ) (examRecords []model.ExamRecord, err error) {
 	collection := repo.getCollection(EXAM_RECORD_COLLECTION)
 	filter := bson.D{
@@ -469,7 +469,7 @@ func (repo *MongoDBRepository) FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDe
 		{"userId", userId},
 	}
 	sort := bson.D{{"updatedAt", -1}} // descending
-	opts := options.Find().SetSort(sort).SetSkip(skip).SetLimit(limit)
+	opts := options.Find().SetSort(sort).SetSkip(int64(skip)).SetLimit(int64(limit))
 	cursor, err := collection.Find(ctx, filter, opts)
 	if err != nil {
 		return nil, err
@@ -485,18 +485,18 @@ func (repo *MongoDBRepository) FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDe
 func (repo *MongoDBRepository) CountExamRecordsByExamIdAndUserId(
 	ctx context.Context,
 	examId, userId string,
-) (count int64, err error) {
+) (count int32, err error) {
 	collection := repo.getCollection(EXAM_RECORD_COLLECTION)
 	filter := bson.D{
 		{"examId", examId},
 		{"userId", userId},
 	}
-	count, err = collection.CountDocuments(ctx, filter)
+	result, err := collection.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0, err
 	}
 
-	return count, nil
+	return int32(result), nil
 }
 
 func (repo *MongoDBRepository) WithTransaction(
