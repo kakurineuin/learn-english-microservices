@@ -21,11 +21,11 @@ import (
 const PORT = ":8091"
 
 func main() {
+	loadEnv()
+
 	logger := log.NewJSONLogger(os.Stdout)
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
 	errorLogger := level.Error(logger)
-
-	loadEnv()
 
 	// 連線到資料庫
 	databaseRepository := repository.NewMongoDBRepository("learnEnglish")
