@@ -126,6 +126,65 @@ func (_c *MockExamService_CreateExam_Call) RunAndReturn(run func(string, string,
 	return _c
 }
 
+// DeleteExam provides a mock function with given fields: examId, userId
+func (_m *MockExamService) DeleteExam(examId string, userId string) (*pb.DeleteExamResponse, error) {
+	ret := _m.Called(examId, userId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteExam")
+	}
+
+	var r0 *pb.DeleteExamResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string, string) (*pb.DeleteExamResponse, error)); ok {
+		return rf(examId, userId)
+	}
+	if rf, ok := ret.Get(0).(func(string, string) *pb.DeleteExamResponse); ok {
+		r0 = rf(examId, userId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*pb.DeleteExamResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string, string) error); ok {
+		r1 = rf(examId, userId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockExamService_DeleteExam_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteExam'
+type MockExamService_DeleteExam_Call struct {
+	*mock.Call
+}
+
+// DeleteExam is a helper method to define mock.On call
+//   - examId string
+//   - userId string
+func (_e *MockExamService_Expecter) DeleteExam(examId interface{}, userId interface{}) *MockExamService_DeleteExam_Call {
+	return &MockExamService_DeleteExam_Call{Call: _e.mock.On("DeleteExam", examId, userId)}
+}
+
+func (_c *MockExamService_DeleteExam_Call) Run(run func(examId string, userId string)) *MockExamService_DeleteExam_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockExamService_DeleteExam_Call) Return(_a0 *pb.DeleteExamResponse, _a1 error) *MockExamService_DeleteExam_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockExamService_DeleteExam_Call) RunAndReturn(run func(string, string) (*pb.DeleteExamResponse, error)) *MockExamService_DeleteExam_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Disconnect provides a mock function with given fields:
 func (_m *MockExamService) Disconnect() error {
 	ret := _m.Called()

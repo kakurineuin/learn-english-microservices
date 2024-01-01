@@ -3,13 +3,12 @@ package examservice
 import (
 	"context"
 
+	"github.com/labstack/gommon/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/kakurineuin/learn-english-microservices/web-service/pb"
 )
-
-const SERVER_ADDRESS = "localhost:8090"
 
 //go:generate mockery --name ExamService
 type ExamService interface {
@@ -32,20 +31,29 @@ type ExamService interface {
 		isPublic bool,
 		userId string,
 	) (*pb.UpdateExamResponse, error)
+	DeleteExam(
+		examId,
+		userId string,
+	) (*pb.DeleteExamResponse, error)
 }
 
-func New() ExamService {
-	return &examService{}
+func New(serverAddress string) ExamService {
+	return &examService{
+		serverAddress: serverAddress,
+	}
 }
 
 type examService struct {
-	connection *grpc.ClientConn
-	client     pb.ExamServiceClient
+	serverAddress string
+	connection    *grpc.ClientConn
+	client        pb.ExamServiceClient
 }
 
 func (service *examService) Connect() error {
+	log.Infof("Start to connect ExamService at %s", service.serverAddress)
+
 	conn, err := grpc.Dial(
-		SERVER_ADDRESS,
+		service.serverAddress,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
@@ -115,6 +123,18 @@ func (examServiceClient examService) UpdateExam(
 			Description: description,
 			IsPublic:    isPublic,
 			UserId:      userId,
+		},
+	)
+}
+
+func (examServiceClient examService) DeleteExam(
+	examId, userId string,
+) (*pb.DeleteExamResponse, error) {
+	return examServiceClient.client.DeleteExam(
+		context.Background(),
+		&pb.DeleteExamRequest{
+			ExamId: examId,
+			UserId: userId,
 		},
 	)
 }

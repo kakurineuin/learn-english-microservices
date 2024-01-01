@@ -3,13 +3,12 @@ package wordservice
 import (
 	"context"
 
+	"github.com/labstack/gommon/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/kakurineuin/learn-english-microservices/web-service/pb"
 )
-
-const SERVER_ADDRESS = "localhost:8091"
 
 //go:generate mockery --name WordService
 type WordService interface {
@@ -33,18 +32,23 @@ type WordService interface {
 	) (*pb.FindRandomFavoriteWordMeaningsResponse, error)
 }
 
-func New() WordService {
-	return &wordService{}
+func New(serverAddress string) WordService {
+	return &wordService{
+		serverAddress: serverAddress,
+	}
 }
 
 type wordService struct {
-	connection *grpc.ClientConn
-	client     pb.WordServiceClient
+	serverAddress string
+	connection    *grpc.ClientConn
+	client        pb.WordServiceClient
 }
 
 func (service *wordService) Connect() error {
+	log.Infof("Start to connect WordService at %s", service.serverAddress)
+
 	conn, err := grpc.Dial(
-		SERVER_ADDRESS,
+		service.serverAddress,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {

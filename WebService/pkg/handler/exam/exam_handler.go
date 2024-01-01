@@ -18,6 +18,7 @@ type ExamHandler interface {
 	CreateExam(c echo.Context) error
 	FindExams(c echo.Context) error
 	UpdateExam(c echo.Context) error
+	DeleteExam(c echo.Context) error
 }
 
 type examHandler struct {
@@ -136,4 +137,27 @@ func (handler examHandler) UpdateExam(c echo.Context) error {
 	return c.JSON(http.StatusOK, echo.Map{
 		"examId": microserviceResponse.ExamId,
 	})
+}
+
+func (handler examHandler) DeleteExam(c echo.Context) error {
+	errorMessage := "DeleteExam failed! error: %w"
+
+	examId := ""
+	err := echo.PathParamsBinder(c).
+		String("examId", &examId).
+		BindError() // returns first binding error
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONBadRequest(c)
+	}
+
+	userId := utilGetJWTClaims(c).UserId
+
+	_, err = handler.examServce.DeleteExam(examId, userId)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONInternalServerError(c)
+	}
+
+	return c.NoContent(http.StatusOK)
 }

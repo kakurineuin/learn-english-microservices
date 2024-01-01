@@ -1,7 +1,6 @@
 package main
 
 import (
-	"net/http"
 	"os"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -25,7 +24,7 @@ func main() {
 	loadEnv()
 
 	// 連線到資料庫
-	databaseRepository := repository.NewMongoDBRepository("learnEnglish")
+	databaseRepository := repository.NewMongoDBRepository(config.EnvDatabaseName())
 	err := databaseRepository.ConnectDB(config.EnvMongoDBURI())
 	if err != nil {
 		log.Fatal(err)
@@ -40,7 +39,7 @@ func main() {
 
 	// 微服務
 	// ExamService
-	examService := examservice.New()
+	examService := examservice.New(config.EnvExamServiceServerAddress())
 	err = examService.Connect()
 	if err != nil {
 		log.Fatal(err)
@@ -54,7 +53,7 @@ func main() {
 	}()
 
 	// WordService
-	wordService := wordservice.New()
+	wordService := wordservice.New(config.EnvWordServiceServerAddress())
 	err = wordService.Connect()
 	if err != nil {
 		log.Fatal(err)
@@ -84,21 +83,8 @@ func main() {
 
 	setupAPIHandlers(e, userHandler, examHandler, wordHandler)
 
-	e.Logger.Info("Echo starts to listin...")
-	e.Logger.Fatal(e.Start(":1323"))
-}
-
-func loadEnv() {
-	switch os.Getenv("LEARN_ENGLISH_ENV") {
-	case "PROD":
-		godotenv.Load(".env.production")
-	default:
-		godotenv.Load(".env.local")
-	}
-}
-
-func home(c echo.Context) error {
-	return c.String(http.StatusOK, "")
+	e.Logger.Info("Echo starts to listin at " + config.EnvServerAddress())
+	e.Logger.Fatal(e.Start(config.EnvServerAddress()))
 }
 
 func setupAPIHandlers(
@@ -131,6 +117,7 @@ func setupAPIHandlers(
 	restrictedApi.GET("/exam", examHandler.FindExams)
 	restrictedApi.POST("/exam", examHandler.CreateExam)
 	restrictedApi.PATCH("/exam", examHandler.UpdateExam)
+	restrictedApi.DELETE("/exam/:examId", examHandler.DeleteExam)
 
 	restrictedApi.GET("/word/:word", wordHandler.FindWordMeanings)
 	restrictedApi.POST("/word/favorite", wordHandler.CreateFavoriteWordMeaning)
@@ -140,4 +127,18 @@ func setupAPIHandlers(
 		wordHandler.DeleteFavoriteWordMeaning,
 	)
 	restrictedApi.GET("/word/card", wordHandler.FindRandomFavoriteWordMeanings)
+}
+
+func loadEnv() {
+	env := os.Getenv("WEB_SERVICE_ENV")
+	if "" == env {
+		env = "development"
+	}
+
+	godotenv.Load(".env." + env + ".local")
+	if "test" != env {
+		godotenv.Load(".env.local")
+	}
+	godotenv.Load(".env." + env)
+	godotenv.Load() // The Original .env
 }

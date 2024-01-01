@@ -18,17 +18,15 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/transport"
 )
 
-const PORT = ":8090"
-
 func main() {
+	loadEnv()
+
 	logger := log.NewJSONLogger(os.Stdout)
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
 	errorLogger := level.Error(logger)
 
-	loadEnv()
-
 	// 連線到資料庫
-	databaseRepository := repository.NewMongoDBRepository("learnEnglish")
+	databaseRepository := repository.NewMongoDBRepository(config.EnvDatabaseName())
 	err := databaseRepository.ConnectDB(config.EnvMongoDBURI())
 	if err != nil {
 		errorLogger.Log("msg", "Connect DB fail", "err", err)
@@ -43,7 +41,7 @@ func main() {
 		}
 	}()
 
-	listener, err := net.Listen("tcp", PORT)
+	listener, err := net.Listen("tcp", config.EnvServerAddress())
 	if err != nil {
 		errorLogger.Log("msg", "net listen fail", "err", err)
 		os.Exit(1)
@@ -56,7 +54,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterExamServiceServer(grpcServer, myGrpcServer)
 	reflection.Register(grpcServer)
-	level.Info(logger).Log("msg", "Starting gRPC server at "+PORT)
+	level.Info(logger).Log("msg", "Starting gRPC server at "+config.EnvServerAddress())
 	err = grpcServer.Serve(listener)
 
 	if err != nil {
@@ -65,10 +63,15 @@ func main() {
 }
 
 func loadEnv() {
-	switch os.Getenv("EXAM_SERVICE_ENV") {
-	case "PROD":
-		godotenv.Load(".env.production")
-	default:
+	env := os.Getenv("EXAM_SERVICE_ENV")
+	if "" == env {
+		env = "development"
+	}
+
+	godotenv.Load(".env." + env + ".local")
+	if "test" != env {
 		godotenv.Load(".env.local")
 	}
+	godotenv.Load(".env." + env)
+	godotenv.Load() // The Original .env
 }

@@ -17,6 +17,8 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/util"
 )
 
+const USER_ID = "user01"
+
 type MyTestSuite struct {
 	suite.Suite
 	examHandler     examHandler
@@ -34,7 +36,7 @@ func (s *MyTestSuite) SetupSuite() {
 	// Mock JWT
 	utilGetJWTClaims = func(c echo.Context) *util.JwtCustomClaims {
 		return &util.JwtCustomClaims{
-			UserId:           "user01",
+			UserId:           USER_ID,
 			Username:         "test01",
 			Role:             "user",
 			RegisteredClaims: jwt.RegisteredClaims{},
@@ -90,7 +92,7 @@ func (s *MyTestSuite) TestCreateExam() {
 	c := e.NewContext(req, rec)
 
 	s.mockExamService.EXPECT().
-		CreateExam("t01", "d01", false, "user01").
+		CreateExam("t01", "d01", false, USER_ID).
 		Return(&pb.CreateExamResponse{
 			ExamId: "exam01",
 		}, nil)
@@ -114,7 +116,7 @@ func (s *MyTestSuite) TestFindExams() {
 	c := e.NewContext(req, rec)
 
 	s.mockExamService.EXPECT().
-		FindExams(int32(0), int32(10), "user01").
+		FindExams(int32(0), int32(10), USER_ID).
 		Return(&pb.FindExamsResponse{
 			Total:     1,
 			PageCount: 1,
@@ -125,7 +127,7 @@ func (s *MyTestSuite) TestFindExams() {
 					Description: "d01",
 					Tags:        []string{},
 					IsPublic:    true,
-					UserId:      "user01",
+					UserId:      USER_ID,
 					CreatedAt:   nil,
 					UpdatedAt:   nil,
 				},
@@ -142,7 +144,7 @@ func (s *MyTestSuite) TestFindExams() {
 		"description": "d01",
 		"tags": [],
 		"isPublic": true,
-		"userId": "user01",
+		"userId": "`+USER_ID+`",
 		"createdAt": null,
 		"updatedAt": null
 	}]}`, rec.Body.String())
@@ -163,7 +165,7 @@ func (s *MyTestSuite) TestUpdateExam() {
 	c := e.NewContext(req, rec)
 
 	s.mockExamService.EXPECT().
-		UpdateExam("exam01", "t01", "d01", false, "user01").
+		UpdateExam("exam01", "t01", "d01", false, USER_ID).
 		Return(&pb.UpdateExamResponse{
 			ExamId: "exam01",
 		}, nil)
@@ -173,4 +175,27 @@ func (s *MyTestSuite) TestUpdateExam() {
 	s.Nil(err)
 	s.Equal(http.StatusOK, rec.Code)
 	s.JSONEq(`{"examId": "exam01"}`, rec.Body.String())
+}
+
+func (s *MyTestSuite) TestDeleteExam() {
+	// Setup
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodDelete, "/", nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	examId := "exam01"
+	c.SetParamNames("examId")
+	c.SetParamValues(examId)
+
+	s.mockExamService.EXPECT().
+		DeleteExam(examId, USER_ID).
+		Return(&pb.DeleteExamResponse{}, nil)
+
+	// Test
+	err := s.examHandler.DeleteExam(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.Empty(rec.Body.String())
 }

@@ -65,10 +65,15 @@ func main() {
 }
 
 func loadEnv() {
-	switch os.Getenv("WORD_SERVICE_ENV") {
-	case "PROD":
-		godotenv.Load(".env.production")
-	default:
+	env := os.Getenv("WORD_SERVICE_ENV")
+	if "" == env {
+		env = "development"
+	}
+
+	godotenv.Load(".env." + env + ".local")
+	if "test" != env {
 		godotenv.Load(".env.local")
 	}
+	godotenv.Load(".env." + env)
+	godotenv.Load() // The Original .env
 }
