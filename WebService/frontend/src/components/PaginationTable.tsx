@@ -40,7 +40,7 @@ function PaginationTable({
     page,
     canPreviousPage,
     canNextPage,
-    // pageOptions,
+    pageOptions,
     pageCount,
     gotoPage,
     nextPage,
@@ -156,7 +156,7 @@ function PaginationTable({
           <span>
             Page{' '}
             <strong>
-              {pageIndex + 1} of {pageCount}
+              {pageIndex + 1} of {pageOptions.length}
             </strong>
           </span>
         </HStack>
