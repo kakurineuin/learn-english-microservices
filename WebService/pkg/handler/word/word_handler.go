@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/microservice/wordservice"
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/util"
@@ -45,15 +44,7 @@ func (handler wordHandler) FindWordMeanings(c echo.Context) error {
 		return util.SendJSONInternalServerError(c)
 	}
 
-	result, err := protojson.MarshalOptions{
-		EmitUnpopulated: true, // Zero value 的欄位不要省略
-	}.Marshal(microserviceResponse)
-	if err != nil {
-		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONInternalServerError(c)
-	}
-
-	return c.JSONBlob(http.StatusOK, result)
+	return util.SendJSONResponse(c, microserviceResponse)
 }
 
 func (handler wordHandler) CreateFavoriteWordMeaning(c echo.Context) error {
@@ -81,9 +72,7 @@ func (handler wordHandler) CreateFavoriteWordMeaning(c echo.Context) error {
 		return util.SendJSONInternalServerError(c)
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"favoriteWordMeaningId": microserviceResponse.FavoriteWordMeaningId,
-	})
+	return util.SendJSONResponse(c, microserviceResponse)
 }
 
 func (handler wordHandler) DeleteFavoriteWordMeaning(c echo.Context) error {
@@ -136,15 +125,7 @@ func (handler wordHandler) FindFavoriteWordMeanings(c echo.Context) error {
 		return util.SendJSONInternalServerError(c)
 	}
 
-	result, err := protojson.MarshalOptions{
-		EmitUnpopulated: true, // Zero value 的欄位不要省略
-	}.Marshal(microserviceResponse)
-	if err != nil {
-		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONInternalServerError(c)
-	}
-
-	return c.JSONBlob(http.StatusOK, result)
+	return util.SendJSONResponse(c, microserviceResponse)
 }
 
 func (handler wordHandler) FindRandomFavoriteWordMeanings(c echo.Context) error {
@@ -162,13 +143,5 @@ func (handler wordHandler) FindRandomFavoriteWordMeanings(c echo.Context) error 
 		return util.SendJSONInternalServerError(c)
 	}
 
-	result, err := protojson.MarshalOptions{
-		EmitUnpopulated: true, // Zero value 的欄位不要省略
-	}.Marshal(microserviceResponse)
-	if err != nil {
-		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONInternalServerError(c)
-	}
-
-	return c.JSONBlob(http.StatusOK, result)
+	return util.SendJSONResponse(c, microserviceResponse)
 }

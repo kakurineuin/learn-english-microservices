@@ -20,6 +20,7 @@ type ExamHandler interface {
 	DeleteExam(c echo.Context) error
 	FindQuestions(c echo.Context) error
 	CreateQuestion(c echo.Context) error
+	UpdateQuestion(c echo.Context) error
 }
 
 type examHandler struct {
@@ -219,6 +220,36 @@ func (handler examHandler) CreateQuestion(c echo.Context) error {
 	userId := utilGetJWTClaims(c).UserId
 	microserviceResponse, err := handler.examServce.CreateQuestion(
 		examId,
+		requestBody.Ask,
+		requestBody.Answers,
+		userId,
+	)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONInternalServerError(c)
+	}
+
+	return util.SendJSONResponse(c, microserviceResponse)
+}
+
+func (handler examHandler) UpdateQuestion(c echo.Context) error {
+	type RequestBody struct {
+		QuestionId string   `json:"_id"`
+		Ask        string   `json:"ask"`
+		Answers    []string `json:"answers"`
+	}
+
+	errorMessage := "UpdateQuestion failed! error: %w"
+
+	requestBody := new(RequestBody)
+	if err := c.Bind(&requestBody); err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONBadRequest(c)
+	}
+
+	userId := utilGetJWTClaims(c).UserId
+	microserviceResponse, err := handler.examServce.UpdateQuestion(
+		requestBody.QuestionId,
 		requestBody.Ask,
 		requestBody.Answers,
 		userId,

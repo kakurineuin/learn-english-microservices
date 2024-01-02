@@ -276,3 +276,29 @@ func (s *MyTestSuite) TestCreateQuestion() {
 	s.Equal(http.StatusOK, rec.Code)
 	s.JSONEq(`{"questionId": "question01"}`, rec.Body.String())
 }
+
+func (s *MyTestSuite) TestUpdateQuestion() {
+	// Setup
+	requestJSON := `{
+		"_id": "question01",
+  	"ask": "ask01",
+  	"answers": ["a01", "a02"]
+	}`
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPatch, "/", strings.NewReader(requestJSON))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	s.mockExamService.EXPECT().
+		UpdateQuestion("question01", "ask01", []string{"a01", "a02"}, USER_ID).
+		Return(&pb.UpdateQuestionResponse{
+			QuestionId: "question01",
+		}, nil)
+
+	// Test
+	err := s.examHandler.UpdateQuestion(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.JSONEq(`{"questionId": "question01"}`, rec.Body.String())
+}

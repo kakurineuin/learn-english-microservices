@@ -32,6 +32,9 @@ type ExamService interface {
 	CreateQuestion(
 		examId, ask string, answers []string, userId string,
 	) (*pb.CreateQuestionResponse, error)
+	UpdateQuestion(
+		questionId, ask string, answers []string, userId string,
+	) (*pb.UpdateQuestionResponse, error)
 }
 
 func New(serverAddress string) ExamService {
@@ -161,6 +164,20 @@ func (service examService) CreateQuestion(
 			Ask:     ask,
 			Answers: answers,
 			UserId:  userId,
+		},
+	)
+}
+
+func (service examService) UpdateQuestion(
+	questionId, ask string, answers []string, userId string,
+) (*pb.UpdateQuestionResponse, error) {
+	return service.client.UpdateQuestion(
+		context.Background(),
+		&pb.UpdateQuestionRequest{
+			QuestionId: questionId,
+			Ask:        ask,
+			Answers:    answers,
+			UserId:     userId,
 		},
 	)
 }

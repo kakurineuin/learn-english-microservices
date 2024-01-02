@@ -474,6 +474,67 @@ func (_c *MockExamService_UpdateExam_Call) RunAndReturn(run func(string, string,
 	return _c
 }
 
+// UpdateQuestion provides a mock function with given fields: questionId, ask, answers, userId
+func (_m *MockExamService) UpdateQuestion(questionId string, ask string, answers []string, userId string) (*pb.UpdateQuestionResponse, error) {
+	ret := _m.Called(questionId, ask, answers, userId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateQuestion")
+	}
+
+	var r0 *pb.UpdateQuestionResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string, string, []string, string) (*pb.UpdateQuestionResponse, error)); ok {
+		return rf(questionId, ask, answers, userId)
+	}
+	if rf, ok := ret.Get(0).(func(string, string, []string, string) *pb.UpdateQuestionResponse); ok {
+		r0 = rf(questionId, ask, answers, userId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*pb.UpdateQuestionResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string, string, []string, string) error); ok {
+		r1 = rf(questionId, ask, answers, userId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockExamService_UpdateQuestion_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateQuestion'
+type MockExamService_UpdateQuestion_Call struct {
+	*mock.Call
+}
+
+// UpdateQuestion is a helper method to define mock.On call
+//   - questionId string
+//   - ask string
+//   - answers []string
+//   - userId string
+func (_e *MockExamService_Expecter) UpdateQuestion(questionId interface{}, ask interface{}, answers interface{}, userId interface{}) *MockExamService_UpdateQuestion_Call {
+	return &MockExamService_UpdateQuestion_Call{Call: _e.mock.On("UpdateQuestion", questionId, ask, answers, userId)}
+}
+
+func (_c *MockExamService_UpdateQuestion_Call) Run(run func(questionId string, ask string, answers []string, userId string)) *MockExamService_UpdateQuestion_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string), args[1].(string), args[2].([]string), args[3].(string))
+	})
+	return _c
+}
+
+func (_c *MockExamService_UpdateQuestion_Call) Return(_a0 *pb.UpdateQuestionResponse, _a1 error) *MockExamService_UpdateQuestion_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockExamService_UpdateQuestion_Call) RunAndReturn(run func(string, string, []string, string) (*pb.UpdateQuestionResponse, error)) *MockExamService_UpdateQuestion_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewMockExamService creates a new instance of MockExamService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockExamService(t interface {
