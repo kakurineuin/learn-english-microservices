@@ -325,3 +325,67 @@ func (s *MyTestSuite) TestDeleteQuestion() {
 	s.Equal(http.StatusOK, rec.Code)
 	s.Empty(rec.Body.String())
 }
+
+func (s *MyTestSuite) TestFindRandomQuestions() {
+	// Setup
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	examId := "exam01"
+	c.SetParamNames("examId")
+	c.SetParamValues(examId)
+	var size int32 = 10
+
+	s.mockExamService.EXPECT().
+		FindRandomQuestions(examId, USER_ID, size).
+		Return(&pb.FindRandomQuestionsResponse{
+			Exam: &pb.Exam{
+				Id:          "examId01",
+				Topic:       "t01",
+				Description: "d01",
+				Tags:        []string{},
+				IsPublic:    true,
+				UserId:      USER_ID,
+				CreatedAt:   nil,
+				UpdatedAt:   nil,
+			},
+			Questions: []*pb.Question{
+				{
+					Id:        "id01",
+					ExamId:    examId,
+					Ask:       "ask01",
+					Answers:   []string{"a01", "a02"},
+					UserId:    USER_ID,
+					CreatedAt: nil,
+					UpdatedAt: nil,
+				},
+			},
+		}, nil)
+
+	// Test
+	err := s.examHandler.FindRandomQuestions(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.JSONEq(`{"exam": {
+		"_id": "examId01",
+		"topic": "t01",
+		"description": "d01",
+		"tags": [],
+		"isPublic": true,
+		"userId": "`+USER_ID+`",
+		"createdAt": null,
+		"updatedAt": null
+	}, 
+	"questions": [{
+		"_id": "id01",
+		"examId": "`+examId+`",
+		"ask": "ask01",
+		"answers": ["a01", "a02"],
+		"userId": "`+USER_ID+`",
+		"createdAt": null,
+		"updatedAt": null
+	}]}`, rec.Body.String())
+}

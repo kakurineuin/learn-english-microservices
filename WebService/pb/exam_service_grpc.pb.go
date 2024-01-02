@@ -30,6 +30,7 @@ type ExamServiceClient interface {
 	UpdateQuestion(ctx context.Context, in *UpdateQuestionRequest, opts ...grpc.CallOption) (*UpdateQuestionResponse, error)
 	FindQuestions(ctx context.Context, in *FindQuestionsRequest, opts ...grpc.CallOption) (*FindQuestionsResponse, error)
 	DeleteQuestion(ctx context.Context, in *DeleteQuestionRequest, opts ...grpc.CallOption) (*DeleteQuestionResponse, error)
+	FindRandomQuestions(ctx context.Context, in *FindRandomQuestionsRequest, opts ...grpc.CallOption) (*FindRandomQuestionsResponse, error)
 	CreateExamRecord(ctx context.Context, in *CreateExamRecordRequest, opts ...grpc.CallOption) (*CreateExamRecordResponse, error)
 	FindExamRecords(ctx context.Context, in *FindExamRecordsRequest, opts ...grpc.CallOption) (*FindExamRecordsResponse, error)
 	FindExamInfos(ctx context.Context, in *FindExamInfosRequest, opts ...grpc.CallOption) (*FindExamInfosResponse, error)
@@ -115,6 +116,15 @@ func (c *examServiceClient) DeleteQuestion(ctx context.Context, in *DeleteQuesti
 	return out, nil
 }
 
+func (c *examServiceClient) FindRandomQuestions(ctx context.Context, in *FindRandomQuestionsRequest, opts ...grpc.CallOption) (*FindRandomQuestionsResponse, error) {
+	out := new(FindRandomQuestionsResponse)
+	err := c.cc.Invoke(ctx, "/pb.ExamService/FindRandomQuestions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *examServiceClient) CreateExamRecord(ctx context.Context, in *CreateExamRecordRequest, opts ...grpc.CallOption) (*CreateExamRecordResponse, error) {
 	out := new(CreateExamRecordResponse)
 	err := c.cc.Invoke(ctx, "/pb.ExamService/CreateExamRecord", in, out, opts...)
@@ -154,6 +164,7 @@ type ExamServiceServer interface {
 	UpdateQuestion(context.Context, *UpdateQuestionRequest) (*UpdateQuestionResponse, error)
 	FindQuestions(context.Context, *FindQuestionsRequest) (*FindQuestionsResponse, error)
 	DeleteQuestion(context.Context, *DeleteQuestionRequest) (*DeleteQuestionResponse, error)
+	FindRandomQuestions(context.Context, *FindRandomQuestionsRequest) (*FindRandomQuestionsResponse, error)
 	CreateExamRecord(context.Context, *CreateExamRecordRequest) (*CreateExamRecordResponse, error)
 	FindExamRecords(context.Context, *FindExamRecordsRequest) (*FindExamRecordsResponse, error)
 	FindExamInfos(context.Context, *FindExamInfosRequest) (*FindExamInfosResponse, error)
@@ -187,6 +198,9 @@ func (UnimplementedExamServiceServer) FindQuestions(context.Context, *FindQuesti
 }
 func (UnimplementedExamServiceServer) DeleteQuestion(context.Context, *DeleteQuestionRequest) (*DeleteQuestionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteQuestion not implemented")
+}
+func (UnimplementedExamServiceServer) FindRandomQuestions(context.Context, *FindRandomQuestionsRequest) (*FindRandomQuestionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindRandomQuestions not implemented")
 }
 func (UnimplementedExamServiceServer) CreateExamRecord(context.Context, *CreateExamRecordRequest) (*CreateExamRecordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateExamRecord not implemented")
@@ -354,6 +368,24 @@ func _ExamService_DeleteQuestion_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExamService_FindRandomQuestions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindRandomQuestionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExamServiceServer).FindRandomQuestions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.ExamService/FindRandomQuestions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExamServiceServer).FindRandomQuestions(ctx, req.(*FindRandomQuestionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ExamService_CreateExamRecord_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateExamRecordRequest)
 	if err := dec(in); err != nil {
@@ -446,6 +478,10 @@ var ExamService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteQuestion",
 			Handler:    _ExamService_DeleteQuestion_Handler,
+		},
+		{
+			MethodName: "FindRandomQuestions",
+			Handler:    _ExamService_FindRandomQuestions_Handler,
 		},
 		{
 			MethodName: "CreateExamRecord",

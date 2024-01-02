@@ -22,6 +22,7 @@ type ExamHandler interface {
 	CreateQuestion(c echo.Context) error
 	UpdateQuestion(c echo.Context) error
 	DeleteQuestion(c echo.Context) error
+	FindRandomQuestions(c echo.Context) error
 }
 
 type examHandler struct {
@@ -286,4 +287,32 @@ func (handler examHandler) DeleteQuestion(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusOK)
+}
+
+func (handler examHandler) FindRandomQuestions(c echo.Context) error {
+	errorMessage := "FindRandomQuestions failed! error: %w"
+
+	examId := ""
+	err := echo.PathParamsBinder(c).
+		String("examId", &examId).
+		BindError() // returns first binding error
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONBadRequest(c)
+	}
+
+	userId := utilGetJWTClaims(c).UserId
+	var size int32 = 10
+
+	microserviceResponse, err := handler.examServce.FindRandomQuestions(
+		examId,
+		userId,
+		size,
+	)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONInternalServerError(c)
+	}
+
+	return util.SendJSONResponse(c, microserviceResponse)
 }

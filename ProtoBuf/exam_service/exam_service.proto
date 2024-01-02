@@ -103,6 +103,17 @@ message DeleteQuestionRequest {
 
 message DeleteQuestionResponse {}
 
+message FindRandomQuestionsRequest {
+  string exam_id = 1;
+  string user_id = 2;
+  int32 size = 3;
+}
+
+message FindRandomQuestionsResponse {
+  Exam exam = 1;
+  repeated Question questions = 2;
+}
+
 message ExamRecord {
   string id = 1 [ json_name = "_id" ];
   string exam_id = 2;
@@ -160,6 +171,8 @@ service ExamService {
   rpc UpdateQuestion(UpdateQuestionRequest) returns (UpdateQuestionResponse);
   rpc FindQuestions(FindQuestionsRequest) returns (FindQuestionsResponse);
   rpc DeleteQuestion(DeleteQuestionRequest) returns (DeleteQuestionResponse);
+  rpc FindRandomQuestions(FindRandomQuestionsRequest)
+      returns (FindRandomQuestionsResponse);
 
   rpc CreateExamRecord(CreateExamRecordRequest)
       returns (CreateExamRecordResponse);

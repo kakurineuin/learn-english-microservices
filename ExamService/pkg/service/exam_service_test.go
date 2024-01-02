@@ -314,6 +314,45 @@ func (s *MyTestSuite) TestDeleteQuestion() {
 	s.Nil(err)
 }
 
+func (s *MyTestSuite) TestFindRandomQuestions() {
+	// Setup
+	id := primitive.NewObjectID()
+	examId := id.Hex()
+	userId := "user01"
+	var size int32 = 10
+	var limit int32 = 1
+	var questionCount int32 = 5
+
+	s.mockDatabaseRepository.EXPECT().
+		GetExamById(mock.Anything, examId).
+		Return(&model.Exam{
+			Id:          id,
+			Topic:       "topic01",
+			Description: "desc01",
+			Tags:        []string{"t01"},
+			IsPublic:    true,
+			UserId:      userId,
+		}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		FindQuestionsByExamIdOrderByUpdateAtDesc(mock.Anything, examId, mock.Anything, limit).
+		Return([]model.Question{
+			{},
+		}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		CountQuestionsByExamId(mock.Anything, examId).
+		Return(questionCount, nil)
+
+	// Test
+	exam, questions, err := s.examService.FindRandomQuestions(
+		examId,
+		userId,
+		size,
+	)
+	s.Nil(err)
+	s.NotEmpty(exam)
+	s.EqualValues(questionCount, len(questions))
+}
+
 func (s *MyTestSuite) TestCreateExamRecord() {
 	// Setup
 	userId := "user01"

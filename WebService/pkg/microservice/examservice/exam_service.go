@@ -38,6 +38,9 @@ type ExamService interface {
 	DeleteQuestion(
 		questionId, userId string,
 	) (*pb.DeleteQuestionResponse, error)
+	FindRandomQuestions(
+		examId, userId string, size int32,
+	) (*pb.FindRandomQuestionsResponse, error)
 }
 
 func New(serverAddress string) ExamService {
@@ -193,6 +196,19 @@ func (service examService) DeleteQuestion(
 		&pb.DeleteQuestionRequest{
 			QuestionId: questionId,
 			UserId:     userId,
+		},
+	)
+}
+
+func (service examService) FindRandomQuestions(
+	examId, userId string, size int32,
+) (*pb.FindRandomQuestionsResponse, error) {
+	return service.client.FindRandomQuestions(
+		context.Background(),
+		&pb.FindRandomQuestionsRequest{
+			ExamId: examId,
+			UserId: userId,
+			Size:   size,
 		},
 	)
 }

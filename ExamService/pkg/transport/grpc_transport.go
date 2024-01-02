@@ -10,18 +10,22 @@ import (
 
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pb"
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/endpoint"
+	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/model"
 )
 
 type GRPCServer struct {
+	logger log.Logger
+
 	createExam gt.Handler
 	updateExam gt.Handler
 	findExams  gt.Handler
 	deleteExam gt.Handler
 
-	createQuestion gt.Handler
-	updateQuestion gt.Handler
-	findQuestions  gt.Handler
-	deleteQuestion gt.Handler
+	createQuestion      gt.Handler
+	updateQuestion      gt.Handler
+	findQuestions       gt.Handler
+	deleteQuestion      gt.Handler
+	findRandomQuestions gt.Handler
 
 	createExamRecord gt.Handler
 	findExamRecords  gt.Handler
@@ -34,6 +38,8 @@ type GRPCServer struct {
 // NewGRPCServer initializes a new gRPC server
 func NewGRPCServer(endpointds endpoint.Endpoints, logger log.Logger) pb.ExamServiceServer {
 	return &GRPCServer{
+		logger: logger,
+
 		// Exam
 		createExam: gt.NewServer(
 			endpointds.CreateExam,
@@ -76,6 +82,11 @@ func NewGRPCServer(endpointds endpoint.Endpoints, logger log.Logger) pb.ExamServ
 			endpointds.DeleteQuestion,
 			decodeDeleteQuestionRequest,
 			encodeDeleteQuestionResponse,
+		),
+		findRandomQuestions: gt.NewServer(
+			endpointds.FindRandomQuestions,
+			decodeFindRandomQuestionsRequest,
+			encodeFindRandomQuestionsResponse,
 		),
 
 		// ExamRecord
@@ -208,16 +219,7 @@ func encodeFindExamsResponse(_ context.Context, response interface{}) (interface
 	exams := []*pb.Exam{}
 
 	for _, exam := range resp.Exams {
-		exams = append(exams, &pb.Exam{
-			Id:          exam.Id.Hex(),
-			Topic:       exam.Topic,
-			Description: exam.Description,
-			IsPublic:    exam.IsPublic,
-			Tags:        exam.Tags,
-			UserId:      exam.UserId,
-			CreatedAt:   timestamppb.New(exam.CreatedAt),
-			UpdatedAt:   timestamppb.New(exam.UpdatedAt),
-		})
+		exams = append(exams, toPBExam(&exam))
 	}
 
 	return &pb.FindExamsResponse{
@@ -369,15 +371,7 @@ func encodeFindQuestionsResponse(_ context.Context, response interface{}) (inter
 	questions := []*pb.Question{}
 
 	for _, question := range resp.Questions {
-		questions = append(questions, &pb.Question{
-			Id:        question.Id.Hex(),
-			ExamId:    question.ExamId,
-			Ask:       question.Ask,
-			Answers:   question.Answers,
-			UserId:    question.UserId,
-			CreatedAt: timestamppb.New(question.CreatedAt),
-			UpdatedAt: timestamppb.New(question.UpdatedAt),
-		})
+		questions = append(questions, toPBQuestion(&question))
 	}
 
 	return &pb.FindQuestionsResponse{
@@ -418,6 +412,53 @@ func encodeDeleteQuestionResponse(_ context.Context, response interface{}) (inte
 	}
 
 	return &pb.DeleteQuestionResponse{}, nil
+}
+
+func (s GRPCServer) FindRandomQuestions(
+	ctx context.Context,
+	req *pb.FindRandomQuestionsRequest,
+) (*pb.FindRandomQuestionsResponse, error) {
+	_, resp, err := s.findRandomQuestions.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb.FindRandomQuestionsResponse), nil
+}
+
+func decodeFindRandomQuestionsRequest(_ context.Context, request interface{}) (interface{}, error) {
+	req, ok := request.(*pb.FindRandomQuestionsRequest)
+	if !ok {
+		return nil, errors.New("invalid request body")
+	}
+
+	return endpoint.FindRandomQuestionsRequest{
+		ExamId: req.ExamId,
+		UserId: req.UserId,
+		Size:   req.Size,
+	}, nil
+}
+
+func encodeFindRandomQuestionsResponse(
+	_ context.Context,
+	response interface{},
+) (interface{}, error) {
+	resp, ok := response.(endpoint.FindRandomQuestionsResponse)
+	if !ok {
+		return nil, errors.New("invalid response body")
+	}
+
+	exam := toPBExam(resp.Exam)
+	questions := []*pb.Question{}
+
+	for _, question := range resp.Questions {
+		questions = append(questions, toPBQuestion(&question))
+	}
+
+	return &pb.FindRandomQuestionsResponse{
+		Exam:      exam,
+		Questions: questions,
+	}, nil
 }
 
 func (s GRPCServer) CreateExamRecord(
@@ -553,4 +594,37 @@ func encodeFindExamInfosResponse(_ context.Context, response interface{}) (inter
 	return &pb.FindExamInfosResponse{
 		ExamInfos: examInfos,
 	}, nil
+}
+
+func toPBExam(exam *model.Exam) *pb.Exam {
+	if exam == nil {
+		return nil
+	}
+
+	return &pb.Exam{
+		Id:          exam.Id.Hex(),
+		Topic:       exam.Topic,
+		Description: exam.Description,
+		Tags:        exam.Tags,
+		IsPublic:    exam.IsPublic,
+		UserId:      exam.UserId,
+		CreatedAt:   timestamppb.New(exam.CreatedAt),
+		UpdatedAt:   timestamppb.New(exam.UpdatedAt),
+	}
+}
+
+func toPBQuestion(question *model.Question) *pb.Question {
+	if question == nil {
+		return nil
+	}
+
+	return &pb.Question{
+		Id:        question.Id.Hex(),
+		ExamId:    question.ExamId,
+		Ask:       question.Ask,
+		Answers:   question.Answers,
+		UserId:    question.UserId,
+		CreatedAt: timestamppb.New(question.CreatedAt),
+		UpdatedAt: timestamppb.New(question.UpdatedAt),
+	}
 }

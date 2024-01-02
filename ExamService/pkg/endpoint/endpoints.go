@@ -16,10 +16,11 @@ type Endpoints struct {
 	FindExams  endpoint.Endpoint
 	DeleteExam endpoint.Endpoint
 
-	CreateQuestion endpoint.Endpoint
-	UpdateQuestion endpoint.Endpoint
-	FindQuestions  endpoint.Endpoint
-	DeleteQuestion endpoint.Endpoint
+	CreateQuestion      endpoint.Endpoint
+	UpdateQuestion      endpoint.Endpoint
+	FindQuestions       endpoint.Endpoint
+	DeleteQuestion      endpoint.Endpoint
+	FindRandomQuestions endpoint.Endpoint
 
 	CreateExamRecord endpoint.Endpoint
 	FindExamRecords  endpoint.Endpoint
@@ -72,16 +73,21 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	findExamInfosEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "FindExamInfos"))(findExamInfosEndpoint)
 
+	findRandomQuestionsEndpoint := makeFindRandomQuestionsEndpoint(examService)
+	findRandomQuestionsEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "FindRandomQuestions"))(findRandomQuestionsEndpoint)
+
 	return Endpoints{
 		CreateExam: createExamEndpoint,
 		UpdateExam: updateExamEndpoint,
 		FindExams:  findExamsEndpoint,
 		DeleteExam: deleteExamEndpoint,
 
-		CreateQuestion: createQuestionEndpoint,
-		UpdateQuestion: updateQuestionEndpoint,
-		FindQuestions:  findQuestionsEndpoint,
-		DeleteQuestion: deleteQuestionEndpoint,
+		CreateQuestion:      createQuestionEndpoint,
+		UpdateQuestion:      updateQuestionEndpoint,
+		FindQuestions:       findQuestionsEndpoint,
+		DeleteQuestion:      deleteQuestionEndpoint,
+		FindRandomQuestions: findRandomQuestionsEndpoint,
 
 		CreateExamRecord: createExamRecordEndpoint,
 		FindExamRecords:  findExamRecordsEndpoint,
@@ -359,6 +365,35 @@ func makeFindExamInfosEndpoint(examService service.ExamService) endpoint.Endpoin
 		}
 		return FindExamInfosResponse{
 			ExamInfos: examInfos,
+		}, nil
+	}
+}
+
+type FindRandomQuestionsRequest struct {
+	ExamId string
+	UserId string
+	Size   int32
+}
+
+type FindRandomQuestionsResponse struct {
+	Exam      *model.Exam
+	Questions []model.Question
+}
+
+func makeFindRandomQuestionsEndpoint(examService service.ExamService) endpoint.Endpoint {
+	return func(_ context.Context, request interface{}) (interface{}, error) {
+		req := request.(FindRandomQuestionsRequest)
+		exam, quesitons, err := examService.FindRandomQuestions(
+			req.ExamId,
+			req.UserId,
+			req.Size,
+		)
+		if err != nil {
+			return nil, err
+		}
+		return FindRandomQuestionsResponse{
+			Exam:      exam,
+			Questions: quesitons,
 		}, nil
 	}
 }

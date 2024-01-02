@@ -168,3 +168,17 @@ func (mw loggingMiddleware) FindExamInfos(
 	}()
 	return mw.next.FindExamInfos(userId, isPublic)
 }
+
+func (mw loggingMiddleware) FindRandomQuestions(
+	examId, userId string, size int32,
+) (exam *model.Exam, questions []model.Question, err error) {
+	defer func() {
+		mw.logger.Log(
+			"method", "FindRandomQuestions",
+			"examId", examId,
+			"userId", userId,
+			"size", size,
+			"err", err)
+	}()
+	return mw.next.FindRandomQuestions(examId, userId, size)
+}

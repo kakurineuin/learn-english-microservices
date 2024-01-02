@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"math/rand"
+	"time"
 
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
@@ -42,6 +44,9 @@ type ExamService interface {
 		examId, userId string,
 	) (total, pageCount int32, questions []model.Question, err error)
 	DeleteQuestion(questionId, userId string) error
+	FindRandomQuestions(
+		examId, userId string, size int32,
+	) (exam *model.Exam, questions []model.Question, err error)
 
 	// ExamRecord
 	CreateExamRecord(examId string, score int32, wrongQuestionIds []string, userId string) error
@@ -570,4 +575,75 @@ func (examService examService) FindExamInfos(
 	}
 
 	return examInfos, nil
+}
+
+func (examService examService) FindRandomQuestions(
+	examId, userId string, size int32,
+) (exam *model.Exam, questions []model.Question, err error) {
+	errorLogger := examService.errorLogger
+	errorMessage := "FindRandomQuestions failed! error: %w"
+
+	databaseRepository := examService.databaseRepository
+	exam, err = databaseRepository.GetExamById(context.TODO(), examId)
+
+	if err != nil {
+		errorLogger.Log("err", err)
+		return nil, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	if exam == nil {
+		return nil, []model.Question{}, nil
+	}
+
+	// 若測驗是不公開，則只有本人可以作測驗
+	if !exam.IsPublic && exam.UserId != userId {
+		err = unauthorizedOperationError
+		errorLogger.Log("err", err)
+		return nil, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	total, err := databaseRepository.CountQuestionsByExamId(
+		context.TODO(),
+		examId,
+	)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return nil, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	// 總數是零，表示使用者還沒新增 Question
+	if total == 0 {
+		return exam, []model.Question{}, nil
+	}
+
+	indexes := []int32{}
+
+	for i := int32(0); i < total; i++ {
+		indexes = append(indexes, i)
+	}
+
+	// 將 indexes 隨機洗牌，然後根據洗牌後的 indexes 順序去查詢，達到隨機排序的效果
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	rng.Shuffle(len(indexes), func(i, j int) {
+		indexes[i], indexes[j] = indexes[j], indexes[i]
+	})
+
+	maxQueryTotal := min(total, size)
+
+	for i := int32(0); i < maxQueryTotal; i++ {
+		findQuestions, err := databaseRepository.FindQuestionsByExamIdOrderByUpdateAtDesc(
+			context.TODO(),
+			examId,
+			indexes[i],
+			1,
+		)
+		if err != nil {
+			errorLogger.Log("err", err)
+			return nil, nil, fmt.Errorf(errorMessage, err)
+		}
+
+		questions = append(questions, findQuestions[0])
+	}
+
+	return exam, questions, nil
 }

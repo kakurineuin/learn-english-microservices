@@ -12,17 +12,14 @@ import { Exam } from '../models/Exam';
 import PageHeading from '../components/PageHeading';
 import ShowText from '../components/ShowText';
 
-type Location = {
-  state: {
-    exam: Exam;
-  };
+type LocationState = {
+  exam: Exam;
 };
 
 function QuestionManager() {
   const {
     state: { exam },
-  }: Location = useLocation();
-  console.log('location exam', exam);
+  }: { state: LocationState } = useLocation();
 
   return (
     <Container maxW="container.xl" mt="3">
