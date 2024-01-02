@@ -302,3 +302,26 @@ func (s *MyTestSuite) TestUpdateQuestion() {
 	s.Equal(http.StatusOK, rec.Code)
 	s.JSONEq(`{"questionId": "question01"}`, rec.Body.String())
 }
+
+func (s *MyTestSuite) TestDeleteQuestion() {
+	// Setup
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodDelete, "/", nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	questionId := "question01"
+	c.SetParamNames("questionId")
+	c.SetParamValues(questionId)
+
+	s.mockExamService.EXPECT().
+		DeleteQuestion(questionId, USER_ID).
+		Return(&pb.DeleteQuestionResponse{}, nil)
+
+	// Test
+	err := s.examHandler.DeleteQuestion(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.Empty(rec.Body.String())
+}

@@ -121,6 +121,7 @@ func setupAPIHandlers(
 	restrictedApi.GET("/exam/:examId/question", examHandler.FindQuestions)
 	restrictedApi.POST("/exam/:examId/question", examHandler.CreateQuestion)
 	restrictedApi.PATCH("/exam/:examId/question", examHandler.UpdateQuestion)
+	restrictedApi.DELETE("/exam/:examId/question/:questionId", examHandler.DeleteQuestion)
 
 	restrictedApi.GET("/word/:word", wordHandler.FindWordMeanings)
 	restrictedApi.POST("/word/favorite", wordHandler.CreateFavoriteWordMeaning)

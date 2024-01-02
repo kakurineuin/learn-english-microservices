@@ -246,6 +246,65 @@ func (_c *MockExamService_DeleteExam_Call) RunAndReturn(run func(string, string)
 	return _c
 }
 
+// DeleteQuestion provides a mock function with given fields: questionId, userId
+func (_m *MockExamService) DeleteQuestion(questionId string, userId string) (*pb.DeleteQuestionResponse, error) {
+	ret := _m.Called(questionId, userId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteQuestion")
+	}
+
+	var r0 *pb.DeleteQuestionResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string, string) (*pb.DeleteQuestionResponse, error)); ok {
+		return rf(questionId, userId)
+	}
+	if rf, ok := ret.Get(0).(func(string, string) *pb.DeleteQuestionResponse); ok {
+		r0 = rf(questionId, userId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*pb.DeleteQuestionResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string, string) error); ok {
+		r1 = rf(questionId, userId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockExamService_DeleteQuestion_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteQuestion'
+type MockExamService_DeleteQuestion_Call struct {
+	*mock.Call
+}
+
+// DeleteQuestion is a helper method to define mock.On call
+//   - questionId string
+//   - userId string
+func (_e *MockExamService_Expecter) DeleteQuestion(questionId interface{}, userId interface{}) *MockExamService_DeleteQuestion_Call {
+	return &MockExamService_DeleteQuestion_Call{Call: _e.mock.On("DeleteQuestion", questionId, userId)}
+}
+
+func (_c *MockExamService_DeleteQuestion_Call) Run(run func(questionId string, userId string)) *MockExamService_DeleteQuestion_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockExamService_DeleteQuestion_Call) Return(_a0 *pb.DeleteQuestionResponse, _a1 error) *MockExamService_DeleteQuestion_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockExamService_DeleteQuestion_Call) RunAndReturn(run func(string, string) (*pb.DeleteQuestionResponse, error)) *MockExamService_DeleteQuestion_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Disconnect provides a mock function with given fields:
 func (_m *MockExamService) Disconnect() error {
 	ret := _m.Called()

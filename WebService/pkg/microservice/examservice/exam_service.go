@@ -35,6 +35,9 @@ type ExamService interface {
 	UpdateQuestion(
 		questionId, ask string, answers []string, userId string,
 	) (*pb.UpdateQuestionResponse, error)
+	DeleteQuestion(
+		questionId, userId string,
+	) (*pb.DeleteQuestionResponse, error)
 }
 
 func New(serverAddress string) ExamService {
@@ -177,6 +180,18 @@ func (service examService) UpdateQuestion(
 			QuestionId: questionId,
 			Ask:        ask,
 			Answers:    answers,
+			UserId:     userId,
+		},
+	)
+}
+
+func (service examService) DeleteQuestion(
+	questionId, userId string,
+) (*pb.DeleteQuestionResponse, error) {
+	return service.client.DeleteQuestion(
+		context.Background(),
+		&pb.DeleteQuestionRequest{
+			QuestionId: questionId,
 			UserId:     userId,
 		},
 	)
