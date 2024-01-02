@@ -59,18 +59,6 @@ function PaginationTable({
 
   const [prevRefreshId, setPrevRefreshId] = useState(refreshId);
 
-  // TODO: 這是舊的寫法，測試 refreshId 功能沒問題後就刪除
-  // // 重新查詢並顯示第1頁
-  // useEffect(() => {
-  //   if (pageIndex === 0) {
-  //     fetchData(pageIndex, pageSize);
-  //   } else {
-  //     gotoPage(0);
-  //   }
-  //
-  //   // eslint-disable-next-line
-  // }, [refreshId]);
-
   useEffect(() => {
     // 重新查詢並顯示第1頁
     if (prevRefreshId !== refreshId) {

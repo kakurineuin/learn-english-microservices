@@ -7,6 +7,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/config"
 )
@@ -59,4 +61,21 @@ func SendJSONInternalServerError(c echo.Context) error {
 	return c.JSON(http.StatusInternalServerError, echo.Map{
 		"message": "系統發生錯誤！",
 	})
+}
+
+func SendJSONResponse(
+	c echo.Context,
+	microserviceResponse protoreflect.ProtoMessage,
+) error {
+	errorMessage := "SendJSONByProtojson failed! error: %w"
+
+	result, err := protojson.MarshalOptions{
+		EmitUnpopulated: true, // Zero value 的欄位不要省略
+	}.Marshal(microserviceResponse)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return SendJSONInternalServerError(c)
+	}
+
+	return c.JSONBlob(http.StatusOK, result)
 }

@@ -63,7 +63,9 @@ function ExamList() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  navigate(`/restricted/exam/${row.values._id}`);
+                  navigate(`/restricted/exam/${row.values._id}`, {
+                    state: { exam: row.values },
+                  });
                 }}
               >
                 題目

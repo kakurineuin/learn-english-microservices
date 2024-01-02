@@ -199,3 +199,80 @@ func (s *MyTestSuite) TestDeleteExam() {
 	s.Equal(http.StatusOK, rec.Code)
 	s.Empty(rec.Body.String())
 }
+
+func (s *MyTestSuite) TestFindQuestions() {
+	// Setup
+	e := echo.New()
+	q := make(url.Values)
+	q.Set("pageIndex", "0")
+	q.Set("pageSize", "10")
+	req := httptest.NewRequest(http.MethodGet, "/?"+q.Encode(), nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	examId := "exam01"
+	c.SetParamNames("examId")
+	c.SetParamValues(examId)
+
+	s.mockExamService.EXPECT().
+		FindQuestions(int32(0), int32(10), examId, USER_ID).
+		Return(&pb.FindQuestionsResponse{
+			Total:     1,
+			PageCount: 1,
+			Questions: []*pb.Question{
+				{
+					Id:        "id01",
+					ExamId:    examId,
+					Ask:       "ask01",
+					Answers:   []string{"a01", "a02"},
+					UserId:    USER_ID,
+					CreatedAt: nil,
+					UpdatedAt: nil,
+				},
+			},
+		}, nil)
+
+	// Test
+	err := s.examHandler.FindQuestions(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.JSONEq(`{"total": 1, "pageCount": 1, "questions": [{
+		"_id": "id01",
+		"examId": "`+examId+`",
+		"ask": "ask01",
+		"answers": ["a01", "a02"],
+		"userId": "`+USER_ID+`",
+		"createdAt": null,
+		"updatedAt": null
+	}]}`, rec.Body.String())
+}
+
+func (s *MyTestSuite) TestCreateQuestion() {
+	// Setup
+	requestJSON := `{
+  	"ask": "ask01",
+  	"answers": ["a01", "a02"]
+	}`
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(requestJSON))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	examId := "exam01"
+	c.SetParamNames("examId")
+	c.SetParamValues(examId)
+
+	s.mockExamService.EXPECT().
+		CreateQuestion(examId, "ask01", []string{"a01", "a02"}, USER_ID).
+		Return(&pb.CreateQuestionResponse{
+			QuestionId: "question01",
+		}, nil)
+
+	// Test
+	err := s.examHandler.CreateQuestion(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.JSONEq(`{"questionId": "question01"}`, rec.Body.String())
+}

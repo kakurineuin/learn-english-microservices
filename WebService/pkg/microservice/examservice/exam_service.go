@@ -15,26 +15,23 @@ type ExamService interface {
 	Connect() error
 	Disconnect() error
 	CreateExam(
-		topic,
-		description string,
-		isPublic bool,
-		userId string,
+		topic, description string, isPublic bool, userId string,
 	) (*pb.CreateExamResponse, error)
 	FindExams(
-		pageIndex, pageSize int32,
-		userId string,
+		pageIndex, pageSize int32, userId string,
 	) (*pb.FindExamsResponse, error)
 	UpdateExam(
-		examId,
-		topic,
-		description string,
-		isPublic bool,
-		userId string,
+		examId, topic, description string, isPublic bool, userId string,
 	) (*pb.UpdateExamResponse, error)
 	DeleteExam(
-		examId,
-		userId string,
+		examId, userId string,
 	) (*pb.DeleteExamResponse, error)
+	FindQuestions(
+		pageIndex, pageSize int32, examId, userId string,
+	) (*pb.FindQuestionsResponse, error)
+	CreateQuestion(
+		examId, ask string, answers []string, userId string,
+	) (*pb.CreateQuestionResponse, error)
 }
 
 func New(serverAddress string) ExamService {
@@ -135,6 +132,35 @@ func (examServiceClient examService) DeleteExam(
 		&pb.DeleteExamRequest{
 			ExamId: examId,
 			UserId: userId,
+		},
+	)
+}
+
+func (service examService) FindQuestions(
+	pageIndex, pageSize int32,
+	examId, userId string,
+) (*pb.FindQuestionsResponse, error) {
+	return service.client.FindQuestions(
+		context.Background(),
+		&pb.FindQuestionsRequest{
+			PageIndex: pageIndex,
+			PageSize:  pageSize,
+			ExamId:    examId,
+			UserId:    userId,
+		},
+	)
+}
+
+func (service examService) CreateQuestion(
+	examId, ask string, answers []string, userId string,
+) (*pb.CreateQuestionResponse, error) {
+	return service.client.CreateQuestion(
+		context.Background(),
+		&pb.CreateQuestionRequest{
+			ExamId:  examId,
+			Ask:     ask,
+			Answers: answers,
+			UserId:  userId,
 		},
 	)
 }

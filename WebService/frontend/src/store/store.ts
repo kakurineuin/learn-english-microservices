@@ -6,7 +6,7 @@ import {
 import { loaderReducer } from './slices/loaderSlice';
 import { sessionReducer } from './slices/sessionSlice';
 import { examManagerReducer } from './slices/examManagerSlice';
-// import { questionManagerReducer } from './slices/questionManagerSlice';
+import { questionManagerReducer } from './slices/questionManagerSlice';
 import { askFormReducer } from './slices/askFormSlice';
 // import { examRecordManagerReducer } from './slices/examRecordManagerSlice';
 
@@ -15,7 +15,7 @@ const rootReducer = combineReducers({
   loader: loaderReducer,
   session: sessionReducer,
   examManager: examManagerReducer,
-  // questionManager: questionManagerReducer,
+  questionManager: questionManagerReducer,
   askForm: askFormReducer,
   // examRecordManager: examRecordManagerReducer,
 });

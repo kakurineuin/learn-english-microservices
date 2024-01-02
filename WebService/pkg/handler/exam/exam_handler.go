@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/microservice/examservice"
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/util"
@@ -19,6 +18,8 @@ type ExamHandler interface {
 	FindExams(c echo.Context) error
 	UpdateExam(c echo.Context) error
 	DeleteExam(c echo.Context) error
+	FindQuestions(c echo.Context) error
+	CreateQuestion(c echo.Context) error
 }
 
 type examHandler struct {
@@ -59,9 +60,7 @@ func (handler examHandler) CreateExam(c echo.Context) error {
 		return util.SendJSONInternalServerError(c)
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"examId": microserviceResponse.ExamId,
-	})
+	return util.SendJSONResponse(c, microserviceResponse)
 }
 
 func (handler examHandler) FindExams(c echo.Context) error {
@@ -93,15 +92,7 @@ func (handler examHandler) FindExams(c echo.Context) error {
 		return util.SendJSONInternalServerError(c)
 	}
 
-	result, err := protojson.MarshalOptions{
-		EmitUnpopulated: true, // Zero value 的欄位不要省略
-	}.Marshal(microserviceResponse)
-	if err != nil {
-		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONInternalServerError(c)
-	}
-
-	return c.JSONBlob(http.StatusOK, result)
+	return util.SendJSONResponse(c, microserviceResponse)
 }
 
 func (handler examHandler) UpdateExam(c echo.Context) error {
@@ -134,9 +125,7 @@ func (handler examHandler) UpdateExam(c echo.Context) error {
 		return util.SendJSONInternalServerError(c)
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{
-		"examId": microserviceResponse.ExamId,
-	})
+	return util.SendJSONResponse(c, microserviceResponse)
 }
 
 func (handler examHandler) DeleteExam(c echo.Context) error {
@@ -160,4 +149,84 @@ func (handler examHandler) DeleteExam(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusOK)
+}
+
+func (handler examHandler) FindQuestions(c echo.Context) error {
+	errorMessage := "FindQuestions failed! error: %w"
+
+	var (
+		examId    string = ""
+		pageIndex int32  = 0
+		pageSize  int32  = 0
+	)
+
+	err := echo.PathParamsBinder(c).
+		String("examId", &examId).
+		BindError() // returns first binding error
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONBadRequest(c)
+	}
+
+	err = echo.QueryParamsBinder(c).
+		Int32("pageIndex", &pageIndex).
+		Int32("pageSize", &pageSize).
+		BindError() // returns first binding error
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONBadRequest(c)
+	}
+
+	userId := utilGetJWTClaims(c).UserId
+
+	microserviceResponse, err := handler.examServce.FindQuestions(
+		pageIndex,
+		pageSize,
+		examId,
+		userId,
+	)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONInternalServerError(c)
+	}
+
+	return util.SendJSONResponse(c, microserviceResponse)
+}
+
+func (handler examHandler) CreateQuestion(c echo.Context) error {
+	type RequestBody struct {
+		Ask     string   `json:"ask"`
+		Answers []string `json:"answers"`
+	}
+
+	errorMessage := "CreateQuestion failed! error: %w"
+
+	examId := ""
+	err := echo.PathParamsBinder(c).
+		String("examId", &examId).
+		BindError() // returns first binding error
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONBadRequest(c)
+	}
+
+	requestBody := new(RequestBody)
+	if err := c.Bind(&requestBody); err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONBadRequest(c)
+	}
+
+	userId := utilGetJWTClaims(c).UserId
+	microserviceResponse, err := handler.examServce.CreateQuestion(
+		examId,
+		requestBody.Ask,
+		requestBody.Answers,
+		userId,
+	)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONInternalServerError(c)
+	}
+
+	return util.SendJSONResponse(c, microserviceResponse)
 }

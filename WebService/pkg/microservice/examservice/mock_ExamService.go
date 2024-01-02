@@ -126,6 +126,67 @@ func (_c *MockExamService_CreateExam_Call) RunAndReturn(run func(string, string,
 	return _c
 }
 
+// CreateQuestion provides a mock function with given fields: examId, ask, answers, userId
+func (_m *MockExamService) CreateQuestion(examId string, ask string, answers []string, userId string) (*pb.CreateQuestionResponse, error) {
+	ret := _m.Called(examId, ask, answers, userId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateQuestion")
+	}
+
+	var r0 *pb.CreateQuestionResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string, string, []string, string) (*pb.CreateQuestionResponse, error)); ok {
+		return rf(examId, ask, answers, userId)
+	}
+	if rf, ok := ret.Get(0).(func(string, string, []string, string) *pb.CreateQuestionResponse); ok {
+		r0 = rf(examId, ask, answers, userId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*pb.CreateQuestionResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string, string, []string, string) error); ok {
+		r1 = rf(examId, ask, answers, userId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockExamService_CreateQuestion_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateQuestion'
+type MockExamService_CreateQuestion_Call struct {
+	*mock.Call
+}
+
+// CreateQuestion is a helper method to define mock.On call
+//   - examId string
+//   - ask string
+//   - answers []string
+//   - userId string
+func (_e *MockExamService_Expecter) CreateQuestion(examId interface{}, ask interface{}, answers interface{}, userId interface{}) *MockExamService_CreateQuestion_Call {
+	return &MockExamService_CreateQuestion_Call{Call: _e.mock.On("CreateQuestion", examId, ask, answers, userId)}
+}
+
+func (_c *MockExamService_CreateQuestion_Call) Run(run func(examId string, ask string, answers []string, userId string)) *MockExamService_CreateQuestion_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string), args[1].(string), args[2].([]string), args[3].(string))
+	})
+	return _c
+}
+
+func (_c *MockExamService_CreateQuestion_Call) Return(_a0 *pb.CreateQuestionResponse, _a1 error) *MockExamService_CreateQuestion_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockExamService_CreateQuestion_Call) RunAndReturn(run func(string, string, []string, string) (*pb.CreateQuestionResponse, error)) *MockExamService_CreateQuestion_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteExam provides a mock function with given fields: examId, userId
 func (_m *MockExamService) DeleteExam(examId string, userId string) (*pb.DeleteExamResponse, error) {
 	ret := _m.Called(examId, userId)
@@ -286,6 +347,67 @@ func (_c *MockExamService_FindExams_Call) Return(_a0 *pb.FindExamsResponse, _a1 
 }
 
 func (_c *MockExamService_FindExams_Call) RunAndReturn(run func(int32, int32, string) (*pb.FindExamsResponse, error)) *MockExamService_FindExams_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FindQuestions provides a mock function with given fields: pageIndex, pageSize, examId, userId
+func (_m *MockExamService) FindQuestions(pageIndex int32, pageSize int32, examId string, userId string) (*pb.FindQuestionsResponse, error) {
+	ret := _m.Called(pageIndex, pageSize, examId, userId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindQuestions")
+	}
+
+	var r0 *pb.FindQuestionsResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(int32, int32, string, string) (*pb.FindQuestionsResponse, error)); ok {
+		return rf(pageIndex, pageSize, examId, userId)
+	}
+	if rf, ok := ret.Get(0).(func(int32, int32, string, string) *pb.FindQuestionsResponse); ok {
+		r0 = rf(pageIndex, pageSize, examId, userId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*pb.FindQuestionsResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(int32, int32, string, string) error); ok {
+		r1 = rf(pageIndex, pageSize, examId, userId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockExamService_FindQuestions_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindQuestions'
+type MockExamService_FindQuestions_Call struct {
+	*mock.Call
+}
+
+// FindQuestions is a helper method to define mock.On call
+//   - pageIndex int32
+//   - pageSize int32
+//   - examId string
+//   - userId string
+func (_e *MockExamService_Expecter) FindQuestions(pageIndex interface{}, pageSize interface{}, examId interface{}, userId interface{}) *MockExamService_FindQuestions_Call {
+	return &MockExamService_FindQuestions_Call{Call: _e.mock.On("FindQuestions", pageIndex, pageSize, examId, userId)}
+}
+
+func (_c *MockExamService_FindQuestions_Call) Run(run func(pageIndex int32, pageSize int32, examId string, userId string)) *MockExamService_FindQuestions_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(int32), args[1].(int32), args[2].(string), args[3].(string))
+	})
+	return _c
+}
+
+func (_c *MockExamService_FindQuestions_Call) Return(_a0 *pb.FindQuestionsResponse, _a1 error) *MockExamService_FindQuestions_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockExamService_FindQuestions_Call) RunAndReturn(run func(int32, int32, string, string) (*pb.FindQuestionsResponse, error)) *MockExamService_FindQuestions_Call {
 	_c.Call.Return(run)
 	return _c
 }

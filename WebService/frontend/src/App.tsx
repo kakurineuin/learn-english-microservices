@@ -13,6 +13,7 @@ import WordManager from './routes/WordManager';
 import FavoriteWordMeaningManager from './routes/FavoriteWordMeaningManager';
 import WordCard from './routes/WordCard';
 import ExamManager from './routes/ExamManager';
+import QuestionManager from './routes/QuestionManager';
 
 axios.defaults.baseURL = `${import.meta.env.VITE_BACKEND_URL}/api`;
 axios.defaults.withCredentials = true;
@@ -53,6 +54,10 @@ function App() {
         {
           path: '/restricted/exam',
           element: <ExamManager />,
+        },
+        {
+          path: '/restricted/exam/:examId',
+          element: <QuestionManager />,
         },
         {
           path: '/restricted/word',
