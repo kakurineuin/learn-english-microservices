@@ -41,6 +41,9 @@ type ExamService interface {
 	FindRandomQuestions(
 		examId, userId string, size int32,
 	) (*pb.FindRandomQuestionsResponse, error)
+	CreateExamRecord(
+		examId string, score int32, wrongQuestionIds []string, userId string,
+	) (*pb.CreateExamRecordResponse, error)
 }
 
 func New(serverAddress string) ExamService {
@@ -209,6 +212,20 @@ func (service examService) FindRandomQuestions(
 			ExamId: examId,
 			UserId: userId,
 			Size:   size,
+		},
+	)
+}
+
+func (service examService) CreateExamRecord(
+	examId string, score int32, wrongQuestionIds []string, userId string,
+) (*pb.CreateExamRecordResponse, error) {
+	return service.client.CreateExamRecord(
+		context.Background(),
+		&pb.CreateExamRecordRequest{
+			ExamId:           examId,
+			Score:            score,
+			WrongQuestionIds: wrongQuestionIds,
+			UserId:           userId,
 		},
 	)
 }

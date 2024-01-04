@@ -126,6 +126,67 @@ func (_c *MockExamService_CreateExam_Call) RunAndReturn(run func(string, string,
 	return _c
 }
 
+// CreateExamRecord provides a mock function with given fields: examId, score, wrongQuestionIds, userId
+func (_m *MockExamService) CreateExamRecord(examId string, score int32, wrongQuestionIds []string, userId string) (*pb.CreateExamRecordResponse, error) {
+	ret := _m.Called(examId, score, wrongQuestionIds, userId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateExamRecord")
+	}
+
+	var r0 *pb.CreateExamRecordResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string, int32, []string, string) (*pb.CreateExamRecordResponse, error)); ok {
+		return rf(examId, score, wrongQuestionIds, userId)
+	}
+	if rf, ok := ret.Get(0).(func(string, int32, []string, string) *pb.CreateExamRecordResponse); ok {
+		r0 = rf(examId, score, wrongQuestionIds, userId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*pb.CreateExamRecordResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string, int32, []string, string) error); ok {
+		r1 = rf(examId, score, wrongQuestionIds, userId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockExamService_CreateExamRecord_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateExamRecord'
+type MockExamService_CreateExamRecord_Call struct {
+	*mock.Call
+}
+
+// CreateExamRecord is a helper method to define mock.On call
+//   - examId string
+//   - score int32
+//   - wrongQuestionIds []string
+//   - userId string
+func (_e *MockExamService_Expecter) CreateExamRecord(examId interface{}, score interface{}, wrongQuestionIds interface{}, userId interface{}) *MockExamService_CreateExamRecord_Call {
+	return &MockExamService_CreateExamRecord_Call{Call: _e.mock.On("CreateExamRecord", examId, score, wrongQuestionIds, userId)}
+}
+
+func (_c *MockExamService_CreateExamRecord_Call) Run(run func(examId string, score int32, wrongQuestionIds []string, userId string)) *MockExamService_CreateExamRecord_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string), args[1].(int32), args[2].([]string), args[3].(string))
+	})
+	return _c
+}
+
+func (_c *MockExamService_CreateExamRecord_Call) Return(_a0 *pb.CreateExamRecordResponse, _a1 error) *MockExamService_CreateExamRecord_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockExamService_CreateExamRecord_Call) RunAndReturn(run func(string, int32, []string, string) (*pb.CreateExamRecordResponse, error)) *MockExamService_CreateExamRecord_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateQuestion provides a mock function with given fields: examId, ask, answers, userId
 func (_m *MockExamService) CreateQuestion(examId string, ask string, answers []string, userId string) (*pb.CreateQuestionResponse, error) {
 	ret := _m.Called(examId, ask, answers, userId)

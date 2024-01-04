@@ -23,6 +23,7 @@ type ExamHandler interface {
 	UpdateQuestion(c echo.Context) error
 	DeleteQuestion(c echo.Context) error
 	FindRandomQuestions(c echo.Context) error
+	CreateExamRecord(c echo.Context) error
 }
 
 type examHandler struct {
@@ -308,6 +309,44 @@ func (handler examHandler) FindRandomQuestions(c echo.Context) error {
 		examId,
 		userId,
 		size,
+	)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONInternalServerError(c)
+	}
+
+	return util.SendJSONResponse(c, microserviceResponse)
+}
+
+func (handler examHandler) CreateExamRecord(c echo.Context) error {
+	type RequestBody struct {
+		Score            int32    `json:"score"`
+		WrongQuestionIds []string `json:"wrongQuestionIds"`
+	}
+
+	errorMessage := "CreateExamRecord failed! error: %w"
+
+	examId := ""
+	err := echo.PathParamsBinder(c).
+		String("examId", &examId).
+		BindError() // returns first binding error
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONBadRequest(c)
+	}
+
+	requestBody := new(RequestBody)
+	if err := c.Bind(&requestBody); err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONBadRequest(c)
+	}
+
+	userId := utilGetJWTClaims(c).UserId
+	microserviceResponse, err := handler.examServce.CreateExamRecord(
+		examId,
+		requestBody.Score,
+		requestBody.WrongQuestionIds,
+		userId,
 	)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))

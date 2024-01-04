@@ -389,3 +389,30 @@ func (s *MyTestSuite) TestFindRandomQuestions() {
 		"updatedAt": null
 	}]}`, rec.Body.String())
 }
+
+func (s *MyTestSuite) TestCreateExamRecord() {
+	// Setup
+	requestJSON := `{
+  	"Score": 10,
+  	"WrongQuestionIds": ["q01", "q02"]
+	}`
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(requestJSON))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	examId := "exam01"
+	c.SetParamNames("examId")
+	c.SetParamValues(examId)
+
+	s.mockExamService.EXPECT().
+		CreateExamRecord(examId, int32(10), []string{"q01", "q02"}, USER_ID).
+		Return(&pb.CreateExamRecordResponse{}, nil)
+
+	// Test
+	err := s.examHandler.CreateExamRecord(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.JSONEq(`{}`, rec.Body.String())
+}

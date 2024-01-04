@@ -46,7 +46,7 @@ function AskForm({ questions, onCreateExamRecord }: Props) {
       dispatch(loaderActions.toggleLoading());
 
       try {
-        await axios.post(`/exam/${questions[0].examId}/record`, {
+        await axios.post(`/restricted/exam/${questions[0].examId}/record`, {
           score,
           wrongQuestionIds,
         });
