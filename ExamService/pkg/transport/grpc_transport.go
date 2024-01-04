@@ -27,8 +27,9 @@ type GRPCServer struct {
 	deleteQuestion      gt.Handler
 	findRandomQuestions gt.Handler
 
-	createExamRecord gt.Handler
-	findExamRecords  gt.Handler
+	createExamRecord       gt.Handler
+	findExamRecords        gt.Handler
+	findExamRecordOverview gt.Handler
 
 	findExamInfos gt.Handler
 
@@ -99,6 +100,11 @@ func NewGRPCServer(endpointds endpoint.Endpoints, logger log.Logger) pb.ExamServ
 			endpointds.FindExamRecords,
 			decodeFindExamRecordsRequest,
 			encodeFindExamRecordsResponse,
+		),
+		findExamRecordOverview: gt.NewServer(
+			endpointds.FindExamRecordOverview,
+			decodeFindExamRecordOverviewRequest,
+			encodeFindExamRecordOverviewResponse,
 		),
 
 		// ExamInfo
@@ -531,20 +537,78 @@ func encodeFindExamRecordsResponse(_ context.Context, response interface{}) (int
 	examRecords := []*pb.ExamRecord{}
 
 	for _, examRecord := range resp.ExamRecords {
-		examRecords = append(examRecords, &pb.ExamRecord{
-			Id:        examRecord.Id.Hex(),
-			ExamId:    examRecord.ExamId,
-			Score:     examRecord.Score,
-			UserId:    examRecord.UserId,
-			CreatedAt: timestamppb.New(examRecord.CreatedAt),
-			UpdatedAt: timestamppb.New(examRecord.UpdatedAt),
-		})
+		examRecords = append(examRecords, toPBExamRecord(&examRecord))
 	}
 
 	return &pb.FindExamRecordsResponse{
 		Total:       resp.Total,
 		PageCount:   resp.PageCount,
 		ExamRecords: examRecords,
+	}, nil
+}
+
+func (s GRPCServer) FindExamRecordOverview(
+	ctx context.Context,
+	req *pb.FindExamRecordOverviewRequest,
+) (*pb.FindExamRecordOverviewResponse, error) {
+	_, resp, err := s.findExamRecordOverview.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb.FindExamRecordOverviewResponse), nil
+}
+
+func decodeFindExamRecordOverviewRequest(
+	_ context.Context,
+	request interface{},
+) (interface{}, error) {
+	req, ok := request.(*pb.FindExamRecordOverviewRequest)
+	if !ok {
+		return nil, errors.New("invalid request body")
+	}
+
+	return endpoint.FindExamRecordOverviewRequest{
+		ExamId:    req.ExamId,
+		UserId:    req.UserId,
+		StartDate: req.StartDate.AsTime(),
+	}, nil
+}
+
+func encodeFindExamRecordOverviewResponse(
+	_ context.Context,
+	response interface{},
+) (interface{}, error) {
+	resp, ok := response.(endpoint.FindExamRecordOverviewResponse)
+	if !ok {
+		return nil, errors.New("invalid response body")
+	}
+
+	exam := toPBExam(resp.Exam)
+	questions := []*pb.Question{}
+
+	for _, question := range resp.Questions {
+		questions = append(questions, toPBQuestion(&question))
+	}
+
+	answerWrongs := []*pb.AnswerWrong{}
+
+	for _, answerWrong := range resp.AnswerWrongs {
+		answerWrongs = append(answerWrongs, toPBAnswerWrong(&answerWrong))
+	}
+
+	examRecords := []*pb.ExamRecord{}
+
+	for _, examRecord := range resp.ExamRecords {
+		examRecords = append(examRecords, toPBExamRecord(&examRecord))
+	}
+
+	return &pb.FindExamRecordOverviewResponse{
+		StartDate:    resp.StartDate,
+		Exam:         exam,
+		Questions:    questions,
+		AnswerWrongs: answerWrongs,
+		ExamRecords:  examRecords,
 	}, nil
 }
 
@@ -626,5 +690,36 @@ func toPBQuestion(question *model.Question) *pb.Question {
 		UserId:    question.UserId,
 		CreatedAt: timestamppb.New(question.CreatedAt),
 		UpdatedAt: timestamppb.New(question.UpdatedAt),
+	}
+}
+
+func toPBAnswerWrong(answerWrong *model.AnswerWrong) *pb.AnswerWrong {
+	if answerWrong == nil {
+		return nil
+	}
+
+	return &pb.AnswerWrong{
+		Id:         answerWrong.Id.Hex(),
+		ExamId:     answerWrong.ExamId,
+		QuestionId: answerWrong.QuestionId,
+		Times:      answerWrong.Times,
+		UserId:     answerWrong.UserId,
+		CreatedAt:  timestamppb.New(answerWrong.CreatedAt),
+		UpdatedAt:  timestamppb.New(answerWrong.UpdatedAt),
+	}
+}
+
+func toPBExamRecord(examRecord *model.ExamRecord) *pb.ExamRecord {
+	if examRecord == nil {
+		return nil
+	}
+
+	return &pb.ExamRecord{
+		Id:        examRecord.Id.Hex(),
+		ExamId:    examRecord.ExamId,
+		Score:     examRecord.Score,
+		UserId:    examRecord.UserId,
+		CreatedAt: timestamppb.New(examRecord.CreatedAt),
+		UpdatedAt: timestamppb.New(examRecord.UpdatedAt),
 	}
 }

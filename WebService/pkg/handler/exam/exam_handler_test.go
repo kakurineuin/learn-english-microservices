@@ -10,6 +10,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/kakurineuin/learn-english-microservices/web-service/pb"
@@ -415,4 +416,30 @@ func (s *MyTestSuite) TestCreateExamRecord() {
 	s.Nil(err)
 	s.Equal(http.StatusOK, rec.Code)
 	s.JSONEq(`{}`, rec.Body.String())
+}
+
+func (s *MyTestSuite) TestFindExamRecordOverview() {
+	// Setup
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	examId := "exam01"
+	c.SetParamNames("examId")
+	c.SetParamValues(examId)
+
+	s.mockExamService.EXPECT().
+		FindExamRecordOverview(examId, USER_ID, mock.Anything).
+		Return(&pb.FindExamRecordOverviewResponse{}, nil)
+
+	// Test
+	err := s.examHandler.FindExamRecordOverview(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.JSONEq(
+		`{"startDate": "", "exam": null, "questions": [], "answerWrongs": [], "examRecords": []}`,
+		rec.Body.String(),
+	)
 }

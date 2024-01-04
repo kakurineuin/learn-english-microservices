@@ -3,7 +3,7 @@ import { Center, Heading } from '@chakra-ui/react';
 import InfoDialog from './InfoDialog';
 
 type Props = {
-  title: String;
+  title?: String;
   children?: ReactNode;
 };
 

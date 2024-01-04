@@ -15,10 +15,10 @@ import (
 )
 
 const (
-	EXAM_COLLECTION        = "exams"
-	QUESTION_COLLECTION    = "questions"
-	ANSWERWRONG_COLLECTION = "answerwrongs"
-	EXAM_RECORD_COLLECTION = "examrecords"
+	EXAM_COLLECTION         = "exams"
+	QUESTION_COLLECTION     = "questions"
+	ANSWER_WRONG_COLLECTION = "answerwrongs"
+	EXAM_RECORD_COLLECTION  = "examrecords"
 )
 
 type MongoDBRepository struct {
@@ -287,6 +287,37 @@ func (repo *MongoDBRepository) GetQuestionById(
 	return &result, nil
 }
 
+func (repo *MongoDBRepository) FindQuestionsByQuestionIds(
+	ctx context.Context,
+	questionIds []string,
+) (questions []model.Question, err error) {
+	ids := []primitive.ObjectID{}
+
+	for _, questionId := range questionIds {
+		id, err := primitive.ObjectIDFromHex(questionId)
+		if err != nil {
+			return nil, err
+		}
+
+		ids = append(ids, id)
+	}
+
+	collection := repo.getCollection(QUESTION_COLLECTION)
+	filter := bson.D{
+		{"_id", bson.D{{"$in", ids}}},
+	}
+	cursor, err := collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cursor.All(ctx, &questions); err != nil {
+		return nil, err
+	}
+
+	return questions, nil
+}
+
 func (repo *MongoDBRepository) FindQuestionsByExamIdOrderByUpdateAtDesc(
 	ctx context.Context,
 	examId string,
@@ -370,7 +401,7 @@ func (repo *MongoDBRepository) DeleteAnswerWrongsByQuestionId(
 	filter := bson.D{
 		{"questionId", questionId},
 	}
-	collection := repo.getCollection(ANSWERWRONG_COLLECTION)
+	collection := repo.getCollection(ANSWER_WRONG_COLLECTION)
 	result, err := collection.DeleteMany(ctx, filter)
 	if err != nil {
 		return 0, err
@@ -386,7 +417,7 @@ func (repo *MongoDBRepository) DeleteAnswerWrongsByExamId(
 	filter := bson.D{
 		{"examId", examId},
 	}
-	collection := repo.getCollection(ANSWERWRONG_COLLECTION)
+	collection := repo.getCollection(ANSWER_WRONG_COLLECTION)
 	result, err := collection.DeleteMany(ctx, filter)
 	if err != nil {
 		return 0, err
@@ -405,23 +436,55 @@ func (repo *MongoDBRepository) UpsertAnswerWrongByTimesPlusOne(
 		{"userId", userId},
 	}
 
+	now := time.Now()
+
+	// TODO: 拆成新增和修改兩個方法，這樣才能分別正確設定 createdAt, updatedAt
+
 	// times 遞增 1
 	update := bson.D{
 		{"$inc", bson.D{
 			{"times", 1},
+		}},
+		{"$set", bson.D{
+			{"createdAt", now},
+			{"updatedAt", now},
 		}},
 	}
 
 	// Enable update or insert
 	opts := options.Update().SetUpsert(true)
 
-	collection := repo.getCollection(ANSWERWRONG_COLLECTION)
+	collection := repo.getCollection(ANSWER_WRONG_COLLECTION)
 	result, err := collection.UpdateOne(ctx, filter, update, opts)
 	if err != nil {
 		return 0, 0, err
 	}
 
 	return int32(result.ModifiedCount), int32(result.UpsertedCount), nil
+}
+
+func (repo *MongoDBRepository) FindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc(
+	ctx context.Context,
+	examId, userId string,
+	limit int32,
+) (answerWrongs []model.AnswerWrong, err error) {
+	collection := repo.getCollection(ANSWER_WRONG_COLLECTION)
+	filter := bson.D{
+		{"examId", examId},
+		{"userId", userId},
+	}
+	sort := bson.D{{"times", -1}} // descending
+	opts := options.Find().SetSort(sort).SetLimit(int64(limit))
+	cursor, err := collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cursor.All(ctx, &answerWrongs); err != nil {
+		return nil, err
+	}
+
+	return answerWrongs, nil
 }
 
 func (repo *MongoDBRepository) DeleteExamRecordsByExamId(
@@ -497,6 +560,32 @@ func (repo *MongoDBRepository) CountExamRecordsByExamIdAndUserId(
 	}
 
 	return int32(result), nil
+}
+
+func (repo *MongoDBRepository) FindExamRecordsByExamIdAndUserIdAndCreatedAt(
+	ctx context.Context,
+	examId,
+	userId string,
+	createdAt time.Time,
+) (examRecords []model.ExamRecord, err error) {
+	collection := repo.getCollection(EXAM_RECORD_COLLECTION)
+	filter := bson.D{
+		{"examId", examId},
+		{"userId", userId},
+		{"createdAt", bson.D{{"$gte", primitive.NewDateTimeFromTime(createdAt)}}},
+	}
+	sort := bson.D{{"createdAt", 1}} // ascending
+	opts := options.Find().SetSort(sort)
+	cursor, err := collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cursor.All(ctx, &examRecords); err != nil {
+		return nil, err
+	}
+
+	return examRecords, nil
 }
 
 func (repo *MongoDBRepository) WithTransaction(

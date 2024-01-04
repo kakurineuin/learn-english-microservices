@@ -1,10 +1,12 @@
 package service
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"math"
 	"math/rand"
+	"slices"
 	"time"
 
 	"github.com/go-kit/log"
@@ -54,6 +56,16 @@ type ExamService interface {
 		pageIndex, pageSize int32,
 		examId, userId string,
 	) (total, pageCount int32, examRecords []model.ExamRecord, err error)
+	FindExamRecordOverview(
+		examId, userId string, startDate time.Time,
+	) (
+		strStartDate string,
+		exam *model.Exam,
+		questions []model.Question,
+		answerWrongs []model.AnswerWrong,
+		examRecords []model.ExamRecord,
+		err error,
+	)
 
 	// ExamInfo
 	FindExamInfos(userId string, isPublic bool) (examInfos []ExamInfo, err error)
@@ -521,6 +533,69 @@ func (examService examService) FindExamRecords(
 	pageCount = int32(math.Ceil(float64(total) / float64(pageSize)))
 	logger.Log("total", total, "pageCount", pageCount, "examRecords size", len(examRecords))
 	return
+}
+
+func (examService examService) FindExamRecordOverview(
+	examId, userId string, startDate time.Time,
+) (
+	strStartDate string,
+	exam *model.Exam,
+	questions []model.Question,
+	answerWrongs []model.AnswerWrong,
+	examRecords []model.ExamRecord,
+	err error,
+) {
+	errorLogger := examService.errorLogger
+	errorMessage := "FindExamRecordOverview failed: %w"
+
+	databaseRepository := examService.databaseRepository
+
+	// Exam
+	exam, err = databaseRepository.GetExamById(context.TODO(), examId)
+	if err != nil {
+		errorLogger.Log("err", err)
+		return "", nil, nil, nil, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	if exam == nil {
+		err := fmt.Errorf("Exam not found by id: %s", examId)
+		errorLogger.Log("err", err)
+		return "", nil, nil, nil, nil, fmt.Errorf(errorMessage, err)
+	}
+
+	// AnswerWrong
+	// 查詢此測驗中，該名使用者答錯次數最多的 10 個問題
+	answerWrongs, err = databaseRepository.FindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc(
+		context.TODO(),
+		examId,
+		userId,
+		10,
+	)
+	questionIds := []string{}
+
+	for _, answerWrong := range answerWrongs {
+		questionIds = append(questionIds, answerWrong.QuestionId)
+	}
+
+	// Question
+	questions, err = databaseRepository.FindQuestionsByQuestionIds(context.TODO(), questionIds)
+
+	// 依照 questionIds 原本的順序排序
+	slices.SortFunc(questions, func(q1, q2 model.Question) int {
+		index1 := slices.Index(questionIds, q1.Id.Hex())
+		index2 := slices.Index(questionIds, q2.Id.Hex())
+		return cmp.Compare(index1, index2)
+	})
+
+	// ExamRecord
+	examRecords, err = databaseRepository.FindExamRecordsByExamIdAndUserIdAndCreatedAt(
+		context.TODO(),
+		examId,
+		userId,
+		startDate,
+	)
+
+	return startDate.Format("2006/01/02"), exam, questions, answerWrongs, examRecords, err
 }
 
 func (examService examService) FindExamInfos(

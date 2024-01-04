@@ -2,10 +2,12 @@ package examservice
 
 import (
 	"context"
+	"time"
 
 	"github.com/labstack/gommon/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/kakurineuin/learn-english-microservices/web-service/pb"
 )
@@ -44,6 +46,9 @@ type ExamService interface {
 	CreateExamRecord(
 		examId string, score int32, wrongQuestionIds []string, userId string,
 	) (*pb.CreateExamRecordResponse, error)
+	FindExamRecordOverview(
+		examId, userId string, startDate time.Time,
+	) (*pb.FindExamRecordOverviewResponse, error)
 }
 
 func New(serverAddress string) ExamService {
@@ -226,6 +231,19 @@ func (service examService) CreateExamRecord(
 			Score:            score,
 			WrongQuestionIds: wrongQuestionIds,
 			UserId:           userId,
+		},
+	)
+}
+
+func (service examService) FindExamRecordOverview(
+	examId, userId string, startDate time.Time,
+) (*pb.FindExamRecordOverviewResponse, error) {
+	return service.client.FindExamRecordOverview(
+		context.Background(),
+		&pb.FindExamRecordOverviewRequest{
+			ExamId:    examId,
+			UserId:    userId,
+			StartDate: timestamppb.New(startDate),
 		},
 	)
 }

@@ -3,6 +3,8 @@
 package examservice
 
 import (
+	time "time"
+
 	pb "github.com/kakurineuin/learn-english-microservices/web-service/pb"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -407,6 +409,66 @@ func (_c *MockExamService_Disconnect_Call) Return(_a0 error) *MockExamService_Di
 }
 
 func (_c *MockExamService_Disconnect_Call) RunAndReturn(run func() error) *MockExamService_Disconnect_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FindExamRecordOverview provides a mock function with given fields: examId, userId, startDate
+func (_m *MockExamService) FindExamRecordOverview(examId string, userId string, startDate time.Time) (*pb.FindExamRecordOverviewResponse, error) {
+	ret := _m.Called(examId, userId, startDate)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindExamRecordOverview")
+	}
+
+	var r0 *pb.FindExamRecordOverviewResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string, string, time.Time) (*pb.FindExamRecordOverviewResponse, error)); ok {
+		return rf(examId, userId, startDate)
+	}
+	if rf, ok := ret.Get(0).(func(string, string, time.Time) *pb.FindExamRecordOverviewResponse); ok {
+		r0 = rf(examId, userId, startDate)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*pb.FindExamRecordOverviewResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string, string, time.Time) error); ok {
+		r1 = rf(examId, userId, startDate)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockExamService_FindExamRecordOverview_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindExamRecordOverview'
+type MockExamService_FindExamRecordOverview_Call struct {
+	*mock.Call
+}
+
+// FindExamRecordOverview is a helper method to define mock.On call
+//   - examId string
+//   - userId string
+//   - startDate time.Time
+func (_e *MockExamService_Expecter) FindExamRecordOverview(examId interface{}, userId interface{}, startDate interface{}) *MockExamService_FindExamRecordOverview_Call {
+	return &MockExamService_FindExamRecordOverview_Call{Call: _e.mock.On("FindExamRecordOverview", examId, userId, startDate)}
+}
+
+func (_c *MockExamService_FindExamRecordOverview_Call) Run(run func(examId string, userId string, startDate time.Time)) *MockExamService_FindExamRecordOverview_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string), args[1].(string), args[2].(time.Time))
+	})
+	return _c
+}
+
+func (_c *MockExamService_FindExamRecordOverview_Call) Return(_a0 *pb.FindExamRecordOverviewResponse, _a1 error) *MockExamService_FindExamRecordOverview_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockExamService_FindExamRecordOverview_Call) RunAndReturn(run func(string, string, time.Time) (*pb.FindExamRecordOverviewResponse, error)) *MockExamService_FindExamRecordOverview_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -67,30 +67,32 @@ function StartExam() {
 
   return (
     <Container maxW="container.xl" mt="3">
-      <motion.div
-        variants={fadeIn('down', 'tween', 0.2, 1)}
-        initial="hidden"
-        animate="show"
-        onAnimationComplete={() => setIsShowDescription(true)}
-      >
-        <PageHeading title={exam?.topic || ''} />
-        {isShowDescription && <ShowText>{exam?.description || ''}</ShowText>}
-        <Box textAlign="right">
-          <Button colorScheme="teal" variant="outline" onClick={refreshPage}>
-            再測驗一次
-          </Button>
+      {exam && (
+        <motion.div
+          variants={fadeIn('down', 'tween', 0.2, 1)}
+          initial="hidden"
+          animate="show"
+          onAnimationComplete={() => setIsShowDescription(true)}
+        >
+          <PageHeading title={exam.topic} />
+          {isShowDescription && <ShowText>{exam.description}</ShowText>}
+          <Box textAlign="right">
+            <Button colorScheme="teal" variant="outline" onClick={refreshPage}>
+              再測驗一次
+            </Button>
 
-          <Button
-            colorScheme="blue"
-            variant="outline"
-            ml="3"
-            isDisabled={isDisabledGoExamRecord}
-            onClick={goExamRecordClickHandler}
-          >
-            成績紀錄
-          </Button>
-        </Box>
-      </motion.div>
+            <Button
+              colorScheme="blue"
+              variant="outline"
+              ml="3"
+              isDisabled={isDisabledGoExamRecord}
+              onClick={goExamRecordClickHandler}
+            >
+              成績紀錄
+            </Button>
+          </Box>
+        </motion.div>
+      )}
       <Divider my={5} />
       {questions.length > 0 && (
         <AskForm

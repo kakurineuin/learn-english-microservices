@@ -145,6 +145,30 @@ message FindExamRecordsResponse {
   repeated ExamRecord exam_records = 3;
 }
 
+message AnswerWrong {
+  string id = 1 [ json_name = "_id" ];
+  string exam_id = 2;
+  string question_id = 3;
+  int32 times = 4;
+  string user_id = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message FindExamRecordOverviewRequest {
+  string exam_id = 1;
+  string user_id = 2;
+  google.protobuf.Timestamp start_date = 3;
+}
+
+message FindExamRecordOverviewResponse {
+  string start_date = 1;
+  Exam exam = 2;
+  repeated Question questions = 3;
+  repeated AnswerWrong answer_wrongs = 4;
+  repeated ExamRecord exam_records = 5;
+}
+
 message ExamInfo {
   string exam_id = 1;
   string topic = 2;
@@ -177,6 +201,8 @@ service ExamService {
   rpc CreateExamRecord(CreateExamRecordRequest)
       returns (CreateExamRecordResponse);
   rpc FindExamRecords(FindExamRecordsRequest) returns (FindExamRecordsResponse);
+  rpc FindExamRecordOverview(FindExamRecordOverviewRequest)
+      returns (FindExamRecordOverviewResponse);
 
   rpc FindExamInfos(FindExamInfosRequest) returns (FindExamInfosResponse);
 }

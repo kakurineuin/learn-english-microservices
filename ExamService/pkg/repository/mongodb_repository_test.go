@@ -323,6 +323,39 @@ func (s *MyTestSuite) TestGetQuestionById() {
 	s.NotNil(question)
 }
 
+func (s *MyTestSuite) TestFindQuestionsByQuestionIds() {
+	ctx := context.TODO()
+
+	examId := "TestFindQuestionsByQuestionIds"
+	userId := "user01"
+	documents := []interface{}{}
+	size := 10
+
+	for i := 0; i < size; i++ {
+		documents = append(documents, model.Question{
+			ExamId:  examId,
+			Ask:     fmt.Sprintf("Question_%d", i),
+			Answers: []string{"a01", "a02"},
+			UserId:  userId,
+		})
+	}
+	result, err := s.questionCollection.InsertMany(ctx, documents)
+	s.Nil(err)
+
+	questionIds := []string{}
+
+	for _, id := range result.InsertedIDs {
+		questionIds = append(questionIds, id.(primitive.ObjectID).Hex())
+	}
+
+	questions, err := s.repo.FindQuestionsByQuestionIds(
+		ctx,
+		questionIds,
+	)
+	s.Nil(err)
+	s.Equal(size, len(questions))
+}
+
 func (s *MyTestSuite) TestFindQuestionsByExamIdOrderByUpdateAtDesc() {
 	ctx := context.TODO()
 
@@ -491,6 +524,35 @@ func (s *MyTestSuite) TestUpsertAnswerWrongByTimesPlusOne() {
 	s.Equal(int32(0), upsertedCount)
 }
 
+func (s *MyTestSuite) TestFindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc() {
+	ctx := context.TODO()
+
+	examId := "FindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc"
+	userId := "user01"
+	documents := []interface{}{}
+	size := 10
+
+	for i := 0; i < size; i++ {
+		documents = append(documents, model.AnswerWrong{
+			ExamId:     examId,
+			QuestionId: fmt.Sprintf("question%d", i+1),
+			Times:      int32(i + 1),
+			UserId:     userId,
+		})
+	}
+	_, err := s.answerWrongCollection.InsertMany(ctx, documents)
+	s.Nil(err)
+
+	answerWrongs, err := s.repo.FindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc(
+		ctx,
+		examId,
+		userId,
+		int32(size),
+	)
+	s.Nil(err)
+	s.Equal(size, len(answerWrongs))
+}
+
 func (s *MyTestSuite) TestDeleteExamRecordsByExamId() {
 	ctx := context.TODO()
 
@@ -574,6 +636,38 @@ func (s *MyTestSuite) TestCountExamRecordsByExamIdAndUserId() {
 	count, err := s.repo.CountExamRecordsByExamIdAndUserId(ctx, examId, userId)
 	s.Nil(err)
 	s.Equal(int32(size), count)
+}
+
+func (s *MyTestSuite) TestFindExamRecordsByExamIdAndUserIdAndCreatedAt() {
+	ctx := context.TODO()
+
+	examId := "TestFindExamRecordsByExamIdAndUserIdAndCreatedAt"
+	userId := "user01"
+	documents := []interface{}{}
+	size := 10
+	now := time.Now()
+
+	for i := 0; i < size; i++ {
+		documents = append(documents, model.ExamRecord{
+			ExamId:    examId,
+			Score:     10,
+			UserId:    userId,
+			CreatedAt: now,
+			UpdatedAt: now,
+		})
+	}
+	_, err := s.examRecordCollection.InsertMany(ctx, documents)
+	s.Nil(err)
+
+	createdAt := time.Now().AddDate(0, 0, -29)
+	examRecords, err := s.repo.FindExamRecordsByExamIdAndUserIdAndCreatedAt(
+		ctx,
+		examId,
+		userId,
+		createdAt,
+	)
+	s.Nil(err)
+	s.Equal(size, len(examRecords))
 }
 
 // testcontainers mongodb 不支援交易功能，所以註解此測試

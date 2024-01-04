@@ -33,6 +33,7 @@ type ExamServiceClient interface {
 	FindRandomQuestions(ctx context.Context, in *FindRandomQuestionsRequest, opts ...grpc.CallOption) (*FindRandomQuestionsResponse, error)
 	CreateExamRecord(ctx context.Context, in *CreateExamRecordRequest, opts ...grpc.CallOption) (*CreateExamRecordResponse, error)
 	FindExamRecords(ctx context.Context, in *FindExamRecordsRequest, opts ...grpc.CallOption) (*FindExamRecordsResponse, error)
+	FindExamRecordOverview(ctx context.Context, in *FindExamRecordOverviewRequest, opts ...grpc.CallOption) (*FindExamRecordOverviewResponse, error)
 	FindExamInfos(ctx context.Context, in *FindExamInfosRequest, opts ...grpc.CallOption) (*FindExamInfosResponse, error)
 }
 
@@ -143,6 +144,15 @@ func (c *examServiceClient) FindExamRecords(ctx context.Context, in *FindExamRec
 	return out, nil
 }
 
+func (c *examServiceClient) FindExamRecordOverview(ctx context.Context, in *FindExamRecordOverviewRequest, opts ...grpc.CallOption) (*FindExamRecordOverviewResponse, error) {
+	out := new(FindExamRecordOverviewResponse)
+	err := c.cc.Invoke(ctx, "/pb.ExamService/FindExamRecordOverview", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *examServiceClient) FindExamInfos(ctx context.Context, in *FindExamInfosRequest, opts ...grpc.CallOption) (*FindExamInfosResponse, error) {
 	out := new(FindExamInfosResponse)
 	err := c.cc.Invoke(ctx, "/pb.ExamService/FindExamInfos", in, out, opts...)
@@ -167,6 +177,7 @@ type ExamServiceServer interface {
 	FindRandomQuestions(context.Context, *FindRandomQuestionsRequest) (*FindRandomQuestionsResponse, error)
 	CreateExamRecord(context.Context, *CreateExamRecordRequest) (*CreateExamRecordResponse, error)
 	FindExamRecords(context.Context, *FindExamRecordsRequest) (*FindExamRecordsResponse, error)
+	FindExamRecordOverview(context.Context, *FindExamRecordOverviewRequest) (*FindExamRecordOverviewResponse, error)
 	FindExamInfos(context.Context, *FindExamInfosRequest) (*FindExamInfosResponse, error)
 	mustEmbedUnimplementedExamServiceServer()
 }
@@ -207,6 +218,9 @@ func (UnimplementedExamServiceServer) CreateExamRecord(context.Context, *CreateE
 }
 func (UnimplementedExamServiceServer) FindExamRecords(context.Context, *FindExamRecordsRequest) (*FindExamRecordsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindExamRecords not implemented")
+}
+func (UnimplementedExamServiceServer) FindExamRecordOverview(context.Context, *FindExamRecordOverviewRequest) (*FindExamRecordOverviewResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FindExamRecordOverview not implemented")
 }
 func (UnimplementedExamServiceServer) FindExamInfos(context.Context, *FindExamInfosRequest) (*FindExamInfosResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindExamInfos not implemented")
@@ -422,6 +436,24 @@ func _ExamService_FindExamRecords_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExamService_FindExamRecordOverview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FindExamRecordOverviewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExamServiceServer).FindExamRecordOverview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.ExamService/FindExamRecordOverview",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExamServiceServer).FindExamRecordOverview(ctx, req.(*FindExamRecordOverviewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ExamService_FindExamInfos_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(FindExamInfosRequest)
 	if err := dec(in); err != nil {
@@ -490,6 +522,10 @@ var ExamService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FindExamRecords",
 			Handler:    _ExamService_FindExamRecords_Handler,
+		},
+		{
+			MethodName: "FindExamRecordOverview",
+			Handler:    _ExamService_FindExamRecordOverview_Handler,
 		},
 		{
 			MethodName: "FindExamInfos",

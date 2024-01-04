@@ -31,7 +31,7 @@ type FontSize =
   | '6xl';
 
 type Props = {
-  children: string;
+  children?: string;
   as?: As;
   fontSize?: FontSize;
   color?: string;
@@ -44,7 +44,7 @@ type Props = {
 };
 
 function ShowText({
-  children,
+  children = '',
   as,
   fontSize,
   color,

@@ -1,6 +1,8 @@
 package service
 
 import (
+	"time"
+
 	"github.com/go-kit/log"
 
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/model"
@@ -154,6 +156,27 @@ func (mw loggingMiddleware) FindExamRecords(
 			"err", err)
 	}()
 	return mw.next.FindExamRecords(pageIndex, pageSize, examId, userId)
+}
+
+func (mw loggingMiddleware) FindExamRecordOverview(
+	examId, userId string, startDate time.Time,
+) (
+	strStartDate string,
+	exam *model.Exam,
+	questions []model.Question,
+	answerWrongs []model.AnswerWrong,
+	examRecords []model.ExamRecord,
+	err error,
+) {
+	defer func() {
+		mw.logger.Log(
+			"method", "FindExamRecordOverview",
+			"exmaId", examId,
+			"userId", userId,
+			"startDate", startDate,
+			"err", err)
+	}()
+	return mw.next.FindExamRecordOverview(examId, userId, startDate)
 }
 
 func (mw loggingMiddleware) FindExamInfos(

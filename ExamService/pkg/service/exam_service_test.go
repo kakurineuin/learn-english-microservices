@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"testing"
+	"time"
 
 	gokitlog "github.com/go-kit/log"
 	"github.com/go-kit/log/level"
@@ -381,6 +382,102 @@ func (s *MyTestSuite) TestCreateExamRecord() {
 		userId,
 	)
 	s.Nil(err)
+}
+
+func (s *MyTestSuite) TestFindExamRecords() {
+	// Setup
+	examId := "exam01"
+	userId := "user01"
+	var pageIndex int32 = 0
+	var pageSize int32 = 10
+	skip := pageIndex * pageSize
+	limit := pageSize
+
+	s.mockDatabaseRepository.EXPECT().
+		FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc(
+			mock.Anything,
+			examId,
+			userId,
+			skip,
+			limit,
+		).
+		Return([]model.ExamRecord{
+			{},
+			{},
+			{},
+		}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		CountExamRecordsByExamIdAndUserId(mock.Anything, examId, userId).
+		Return(3, nil)
+
+	// Test
+	total, pageCount, examRecords, err := s.examService.FindExamRecords(
+		pageIndex,
+		pageSize,
+		examId,
+		userId,
+	)
+	s.Nil(err)
+	s.EqualValues(3, total)
+	s.EqualValues(1, pageCount)
+	s.Equal(3, len(examRecords))
+}
+
+func (s *MyTestSuite) TestFindExamRecordOverview() {
+	// Setup
+	examId := "exam01"
+	userId := "user01"
+	startDate := time.Now()
+	var limit int32 = 10
+
+	s.mockDatabaseRepository.EXPECT().
+		GetExamById(
+			mock.Anything,
+			examId,
+		).
+		Return(&model.Exam{}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		FindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc(mock.Anything, examId, userId, limit).
+		Return([]model.AnswerWrong{
+			{
+				ExamId:     examId,
+				QuestionId: "q01",
+				Times:      1,
+				UserId:     userId,
+			},
+			{
+				ExamId:     examId,
+				QuestionId: "q02",
+				Times:      2,
+				UserId:     userId,
+			},
+		}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		FindQuestionsByQuestionIds(mock.Anything, []string{"q01", "q02"}).
+		Return([]model.Question{
+			{},
+			{},
+		}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		FindExamRecordsByExamIdAndUserIdAndCreatedAt(mock.Anything, examId, userId, startDate).
+		Return([]model.ExamRecord{
+			{},
+			{},
+			{},
+		}, nil)
+
+	// Test
+	strStartDate, exam, questions, answerWrongs, examRecords, err := s.examService.FindExamRecordOverview(
+		examId,
+		userId,
+		startDate,
+	)
+	s.Nil(err)
+	s.Equal(startDate.Format("2006/01/02"), strStartDate)
+	s.NotNil(exam)
+	s.Equal(2, len(questions))
+	s.Equal(2, len(answerWrongs))
+	s.Equal(3, len(examRecords))
 }
 
 func (s *MyTestSuite) TestFindExamInfos() {

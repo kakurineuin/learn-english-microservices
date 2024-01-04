@@ -2,6 +2,7 @@ package endpoint
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-kit/kit/endpoint"
 	"github.com/go-kit/log"
@@ -22,8 +23,9 @@ type Endpoints struct {
 	DeleteQuestion      endpoint.Endpoint
 	FindRandomQuestions endpoint.Endpoint
 
-	CreateExamRecord endpoint.Endpoint
-	FindExamRecords  endpoint.Endpoint
+	CreateExamRecord       endpoint.Endpoint
+	FindExamRecords        endpoint.Endpoint
+	FindExamRecordOverview endpoint.Endpoint
 
 	FindExamInfos endpoint.Endpoint
 }
@@ -61,6 +63,10 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	deleteQuestionEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "DeleteQuestion"))(deleteQuestionEndpoint)
 
+	findRandomQuestionsEndpoint := makeFindRandomQuestionsEndpoint(examService)
+	findRandomQuestionsEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "FindRandomQuestions"))(findRandomQuestionsEndpoint)
+
 	createExamRecordEndpoint := makeCreateExamRecordEndpoint(examService)
 	createExamRecordEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "CreateExamRecord"))(createExamRecordEndpoint)
@@ -69,13 +75,13 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	findExamRecordsEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "FindExamRecords"))(findExamRecordsEndpoint)
 
+	findExamRecordOverviewEndpoint := makeFindExamRecordOverviewEndpoint(examService)
+	findExamRecordOverviewEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "FindExamRecordOverview"))(findExamRecordOverviewEndpoint)
+
 	findExamInfosEndpoint := makeFindExamInfosEndpoint(examService)
 	findExamInfosEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "FindExamInfos"))(findExamInfosEndpoint)
-
-	findRandomQuestionsEndpoint := makeFindRandomQuestionsEndpoint(examService)
-	findRandomQuestionsEndpoint = LoggingMiddleware(
-		log.With(logger, "method", "FindRandomQuestions"))(findRandomQuestionsEndpoint)
 
 	return Endpoints{
 		CreateExam: createExamEndpoint,
@@ -89,8 +95,9 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 		DeleteQuestion:      deleteQuestionEndpoint,
 		FindRandomQuestions: findRandomQuestionsEndpoint,
 
-		CreateExamRecord: createExamRecordEndpoint,
-		FindExamRecords:  findExamRecordsEndpoint,
+		CreateExamRecord:       createExamRecordEndpoint,
+		FindExamRecords:        findExamRecordsEndpoint,
+		FindExamRecordOverview: findExamRecordOverviewEndpoint,
 
 		FindExamInfos: findExamInfosEndpoint,
 	}
@@ -340,6 +347,41 @@ func makeFindExamRecordsEndpoint(examService service.ExamService) endpoint.Endpo
 			Total:       total,
 			PageCount:   pageCount,
 			ExamRecords: examRecords,
+		}, nil
+	}
+}
+
+type FindExamRecordOverviewRequest struct {
+	ExamId    string
+	UserId    string
+	StartDate time.Time
+}
+
+type FindExamRecordOverviewResponse struct {
+	StartDate    string
+	Exam         *model.Exam
+	Questions    []model.Question
+	AnswerWrongs []model.AnswerWrong
+	ExamRecords  []model.ExamRecord
+}
+
+func makeFindExamRecordOverviewEndpoint(examService service.ExamService) endpoint.Endpoint {
+	return func(_ context.Context, request interface{}) (interface{}, error) {
+		req := request.(FindExamRecordOverviewRequest)
+		startDate, exam, quesitons, answerWrongs, examRecords, err := examService.FindExamRecordOverview(
+			req.ExamId,
+			req.UserId,
+			req.StartDate,
+		)
+		if err != nil {
+			return nil, err
+		}
+		return FindExamRecordOverviewResponse{
+			StartDate:    startDate,
+			Exam:         exam,
+			Questions:    quesitons,
+			AnswerWrongs: answerWrongs,
+			ExamRecords:  examRecords,
 		}, nil
 	}
 }

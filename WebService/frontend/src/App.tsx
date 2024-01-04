@@ -15,6 +15,7 @@ import WordCard from './routes/WordCard';
 import ExamManager from './routes/ExamManager';
 import QuestionManager from './routes/QuestionManager';
 import StartExam from './routes/StartExam';
+import ExamRecordOverview from './routes/ExamRecordOverview';
 
 axios.defaults.baseURL = `${import.meta.env.VITE_BACKEND_URL}/api`;
 axios.defaults.withCredentials = true;
@@ -63,6 +64,10 @@ function App() {
         {
           path: '/restricted/exam/:examId/start',
           element: <StartExam />,
+        },
+        {
+          path: '/restricted/exam/:examId/record/overview',
+          element: <ExamRecordOverview />,
         },
         {
           path: '/restricted/word',

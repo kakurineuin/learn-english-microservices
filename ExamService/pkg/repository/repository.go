@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/model"
 )
@@ -37,6 +38,10 @@ type DatabaseRepository interface {
 	CreateQuestion(ctx context.Context, question model.Question) (questionId string, err error)
 	UpdateQuestion(ctx context.Context, question model.Question) error
 	GetQuestionById(ctx context.Context, questionId string) (question *model.Question, err error)
+	FindQuestionsByQuestionIds(
+		ctx context.Context,
+		questionIds []string,
+	) (questions []model.Question, err error)
 	FindQuestionsByExamIdOrderByUpdateAtDesc(
 		ctx context.Context,
 		examId string,
@@ -59,6 +64,11 @@ type DatabaseRepository interface {
 		ctx context.Context,
 		examId, questionId, userId string,
 	) (modifiedCount, upsertedCount int32, err error)
+	FindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc(
+		ctx context.Context,
+		examId, userId string,
+		limit int32,
+	) (answerWrongs []model.AnswerWrong, err error)
 
 	// ExamRecord
 	CreateExamRecord(
@@ -75,4 +85,10 @@ type DatabaseRepository interface {
 		ctx context.Context,
 		examId, userId string,
 	) (count int32, err error)
+	FindExamRecordsByExamIdAndUserIdAndCreatedAt(
+		ctx context.Context,
+		examId,
+		userId string,
+		createdAt time.Time,
+	) (examRecords []model.ExamRecord, err error)
 }
