@@ -46,6 +46,9 @@ type ExamService interface {
 	CreateExamRecord(
 		examId string, score int32, wrongQuestionIds []string, userId string,
 	) (*pb.CreateExamRecordResponse, error)
+	FindExamRecords(
+		pageIndex, pageSize int32, examId, userId string,
+	) (*pb.FindExamRecordsResponse, error)
 	FindExamRecordOverview(
 		examId, userId string, startDate time.Time,
 	) (*pb.FindExamRecordOverviewResponse, error)
@@ -244,6 +247,20 @@ func (service examService) FindExamRecordOverview(
 			ExamId:    examId,
 			UserId:    userId,
 			StartDate: timestamppb.New(startDate),
+		},
+	)
+}
+
+func (service examService) FindExamRecords(
+	pageIndex, pageSize int32, examId, userId string,
+) (*pb.FindExamRecordsResponse, error) {
+	return service.client.FindExamRecords(
+		context.Background(),
+		&pb.FindExamRecordsRequest{
+			PageIndex: pageIndex,
+			PageSize:  pageSize,
+			ExamId:    examId,
+			UserId:    userId,
 		},
 	)
 }

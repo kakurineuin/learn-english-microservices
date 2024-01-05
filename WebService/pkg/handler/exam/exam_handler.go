@@ -26,6 +26,7 @@ type ExamHandler interface {
 	FindRandomQuestions(c echo.Context) error
 	CreateExamRecord(c echo.Context) error
 	FindExamRecordOverview(c echo.Context) error
+	FindExamRecords(c echo.Context) error
 }
 
 type examHandler struct {
@@ -376,6 +377,48 @@ func (handler examHandler) FindExamRecordOverview(c echo.Context) error {
 		examId,
 		userId,
 		startDate,
+	)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONInternalServerError(c)
+	}
+
+	return util.SendJSONResponse(c, microserviceResponse)
+}
+
+func (handler examHandler) FindExamRecords(c echo.Context) error {
+	errorMessage := "FindExamRecords failed! error: %w"
+
+	var (
+		examId    string = ""
+		pageIndex int32  = 0
+		pageSize  int32  = 0
+	)
+
+	err := echo.PathParamsBinder(c).
+		String("examId", &examId).
+		BindError() // returns first binding error
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONBadRequest(c)
+	}
+
+	err = echo.QueryParamsBinder(c).
+		Int32("pageIndex", &pageIndex).
+		Int32("pageSize", &pageSize).
+		BindError() // returns first binding error
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONBadRequest(c)
+	}
+
+	userId := utilGetJWTClaims(c).UserId
+
+	microserviceResponse, err := handler.examServce.FindExamRecords(
+		pageIndex,
+		pageSize,
+		examId,
+		userId,
 	)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))

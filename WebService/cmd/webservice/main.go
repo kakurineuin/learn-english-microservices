@@ -125,6 +125,7 @@ func setupAPIHandlers(
 	restrictedApi.GET("/exam/:examId/start", examHandler.FindRandomQuestions)
 	restrictedApi.POST("/exam/:examId/record", examHandler.CreateExamRecord)
 	restrictedApi.GET("/exam/:examId/record/overview", examHandler.FindExamRecordOverview)
+	restrictedApi.GET("/exam/:examId/record", examHandler.FindExamRecords)
 
 	restrictedApi.GET("/word/:word", wordHandler.FindWordMeanings)
 	restrictedApi.POST("/word/favorite", wordHandler.CreateFavoriteWordMeaning)

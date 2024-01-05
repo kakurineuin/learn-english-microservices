@@ -443,3 +443,49 @@ func (s *MyTestSuite) TestFindExamRecordOverview() {
 		rec.Body.String(),
 	)
 }
+
+func (s *MyTestSuite) TestFindExamRecords() {
+	// Setup
+	e := echo.New()
+	q := make(url.Values)
+	q.Set("pageIndex", "0")
+	q.Set("pageSize", "10")
+	req := httptest.NewRequest(http.MethodGet, "/?"+q.Encode(), nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	examId := "exam01"
+	c.SetParamNames("examId")
+	c.SetParamValues(examId)
+
+	s.mockExamService.EXPECT().
+		FindExamRecords(int32(0), int32(10), examId, USER_ID).
+		Return(&pb.FindExamRecordsResponse{
+			Total:     1,
+			PageCount: 1,
+			ExamRecords: []*pb.ExamRecord{
+				{
+					Id:        "id01",
+					ExamId:    examId,
+					Score:     10,
+					UserId:    USER_ID,
+					CreatedAt: nil,
+					UpdatedAt: nil,
+				},
+			},
+		}, nil)
+
+	// Test
+	err := s.examHandler.FindExamRecords(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.JSONEq(`{"total": 1, "pageCount": 1, "examRecords": [{
+		"_id": "id01",
+		"examId": "`+examId+`",
+		"score": 10,
+		"userId": "`+USER_ID+`",
+		"createdAt": null,
+		"updatedAt": null
+	}]}`, rec.Body.String())
+}

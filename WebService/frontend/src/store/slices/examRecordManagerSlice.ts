@@ -25,12 +25,15 @@ export const queryExamRecords = createAsyncThunk(
     dispatch(loaderActions.toggleLoading());
 
     try {
-      const response = await axios.get(`/exam/${params.examId}/record`, {
-        params: {
-          pageIndex: params.pageIndex,
-          pageSize: params.pageSize,
+      const response = await axios.get(
+        `/restricted/exam/${params.examId}/record`,
+        {
+          params: {
+            pageIndex: params.pageIndex,
+            pageSize: params.pageSize,
+          },
         },
-      });
+      );
       return response.data;
     } catch (err) {
       const errorMessage = axios.isAxiosError(err)

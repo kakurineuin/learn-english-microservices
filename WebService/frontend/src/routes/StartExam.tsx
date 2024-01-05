@@ -33,8 +33,8 @@ function StartExam() {
     setIsDisabledGoExamRecord(false);
   }, []);
 
-  const goExamRecordClickHandler = () => {
-    navigate(`/restricted/exam/${examId}/record`);
+  const goExamRecordOverviewClickHandler = () => {
+    navigate(`/restricted/exam/${examId}/record/overview`);
   };
 
   useEffect(() => {
@@ -86,7 +86,7 @@ function StartExam() {
               variant="outline"
               ml="3"
               isDisabled={isDisabledGoExamRecord}
-              onClick={goExamRecordClickHandler}
+              onClick={goExamRecordOverviewClickHandler}
             >
               成績紀錄
             </Button>

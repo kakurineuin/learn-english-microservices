@@ -473,6 +473,67 @@ func (_c *MockExamService_FindExamRecordOverview_Call) RunAndReturn(run func(str
 	return _c
 }
 
+// FindExamRecords provides a mock function with given fields: pageIndex, pageSize, examId, userId
+func (_m *MockExamService) FindExamRecords(pageIndex int32, pageSize int32, examId string, userId string) (*pb.FindExamRecordsResponse, error) {
+	ret := _m.Called(pageIndex, pageSize, examId, userId)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindExamRecords")
+	}
+
+	var r0 *pb.FindExamRecordsResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(int32, int32, string, string) (*pb.FindExamRecordsResponse, error)); ok {
+		return rf(pageIndex, pageSize, examId, userId)
+	}
+	if rf, ok := ret.Get(0).(func(int32, int32, string, string) *pb.FindExamRecordsResponse); ok {
+		r0 = rf(pageIndex, pageSize, examId, userId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*pb.FindExamRecordsResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(int32, int32, string, string) error); ok {
+		r1 = rf(pageIndex, pageSize, examId, userId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockExamService_FindExamRecords_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindExamRecords'
+type MockExamService_FindExamRecords_Call struct {
+	*mock.Call
+}
+
+// FindExamRecords is a helper method to define mock.On call
+//   - pageIndex int32
+//   - pageSize int32
+//   - examId string
+//   - userId string
+func (_e *MockExamService_Expecter) FindExamRecords(pageIndex interface{}, pageSize interface{}, examId interface{}, userId interface{}) *MockExamService_FindExamRecords_Call {
+	return &MockExamService_FindExamRecords_Call{Call: _e.mock.On("FindExamRecords", pageIndex, pageSize, examId, userId)}
+}
+
+func (_c *MockExamService_FindExamRecords_Call) Run(run func(pageIndex int32, pageSize int32, examId string, userId string)) *MockExamService_FindExamRecords_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(int32), args[1].(int32), args[2].(string), args[3].(string))
+	})
+	return _c
+}
+
+func (_c *MockExamService_FindExamRecords_Call) Return(_a0 *pb.FindExamRecordsResponse, _a1 error) *MockExamService_FindExamRecords_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockExamService_FindExamRecords_Call) RunAndReturn(run func(int32, int32, string, string) (*pb.FindExamRecordsResponse, error)) *MockExamService_FindExamRecords_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // FindExams provides a mock function with given fields: pageIndex, pageSize, userId
 func (_m *MockExamService) FindExams(pageIndex int32, pageSize int32, userId string) (*pb.FindExamsResponse, error) {
 	ret := _m.Called(pageIndex, pageSize, userId)
