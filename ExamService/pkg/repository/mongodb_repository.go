@@ -438,15 +438,12 @@ func (repo *MongoDBRepository) UpsertAnswerWrongByTimesPlusOne(
 
 	now := time.Now()
 
-	// TODO: 拆成新增和修改兩個方法，這樣才能分別正確設定 createdAt, updatedAt
-
 	// times 遞增 1
 	update := bson.D{
 		{"$inc", bson.D{
 			{"times", 1},
 		}},
 		{"$set", bson.D{
-			{"createdAt", now},
 			{"updatedAt", now},
 		}},
 	}
@@ -458,6 +455,19 @@ func (repo *MongoDBRepository) UpsertAnswerWrongByTimesPlusOne(
 	result, err := collection.UpdateOne(ctx, filter, update, opts)
 	if err != nil {
 		return 0, 0, err
+	}
+
+	// 若是新增，補上新增日期時間
+	if result.UpsertedCount == 1 {
+		updateCreatedAt := bson.D{
+			{"$set", bson.D{
+				{"createdAt", now},
+			}},
+		}
+		_, err := collection.UpdateOne(ctx, filter, updateCreatedAt)
+		if err != nil {
+			return 0, 0, err
+		}
 	}
 
 	return int32(result.ModifiedCount), int32(result.UpsertedCount), nil
