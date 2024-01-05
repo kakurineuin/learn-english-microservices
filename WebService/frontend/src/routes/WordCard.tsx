@@ -16,6 +16,7 @@ import { useAppDispatch } from '../store/hooks';
 import { loaderActions } from '../store/slices/loaderSlice';
 
 function WordCard() {
+  const [isReady, setIsReady] = useState(false);
   const [favoriteWordMeanings, setFavoriteWordMeanings] = useState<
     WordMeaning[]
   >([]);
@@ -29,6 +30,7 @@ function WordCard() {
       try {
         const response = await axios.get('/restricted/word/card');
         setFavoriteWordMeanings(response.data.favoriteWordMeanings);
+        setIsReady(true);
       } catch (err) {
         const errorMessage = axios.isAxiosError(err)
           ? (err as AxiosError<{ message: string }, any>).response!.data.message
@@ -88,15 +90,16 @@ function WordCard() {
           </UnorderedList>
         </PageHeading>
       </Container>
-      {favoriteWordMeanings && favoriteWordMeanings.length > 0 ? (
-        <FlippableCardList wordMeanings={favoriteWordMeanings} />
-      ) : (
-        <Center>
-          <Text fontSize="xl">
-            請先使用[查詢單字]功能查詢單字，將喜歡的單字解釋加入最愛，再回到這裡就會有單字卡了。
-          </Text>
-        </Center>
-      )}
+      {isReady &&
+        (favoriteWordMeanings && favoriteWordMeanings.length > 0 ? (
+          <FlippableCardList wordMeanings={favoriteWordMeanings} />
+        ) : (
+          <Center>
+            <Text fontSize="xl">
+              請先使用[查詢單字]功能查詢單字，將喜歡的單字解釋加入最愛，再回到這裡就會有單字卡了。
+            </Text>
+          </Center>
+        ))}
     </>
   );
 }
