@@ -34,53 +34,79 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	createExamEndpoint := makeCreateExamEndpoint(examService)
 	createExamEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "CreateExam"))(createExamEndpoint)
+	createExamEndpoint = RecoverMiddleware(
+		log.With(logger, "method", "CreateExam"))(createExamEndpoint)
 
 	updateExamEndpoint := makeUpdateExamEndpoint(examService)
 	updateExamEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "UpdateExam"))(updateExamEndpoint)
+	updateExamEndpoint = RecoverMiddleware(
 		log.With(logger, "method", "UpdateExam"))(updateExamEndpoint)
 
 	findExamsEndpoint := makeFindExamsEndpoint(examService)
 	findExamsEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "FindExams"))(findExamsEndpoint)
+	findExamsEndpoint = RecoverMiddleware(
+		log.With(logger, "method", "FindExams"))(findExamsEndpoint)
 
 	deleteExamEndpoint := makeDeleteExamEndpoint(examService)
 	deleteExamEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "DeleteExam"))(deleteExamEndpoint)
+	deleteExamEndpoint = RecoverMiddleware(
 		log.With(logger, "method", "DeleteExam"))(deleteExamEndpoint)
 
 	createQuestionEndpoint := makeCreateQuestionEndpoint(examService)
 	createQuestionEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "CreateQuestion"))(createQuestionEndpoint)
+	createQuestionEndpoint = RecoverMiddleware(
+		log.With(logger, "method", "CreateQuestion"))(createQuestionEndpoint)
 
 	updateQuestionEndpoint := makeUpdateQuestionEndpoint(examService)
 	updateQuestionEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "UpdateQuestion"))(updateQuestionEndpoint)
+	updateQuestionEndpoint = RecoverMiddleware(
 		log.With(logger, "method", "UpdateQuestion"))(updateQuestionEndpoint)
 
 	findQuestionsEndpoint := makeFindQuestionsEndpoint(examService)
 	findQuestionsEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "FindQuestions"))(findQuestionsEndpoint)
+	findQuestionsEndpoint = RecoverMiddleware(
+		log.With(logger, "method", "FindQuestions"))(findQuestionsEndpoint)
 
 	deleteQuestionEndpoint := makeDeleteQuestionEndpoint(examService)
 	deleteQuestionEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "DeleteQuestion"))(deleteQuestionEndpoint)
+	deleteQuestionEndpoint = RecoverMiddleware(
 		log.With(logger, "method", "DeleteQuestion"))(deleteQuestionEndpoint)
 
 	findRandomQuestionsEndpoint := makeFindRandomQuestionsEndpoint(examService)
 	findRandomQuestionsEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "FindRandomQuestions"))(findRandomQuestionsEndpoint)
+	findRandomQuestionsEndpoint = RecoverMiddleware(
+		log.With(logger, "method", "FindRandomQuestions"))(findRandomQuestionsEndpoint)
 
 	createExamRecordEndpoint := makeCreateExamRecordEndpoint(examService)
 	createExamRecordEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "CreateExamRecord"))(createExamRecordEndpoint)
+	createExamRecordEndpoint = RecoverMiddleware(
 		log.With(logger, "method", "CreateExamRecord"))(createExamRecordEndpoint)
 
 	findExamRecordsEndpoint := makeFindExamRecordsEndpoint(examService)
 	findExamRecordsEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "FindExamRecords"))(findExamRecordsEndpoint)
+	findExamRecordsEndpoint = RecoverMiddleware(
+		log.With(logger, "method", "FindExamRecords"))(findExamRecordsEndpoint)
 
 	findExamRecordOverviewEndpoint := makeFindExamRecordOverviewEndpoint(examService)
 	findExamRecordOverviewEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "FindExamRecordOverview"))(findExamRecordOverviewEndpoint)
+	findExamRecordOverviewEndpoint = RecoverMiddleware(
+		log.With(logger, "method", "FindExamRecordOverview"))(findExamRecordOverviewEndpoint)
 
 	findExamInfosEndpoint := makeFindExamInfosEndpoint(examService)
 	findExamInfosEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "FindExamInfos"))(findExamInfosEndpoint)
+	findExamInfosEndpoint = RecoverMiddleware(
 		log.With(logger, "method", "FindExamInfos"))(findExamInfosEndpoint)
 
 	return Endpoints{

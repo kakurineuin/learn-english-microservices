@@ -2,6 +2,7 @@ package endpoint
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-kit/kit/endpoint"
@@ -16,6 +17,25 @@ func LoggingMiddleware(logger log.Logger) endpoint.Middleware {
 			defer func(begin time.Time) {
 				logger.Log("endpoint_error", err, "took", time.Since(begin))
 			}(time.Now())
+			return next(ctx, request)
+		}
+	}
+}
+
+func RecoverMiddleware(logger log.Logger) endpoint.Middleware {
+	return func(next endpoint.Endpoint) endpoint.Endpoint {
+		return func(ctx context.Context, request interface{}) (interface{}, error) {
+			defer func() {
+				if r := recover(); r != nil {
+					err, ok := r.(error)
+					if !ok {
+						err = fmt.Errorf("panic: %v", r)
+					}
+
+					// 在這裡可以進行日誌記錄或其他操作
+					logger.Log("Panic", err)
+				}
+			}()
 			return next(ctx, request)
 		}
 	}
