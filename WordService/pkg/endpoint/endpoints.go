@@ -23,23 +23,40 @@ func MakeEndpoints(wordService service.WordService, logger log.Logger) Endpoints
 	findWordByDictionaryEndpoint := makeFindWordByDictionaryEndpoint(wordService)
 	findWordByDictionaryEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "FindWordByDictionary"))(findWordByDictionaryEndpoint)
+	findWordByDictionaryEndpoint = RecoverMiddleware(
+		log.With(logger, "method", "FindWordByDictionary"))(findWordByDictionaryEndpoint)
 
 	createFavoriteWordMeaningEndpoint := makeCreateFavoriteWordMeaningEndpoint(wordService)
 	createFavoriteWordMeaningEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "CreateFavoriteWordMeaning"))(createFavoriteWordMeaningEndpoint)
+	createFavoriteWordMeaningEndpoint = RecoverMiddleware(
 		log.With(logger, "method", "CreateFavoriteWordMeaning"))(createFavoriteWordMeaningEndpoint)
 
 	deleteFavoriteWordMeaningEndpoint := makeDeleteFavoriteWordMeaningEndpoint(wordService)
 	deleteFavoriteWordMeaningEndpoint = LoggingMiddleware(
 		log.With(logger, "method", "DeleteFavoriteWordMeaning"))(deleteFavoriteWordMeaningEndpoint)
+	deleteFavoriteWordMeaningEndpoint = RecoverMiddleware(
+		log.With(logger, "method", "DeleteFavoriteWordMeaning"))(deleteFavoriteWordMeaningEndpoint)
 
 	findFavoriteWordMeaningsEndpoint := makeFindFavoriteWordMeaningsEndpoint(wordService)
 	findFavoriteWordMeaningsEndpoint = LoggingMiddleware(
+		log.With(logger, "method", "FindFavoriteWordMeanings"))(findFavoriteWordMeaningsEndpoint)
+	findFavoriteWordMeaningsEndpoint = RecoverMiddleware(
 		log.With(logger, "method", "FindFavoriteWordMeanings"))(findFavoriteWordMeaningsEndpoint)
 
 	findRandomFavoriteWordMeaningsEndpoint := makeFindRandomFavoriteWordMeaningsEndpoint(
 		wordService,
 	)
 	findRandomFavoriteWordMeaningsEndpoint = LoggingMiddleware(
+		log.With(
+			logger,
+			"method",
+			"FindRandomFavoriteWordMeanings",
+		),
+	)(
+		findRandomFavoriteWordMeaningsEndpoint,
+	)
+	findRandomFavoriteWordMeaningsEndpoint = RecoverMiddleware(
 		log.With(
 			logger,
 			"method",
