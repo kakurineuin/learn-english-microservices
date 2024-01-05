@@ -43,8 +43,8 @@ function UpdateExamDialog({ data }: Props) {
   const dispatch = useAppDispatch();
 
   const schema = Yup.object().shape({
-    topic: Yup.string().trim().required().max(10),
-    description: Yup.string().trim().required().max(100),
+    topic: Yup.string().trim().required().max(50),
+    description: Yup.string().trim().required().max(500),
     isPublic: Yup.boolean().required(),
   });
 
