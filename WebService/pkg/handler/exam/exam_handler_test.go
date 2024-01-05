@@ -1,6 +1,7 @@
 package exam
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -12,9 +13,12 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/kakurineuin/learn-english-microservices/web-service/pb"
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/microservice/examservice"
+	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/model"
+	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/repository"
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/util"
 )
 
@@ -22,8 +26,9 @@ const USER_ID = "user01"
 
 type MyTestSuite struct {
 	suite.Suite
-	examHandler     examHandler
-	mockExamService *examservice.MockExamService
+	examHandler            examHandler
+	mockExamService        *examservice.MockExamService
+	mockDatabaseRepository *repository.MockDatabaseRepository
 }
 
 func TestMyTestSuite(t *testing.T) {
@@ -45,7 +50,8 @@ func (s *MyTestSuite) SetupSuite() {
 	}
 
 	s.examHandler = examHandler{
-		examServce: nil,
+		examServce:         nil,
+		databaseRepository: nil,
 	}
 }
 
@@ -62,6 +68,10 @@ func (s *MyTestSuite) SetupTest() {
 	mockExamService := examservice.NewMockExamService(s.T())
 	s.examHandler.examServce = mockExamService
 	s.mockExamService = mockExamService
+
+	mockDatabaseRepository := repository.NewMockDatabaseRepository(s.T())
+	s.examHandler.databaseRepository = mockDatabaseRepository
+	s.mockDatabaseRepository = mockDatabaseRepository
 }
 
 // run after each test
@@ -487,5 +497,145 @@ func (s *MyTestSuite) TestFindExamRecords() {
 		"userId": "`+USER_ID+`",
 		"createdAt": null,
 		"updatedAt": null
+	}]}`, rec.Body.String())
+}
+
+func (s *MyTestSuite) TestFindExamInfosWhenNotSignIn() {
+	// Setup
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	adminUserObjectId := primitive.NewObjectID()
+	adminUserId := adminUserObjectId.Hex()
+
+	s.mockDatabaseRepository.EXPECT().
+		GetAdminUser(context.TODO()).
+		Return(&model.User{
+			Id:       adminUserObjectId,
+			Username: "TestAdmin",
+			Password: "TestFindExamInfosWhenSignIn",
+			Role:     "admin",
+		}, nil)
+
+	s.mockExamService.EXPECT().
+		FindExamInfos(adminUserId, true).
+		Return(&pb.FindExamInfosResponse{
+			ExamInfos: []*pb.ExamInfo{
+				{
+					ExamId:        "exam01",
+					Topic:         "t01",
+					Description:   "d01",
+					IsPublic:      true,
+					QuestionCount: 10,
+					RecordCount:   1,
+				},
+			},
+		}, nil)
+
+	// Test
+	err := s.examHandler.FindExamInfosWhenNotSignIn(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.JSONEq(`{"examInfos": [{
+		"examId": "exam01",
+		"topic": "t01",
+		"description": "d01",
+		"isPublic": true,
+		"questionCount": 10,
+		"recordCount": 1
+	}]}`, rec.Body.String())
+}
+
+func (s *MyTestSuite) TestFindExamInfosWhenSignIn() {
+	// Setup
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	adminUserObjectId := primitive.NewObjectID()
+	adminUserId := adminUserObjectId.Hex()
+
+	s.mockDatabaseRepository.EXPECT().
+		GetAdminUser(context.TODO()).
+		Return(&model.User{
+			Id:       adminUserObjectId,
+			Username: "TestAdmin",
+			Password: "TestFindExamInfosWhenSignIn",
+			Role:     "admin",
+		}, nil)
+
+	s.mockExamService.EXPECT().
+		FindExamInfos(adminUserId, true).
+		Return(&pb.FindExamInfosResponse{
+			ExamInfos: []*pb.ExamInfo{
+				{
+					ExamId:        "exam01",
+					Topic:         "t01",
+					Description:   "d01",
+					IsPublic:      true,
+					QuestionCount: 10,
+					RecordCount:   1,
+				},
+			},
+		}, nil)
+	s.mockExamService.EXPECT().
+		FindExamInfos(USER_ID, true).
+		Return(&pb.FindExamInfosResponse{
+			ExamInfos: []*pb.ExamInfo{
+				{
+					ExamId:        "exam02",
+					Topic:         "t02",
+					Description:   "d02",
+					IsPublic:      true,
+					QuestionCount: 20,
+					RecordCount:   2,
+				},
+			},
+		}, nil)
+	s.mockExamService.EXPECT().
+		FindExamInfos(USER_ID, false).
+		Return(&pb.FindExamInfosResponse{
+			ExamInfos: []*pb.ExamInfo{
+				{
+					ExamId:        "exam03",
+					Topic:         "t03",
+					Description:   "d03",
+					IsPublic:      false,
+					QuestionCount: 30,
+					RecordCount:   3,
+				},
+			},
+		}, nil)
+
+	// Test
+	err := s.examHandler.FindExamInfosWhenSignIn(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.JSONEq(`{"examInfos": [{
+		"examId": "exam01",
+		"topic": "t01",
+		"description": "d01",
+		"isPublic": true,
+		"questionCount": 10,
+		"recordCount": 1
+	}, {
+		"examId": "exam02",
+		"topic": "t02",
+		"description": "d02",
+		"isPublic": true,
+		"questionCount": 20,
+		"recordCount": 2
+	}, {
+		"examId": "exam03",
+		"topic": "t03",
+		"description": "d03",
+		"isPublic": false,
+		"questionCount": 30,
+		"recordCount": 3
 	}]}`, rec.Body.String())
 }

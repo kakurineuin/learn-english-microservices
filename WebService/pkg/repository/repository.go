@@ -20,4 +20,5 @@ type DatabaseRepository interface {
 	CreateUser(ctx context.Context, user model.User) (userId string, err error)
 	GetUserById(ctx context.Context, userId string) (user *model.User, err error)
 	GetUserByUsername(ctx context.Context, username string) (user *model.User, err error)
+	GetAdminUser(ctx context.Context) (user *model.User, err error)
 }

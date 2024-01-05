@@ -1,13 +1,16 @@
 package exam
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
 
+	"github.com/kakurineuin/learn-english-microservices/web-service/pb"
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/microservice/examservice"
+	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/repository"
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/util"
 )
 
@@ -19,23 +22,33 @@ type ExamHandler interface {
 	FindExams(c echo.Context) error
 	UpdateExam(c echo.Context) error
 	DeleteExam(c echo.Context) error
+
 	FindQuestions(c echo.Context) error
 	CreateQuestion(c echo.Context) error
 	UpdateQuestion(c echo.Context) error
 	DeleteQuestion(c echo.Context) error
 	FindRandomQuestions(c echo.Context) error
+
 	CreateExamRecord(c echo.Context) error
 	FindExamRecordOverview(c echo.Context) error
 	FindExamRecords(c echo.Context) error
+
+	FindExamInfosWhenNotSignIn(c echo.Context) error
+	FindExamInfosWhenSignIn(c echo.Context) error
 }
 
 type examHandler struct {
-	examServce examservice.ExamService
+	examServce         examservice.ExamService
+	databaseRepository repository.DatabaseRepository
 }
 
-func NewHandler(examServce examservice.ExamService) ExamHandler {
+func NewHandler(
+	examServce examservice.ExamService,
+	databaseRepository repository.DatabaseRepository,
+) ExamHandler {
 	return &examHandler{
-		examServce: examServce,
+		examServce:         examServce,
+		databaseRepository: databaseRepository,
 	}
 }
 
@@ -426,4 +439,98 @@ func (handler examHandler) FindExamRecords(c echo.Context) error {
 	}
 
 	return util.SendJSONResponse(c, microserviceResponse)
+}
+
+/*
+若尚未登入，則只能看到系統管理員公開的 ExamInfo
+*/
+func (handler examHandler) FindExamInfosWhenNotSignIn(c echo.Context) error {
+	errorMessage := "FindExamInfosWhenNotSignIn failed! error: %w"
+
+	databaseRepository := handler.databaseRepository
+
+	// Get admin userId
+	adminUser, err := databaseRepository.GetAdminUser(context.TODO())
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONInternalServerError(c)
+	}
+
+	adminUserId := adminUser.Id.Hex()
+	microserviceResponse, err := handler.examServce.FindExamInfos(
+		adminUserId,
+		true,
+	)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONInternalServerError(c)
+	}
+
+	return util.SendJSONResponse(c, microserviceResponse)
+}
+
+/*
+若已經登入，則能看到系統管理員公開的 ExamInfo 和自己全部的 ExamInfo
+*/
+
+func (handler examHandler) FindExamInfosWhenSignIn(c echo.Context) error {
+	errorMessage := "FindExamInfosWhenSignIn failed! error: %w"
+
+	databaseRepository := handler.databaseRepository
+
+	// Get admin userId
+	adminUser, err := databaseRepository.GetAdminUser(context.TODO())
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONInternalServerError(c)
+	}
+
+	adminUserId := adminUser.Id.Hex()
+	microserviceResponse, err := handler.examServce.FindExamInfos(
+		adminUserId,
+		true,
+	)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONInternalServerError(c)
+	}
+
+	// 系統管理員公開的測驗
+	adminUserPBPublicExamInfos := microserviceResponse.ExamInfos
+
+	response := &pb.FindExamInfosResponse{}
+	response.ExamInfos = append(response.ExamInfos, adminUserPBPublicExamInfos...)
+
+	// 查詢登入者的測驗
+	userId := utilGetJWTClaims(c).UserId
+
+	// 若登入者不是系統管理員
+	if userId != adminUserId {
+		microserviceResponse, err = handler.examServce.FindExamInfos(
+			userId,
+			true,
+		)
+		if err != nil {
+			c.Logger().Error(fmt.Errorf(errorMessage, err))
+			return util.SendJSONInternalServerError(c)
+		}
+
+		// 使用者公開的測驗
+		userPBPublicExamInfos := microserviceResponse.ExamInfos
+		response.ExamInfos = append(response.ExamInfos, userPBPublicExamInfos...)
+	}
+
+	microserviceResponse, err = handler.examServce.FindExamInfos(
+		userId,
+		false,
+	)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONInternalServerError(c)
+	}
+
+	// 使用者私有的測驗
+	userPBPrivateExamInfos := microserviceResponse.ExamInfos
+	response.ExamInfos = append(response.ExamInfos, userPBPrivateExamInfos...)
+	return util.SendJSONResponse(c, response)
 }

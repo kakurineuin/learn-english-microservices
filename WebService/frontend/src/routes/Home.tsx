@@ -1,51 +1,53 @@
-// import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Container,
-  // SimpleGrid,
-  // useToast,
+  SimpleGrid,
+  useToast,
   UnorderedList,
   ListItem,
 } from '@chakra-ui/react';
-// import axios, { AxiosError } from 'axios';
-// import { motion } from 'framer-motion';
-// import { useAppDispatch } from '../store/hooks';
-// import ExamInfoCard from '../components/exam/ExamInfoCard';
-// import { loaderActions } from '../store/slices/loaderSlice';
+import axios, { AxiosError } from 'axios';
+import { motion } from 'framer-motion';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import ExamInfoCard from '../components/exam/ExamInfoCard';
+import { loaderActions } from '../store/slices/loaderSlice';
 import ShowText from '../components/ShowText';
 import PageHeading from '../components/PageHeading';
 
 function Home() {
-  // const [examInfos, setExamInfos] = useState([]);
-  // const dispatch = useAppDispatch();
-  // const toast = useToast();
+  const [examInfos, setExamInfos] = useState([]);
+  const dispatch = useAppDispatch();
+  const toast = useToast();
+  const user = useAppSelector((state) => state.session.user);
 
-  // TODO: 之後恢復
-  // useEffect(() => {
-  //   const queryExamInfos = async () => {
-  //     dispatch(loaderActions.toggleLoading());
-  //
-  //     try {
-  //       const response = await axios.get('/exam/info');
-  //       setExamInfos(response.data.examInfos);
-  //     } catch (err) {
-  //       const errorMessage = axios.isAxiosError(err)
-  //         ? (err as AxiosError<{ message: string }, any>).response!.data.message
-  //         : '系統發生錯誤！';
-  //       toast({
-  //         title: '查詢失敗。',
-  //         description: errorMessage,
-  //         status: 'error',
-  //         isClosable: true,
-  //         position: 'top',
-  //         variant: 'subtle',
-  //       });
-  //     } finally {
-  //       dispatch(loaderActions.toggleLoading());
-  //     }
-  //   };
-  //
-  //   queryExamInfos();
-  // }, [dispatch, toast]);
+  useEffect(() => {
+    const queryExamInfos = async () => {
+      dispatch(loaderActions.toggleLoading());
+
+      try {
+        const response = await axios.get(
+          `${user ? '/restricted' : ''}/exam/info`,
+        );
+        setExamInfos(response.data.examInfos);
+      } catch (err) {
+        const errorMessage = axios.isAxiosError(err)
+          ? (err as AxiosError<{ message: string }, any>).response!.data.message
+          : '系統發生錯誤！';
+        toast({
+          title: '查詢失敗。',
+          description: errorMessage,
+          status: 'error',
+          isClosable: true,
+          position: 'top',
+          variant: 'subtle',
+        });
+      } finally {
+        dispatch(loaderActions.toggleLoading());
+      }
+    };
+
+    queryExamInfos();
+  }, [dispatch, toast, user]);
 
   return (
     <Container maxW="container.xl">
@@ -97,45 +99,42 @@ function Home() {
         </ListItem>
       </UnorderedList>
 
-      {
-        // TODO: 之後恢復
-        // <SimpleGrid
-        //   mt="5"
-        //   minChildWidth="400px"
-        //   spacing="20px"
-        //   data-testid="grid"
-        // >
-        //   {examInfos.map(
-        //     (
-        //       {
-        //         examId,
-        //         topic,
-        //         description,
-        //         isPublic,
-        //         questionCount,
-        //         recordCount,
-        //       },
-        //       index,
-        //     ) => (
-        //       <motion.div
-        //         initial={{ opacity: 0, scale: 0.5 }}
-        //         animate={{ opacity: 1, scale: 1 }}
-        //         transition={{ duration: 0.5, delay: 0.2 * index }}
-        //         key={examId}
-        //       >
-        //         <ExamInfoCard
-        //           examId={examId}
-        //           topic={topic}
-        //           description={description}
-        //           isPublic={isPublic}
-        //           questionCount={questionCount}
-        //           recordCount={recordCount}
-        //         />
-        //       </motion.div>
-        //     ),
-        //   )}
-        // </SimpleGrid>
-      }
+      <SimpleGrid
+        mt="5"
+        minChildWidth="400px"
+        spacing="20px"
+        data-testid="grid"
+      >
+        {examInfos.map(
+          (
+            {
+              examId,
+              topic,
+              description,
+              isPublic,
+              questionCount,
+              recordCount,
+            },
+            index,
+          ) => (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 * index }}
+              key={examId}
+            >
+              <ExamInfoCard
+                examId={examId}
+                topic={topic}
+                description={description}
+                isPublic={isPublic}
+                questionCount={questionCount}
+                recordCount={recordCount}
+              />
+            </motion.div>
+          ),
+        )}
+      </SimpleGrid>
     </Container>
   );
 }

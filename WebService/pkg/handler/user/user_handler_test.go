@@ -15,7 +15,7 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/repository"
 )
 
-var TOKEN string = "jwt_abc123"
+const TOKEN = "jwt_abc123"
 
 type MyTestSuite struct {
 	suite.Suite
@@ -36,11 +36,9 @@ func (s *MyTestSuite) SetupSuite() {
 		return TOKEN, nil
 	}
 
-	mockDatabaseRepository := repository.NewMockDatabaseRepository(s.T())
 	s.userHandler = userHandler{
-		databaseRepository: mockDatabaseRepository,
+		databaseRepository: nil,
 	}
-	s.mockDatabaseRepository = mockDatabaseRepository
 }
 
 // run once, after test suite methods

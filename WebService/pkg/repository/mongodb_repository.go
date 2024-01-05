@@ -129,6 +129,28 @@ func (repo *MongoDBRepository) GetUserByUsername(
 	return &result, nil
 }
 
+func (repo *MongoDBRepository) GetAdminUser(
+	ctx context.Context,
+) (user *model.User, err error) {
+	filter := bson.D{
+		{"role", "admin"},
+	}
+	var result model.User
+	collection := repo.getCollection(USER_COLLECTION)
+	err = collection.FindOne(ctx, filter).Decode(&result)
+
+	if err != nil {
+		// 查無資料不視為錯誤
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return &result, nil
+}
+
 func (repo *MongoDBRepository) WithTransaction(
 	transactoinFunc transactionFunc,
 ) (interface{}, error) {

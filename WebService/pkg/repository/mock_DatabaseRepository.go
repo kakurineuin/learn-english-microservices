@@ -170,6 +170,64 @@ func (_c *MockDatabaseRepository_DisconnectDB_Call) RunAndReturn(run func() erro
 	return _c
 }
 
+// GetAdminUser provides a mock function with given fields: ctx
+func (_m *MockDatabaseRepository) GetAdminUser(ctx context.Context) (*model.User, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAdminUser")
+	}
+
+	var r0 *model.User
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) (*model.User, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) *model.User); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.User)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockDatabaseRepository_GetAdminUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAdminUser'
+type MockDatabaseRepository_GetAdminUser_Call struct {
+	*mock.Call
+}
+
+// GetAdminUser is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockDatabaseRepository_Expecter) GetAdminUser(ctx interface{}) *MockDatabaseRepository_GetAdminUser_Call {
+	return &MockDatabaseRepository_GetAdminUser_Call{Call: _e.mock.On("GetAdminUser", ctx)}
+}
+
+func (_c *MockDatabaseRepository_GetAdminUser_Call) Run(run func(ctx context.Context)) *MockDatabaseRepository_GetAdminUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockDatabaseRepository_GetAdminUser_Call) Return(user *model.User, err error) *MockDatabaseRepository_GetAdminUser_Call {
+	_c.Call.Return(user, err)
+	return _c
+}
+
+func (_c *MockDatabaseRepository_GetAdminUser_Call) RunAndReturn(run func(context.Context) (*model.User, error)) *MockDatabaseRepository_GetAdminUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetUserById provides a mock function with given fields: ctx, userId
 func (_m *MockDatabaseRepository) GetUserById(ctx context.Context, userId string) (*model.User, error) {
 	ret := _m.Called(ctx, userId)

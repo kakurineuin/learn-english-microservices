@@ -81,7 +81,6 @@ function AskForm({ questions, onCreateExamRecord }: Props) {
     dispatch,
     score,
     isScored,
-    questionResults.length,
     questions,
     toast,
     wrongQuestionIds,

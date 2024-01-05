@@ -68,7 +68,7 @@ func main() {
 
 	// Handlers
 	userHandler := user.NewHandler(databaseRepository)
-	examHandler := exam.NewHandler(examService)
+	examHandler := exam.NewHandler(examService, databaseRepository)
 	wordHandler := word.NewHandler(wordService)
 
 	e := echo.New()
@@ -102,6 +102,9 @@ func setupAPIHandlers(
 	// 註冊
 	api.POST("/user", userHandler.CreateUser)
 
+	// 未登入時的 ExamInfo
+	api.GET("/exam/info", examHandler.FindExamInfosWhenNotSignIn)
+
 	// Restricted group，需要登入後才能呼叫的 API
 	restrictedApi := api.Group("/restricted")
 
@@ -113,6 +116,9 @@ func setupAPIHandlers(
 		SigningKey: []byte(config.EnvJWTSecretKey()),
 	}
 	restrictedApi.Use(echojwt.WithConfig(config))
+
+	// ExamInfo
+	restrictedApi.GET("/exam/info", examHandler.FindExamInfosWhenSignIn)
 
 	restrictedApi.GET("/exam", examHandler.FindExams)
 	restrictedApi.POST("/exam", examHandler.CreateExam)

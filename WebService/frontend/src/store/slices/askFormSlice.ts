@@ -21,6 +21,9 @@ export const askFormSlice = createSlice({
     addQuestionResult: (state, action: PayloadAction<QuestionResult>) => {
       state.questionResults.push(action.payload);
     },
+    clearQuestionResult: (state) => {
+      state.questionResults.length = 0;
+    },
   },
 });
 

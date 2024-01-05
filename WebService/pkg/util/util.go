@@ -23,8 +23,15 @@ type JwtCustomClaims struct {
 }
 
 func GetJWTClaims(c echo.Context) *JwtCustomClaims {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*JwtCustomClaims)
+	user := c.Get("user")
+
+	// 若尚未登入
+	if user == nil {
+		return nil
+	}
+
+	jwtToken := user.(*jwt.Token)
+	claims := jwtToken.Claims.(*JwtCustomClaims)
 	return claims
 }
 

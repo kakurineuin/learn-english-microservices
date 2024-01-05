@@ -162,3 +162,18 @@ func (s *MyTestSuite) TestGetUserByUsername() {
 	s.Nil(err)
 	s.NotNil(user)
 }
+
+func (s *MyTestSuite) TestGetAdminUser() {
+	ctx := context.TODO()
+
+	_, err := s.userCollection.InsertOne(ctx, model.User{
+		Username: "TestGetAdminUser",
+		Password: "TestGetAdminUser",
+		Role:     "admin",
+	})
+	s.Nil(err)
+
+	user, err := s.repo.GetAdminUser(ctx)
+	s.Nil(err)
+	s.NotNil(user)
+}

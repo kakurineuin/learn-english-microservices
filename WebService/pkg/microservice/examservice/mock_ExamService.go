@@ -413,6 +413,65 @@ func (_c *MockExamService_Disconnect_Call) RunAndReturn(run func() error) *MockE
 	return _c
 }
 
+// FindExamInfos provides a mock function with given fields: userId, isPublic
+func (_m *MockExamService) FindExamInfos(userId string, isPublic bool) (*pb.FindExamInfosResponse, error) {
+	ret := _m.Called(userId, isPublic)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindExamInfos")
+	}
+
+	var r0 *pb.FindExamInfosResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string, bool) (*pb.FindExamInfosResponse, error)); ok {
+		return rf(userId, isPublic)
+	}
+	if rf, ok := ret.Get(0).(func(string, bool) *pb.FindExamInfosResponse); ok {
+		r0 = rf(userId, isPublic)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*pb.FindExamInfosResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string, bool) error); ok {
+		r1 = rf(userId, isPublic)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockExamService_FindExamInfos_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindExamInfos'
+type MockExamService_FindExamInfos_Call struct {
+	*mock.Call
+}
+
+// FindExamInfos is a helper method to define mock.On call
+//   - userId string
+//   - isPublic bool
+func (_e *MockExamService_Expecter) FindExamInfos(userId interface{}, isPublic interface{}) *MockExamService_FindExamInfos_Call {
+	return &MockExamService_FindExamInfos_Call{Call: _e.mock.On("FindExamInfos", userId, isPublic)}
+}
+
+func (_c *MockExamService_FindExamInfos_Call) Run(run func(userId string, isPublic bool)) *MockExamService_FindExamInfos_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string), args[1].(bool))
+	})
+	return _c
+}
+
+func (_c *MockExamService_FindExamInfos_Call) Return(_a0 *pb.FindExamInfosResponse, _a1 error) *MockExamService_FindExamInfos_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockExamService_FindExamInfos_Call) RunAndReturn(run func(string, bool) (*pb.FindExamInfosResponse, error)) *MockExamService_FindExamInfos_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // FindExamRecordOverview provides a mock function with given fields: examId, userId, startDate
 func (_m *MockExamService) FindExamRecordOverview(examId string, userId string, startDate time.Time) (*pb.FindExamRecordOverviewResponse, error) {
 	ret := _m.Called(examId, userId, startDate)

@@ -28,6 +28,7 @@ type ExamService interface {
 	DeleteExam(
 		examId, userId string,
 	) (*pb.DeleteExamResponse, error)
+
 	FindQuestions(
 		pageIndex, pageSize int32, examId, userId string,
 	) (*pb.FindQuestionsResponse, error)
@@ -43,6 +44,7 @@ type ExamService interface {
 	FindRandomQuestions(
 		examId, userId string, size int32,
 	) (*pb.FindRandomQuestionsResponse, error)
+
 	CreateExamRecord(
 		examId string, score int32, wrongQuestionIds []string, userId string,
 	) (*pb.CreateExamRecordResponse, error)
@@ -52,6 +54,10 @@ type ExamService interface {
 	FindExamRecordOverview(
 		examId, userId string, startDate time.Time,
 	) (*pb.FindExamRecordOverviewResponse, error)
+
+	FindExamInfos(
+		userId string, isPublic bool,
+	) (*pb.FindExamInfosResponse, error)
 }
 
 func New(serverAddress string) ExamService {
@@ -261,6 +267,18 @@ func (service examService) FindExamRecords(
 			PageSize:  pageSize,
 			ExamId:    examId,
 			UserId:    userId,
+		},
+	)
+}
+
+func (service examService) FindExamInfos(
+	userId string, isPublic bool,
+) (*pb.FindExamInfosResponse, error) {
+	return service.client.FindExamInfos(
+		context.Background(),
+		&pb.FindExamInfosRequest{
+			UserId:   userId,
+			IsPublic: isPublic,
 		},
 	)
 }
