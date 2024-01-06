@@ -18,8 +18,6 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/transport"
 )
 
-const PORT = ":8091"
-
 func main() {
 	loadEnv()
 
@@ -43,7 +41,7 @@ func main() {
 		}
 	}()
 
-	listener, err := net.Listen("tcp", PORT)
+	listener, err := net.Listen("tcp", config.EnvServerAddress())
 	if err != nil {
 		errorLogger.Log("msg", "net listen fail", "err", err)
 		os.Exit(1)
@@ -56,7 +54,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterWordServiceServer(grpcServer, myGrpcServer)
 	reflection.Register(grpcServer)
-	level.Info(logger).Log("msg", "Starting gRPC server at "+PORT)
+	level.Info(logger).Log("msg", "Starting gRPC server at "+config.EnvServerAddress())
 	err = grpcServer.Serve(listener)
 
 	if err != nil {
