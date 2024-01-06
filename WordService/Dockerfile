@@ -4,5 +4,5 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . ./
 RUN cd ./cmd/wordservice && CGO_ENABLED=0 GOOS=linux go build -o /word-service
-EXPOSE 8090 27017
+EXPOSE 8091 27017
 CMD ["/word-service"]
