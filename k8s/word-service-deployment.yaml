@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: word-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: word-service
+  template:
+    metadata:
+      labels:
+        component: word-service
+    spec:
+      containers:
+        - name: word-service
+          image: mises/word-service
+          ports:
+            - containerPort: 8091

@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: web-service
+  template:
+    metadata:
+      labels:
+        component: web-service
+    spec:
+      containers:
+        - name: web-service
+          image: mises/web-service
+          ports:
+            - containerPort: 1323

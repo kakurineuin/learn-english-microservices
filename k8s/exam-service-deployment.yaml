@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exam-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: exam-service
+  template:
+    metadata:
+      labels:
+        component: exam-service
+    spec:
+      containers:
+        - name: exam-service
+          image: mises/exam-service
+          ports:
+            - containerPort: 8090

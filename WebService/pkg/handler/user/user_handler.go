@@ -116,23 +116,16 @@ func (handler userHandler) Login(c echo.Context) error {
 		return util.SendJSONInternalServerError(c)
 	}
 
-	fmt.Printf("================ user: %v", user)
-	fmt.Println()
-
 	// 查無此帳號，表示使用者輸入錯誤的帳號
 	if user == nil {
-		fmt.Println("================ 1")
 		return c.JSON(http.StatusUnauthorized, echo.Map{
 			"message": "帳號錯誤",
 		})
 	}
 
-	fmt.Println("================ 2")
-
 	// 檢查密碼
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		fmt.Println("================ 3")
 		return c.JSON(http.StatusUnauthorized, echo.Map{
 			"message": "密碼錯誤",
 		})
