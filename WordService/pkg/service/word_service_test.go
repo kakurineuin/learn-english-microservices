@@ -82,159 +82,576 @@ func (s *MyTestSuite) AfterTest(suiteName, testName string) {
 }
 
 func (s *MyTestSuite) TestFindWordByDictionary_WhenDataFromDB() {
-	// Setup
-	word := "test"
-	userId := "user01"
-	mockWordMeanings := []model.WordMeaning{
+	type args struct {
+		word   string
+		userId string
+	}
+
+	type result struct {
+		wordMeanings []model.WordMeaning
+		err          error
+	}
+
+	word01 := "test"
+	mockWordMeanings01 := []model.WordMeaning{
 		{
-			Word: word,
+			Word: word01,
 		},
 		{
-			Word: word,
+			Word: word01,
 		},
 		{
-			Word: word,
+			Word: word01,
 		},
 	}
-	size := len(mockWordMeanings)
 
-	s.mockDatabaseRepository.EXPECT().
-		FindWordMeaningsByWordAndUserId(mock.Anything, word, userId).
-		Return(mockWordMeanings, nil)
+	word02 := "book"
+	mockWordMeanings02 := []model.WordMeaning{
+		{
+			Word: word02,
+		},
+	}
 
-	// Test
-	wordMeanings, err := s.wordService.FindWordByDictionary(word, userId)
-	s.Nil(err)
-	s.Equal(size, len(wordMeanings))
+	testCases := []struct {
+		name     string
+		args     *args
+		expected *result
+		on       func(s *MyTestSuite, args *args)
+	}{
+		{
+			name: "Find wordMeanings01",
+			args: &args{
+				word:   word01,
+				userId: "user01",
+			},
+			expected: &result{
+				wordMeanings: mockWordMeanings01,
+				err:          nil,
+			},
+			on: func(s *MyTestSuite, args *args) {
+				s.mockDatabaseRepository.EXPECT().
+					FindWordMeaningsByWordAndUserId(
+						mock.AnythingOfType("todoCtx"), args.word, args.userId).
+					Return(mockWordMeanings01, nil)
+			},
+		},
+		{
+			name: "Find wordMeanings02",
+			args: &args{
+				word:   word02,
+				userId: "user01",
+			},
+			expected: &result{
+				wordMeanings: mockWordMeanings02,
+				err:          nil,
+			},
+			on: func(s *MyTestSuite, args *args) {
+				s.mockDatabaseRepository.EXPECT().
+					FindWordMeaningsByWordAndUserId(
+						mock.AnythingOfType("todoCtx"), args.word, args.userId).
+					Return(mockWordMeanings02, nil)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.args
+			tc.on(s, args)
+
+			// Test
+			wordMeanings, err := s.wordService.FindWordByDictionary(
+				args.word, args.userId,
+			)
+			expected := tc.expected
+			s.Equal(expected.wordMeanings, wordMeanings)
+			s.Equal(expected.err, err)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestFindWordByDictionary_WhenDataFromCrawler() {
-	// Setup
-	word := "test"
-	userId := "user01"
-	mockWordMeanings := []model.WordMeaning{
+	type args struct {
+		word   string
+		userId string
+	}
+
+	type result struct {
+		wordMeanings []model.WordMeaning
+		err          error
+	}
+
+	word01 := "test"
+	mockWordMeanings01 := []model.WordMeaning{
 		{
-			Word: word,
+			Word: word01,
 		},
 		{
-			Word: word,
+			Word: word01,
 		},
 		{
-			Word: word,
+			Word: word01,
 		},
 	}
-	size := len(mockWordMeanings)
 
-	s.mockDatabaseRepository.EXPECT().
-		FindWordMeaningsByWordAndUserId(mock.Anything, word, userId).
-		Return(nil, nil).
-		Once()
-	s.mockSpider.EXPECT().FindWordMeaningsFromDictionary(word).Return(mockWordMeanings, nil)
-	s.mockDatabaseRepository.EXPECT().
-		CreateWordMeanings(mock.Anything, mockWordMeanings).
-		Return([]string{"id1", "id2", "id3"}, nil)
-	s.mockDatabaseRepository.EXPECT().
-		FindWordMeaningsByWordAndUserId(mock.Anything, word, userId).
-		Return(mockWordMeanings, nil)
+	word02 := "book"
+	mockWordMeanings02 := []model.WordMeaning{
+		{
+			Word: word02,
+		},
+	}
 
-	// Test
-	wordMeanings, err := s.wordService.FindWordByDictionary(word, userId)
-	s.Nil(err)
-	s.Equal(size, len(wordMeanings))
+	testCases := []struct {
+		name     string
+		args     *args
+		expected *result
+		on       func(s *MyTestSuite, args *args)
+	}{
+		{
+			name: "Find wordMeanings01",
+			args: &args{
+				word:   word01,
+				userId: "user01",
+			},
+			expected: &result{
+				wordMeanings: mockWordMeanings01,
+				err:          nil,
+			},
+			on: func(s *MyTestSuite, args *args) {
+				s.mockDatabaseRepository.EXPECT().
+					FindWordMeaningsByWordAndUserId(
+						mock.AnythingOfType("todoCtx"), args.word, args.userId).
+					Return(nil, nil).
+					Once()
+				s.mockSpider.EXPECT().FindWordMeaningsFromDictionary(args.word).
+					Return(mockWordMeanings01, nil)
+				s.mockDatabaseRepository.EXPECT().
+					CreateWordMeanings(mock.AnythingOfType("todoCtx"), mockWordMeanings01).
+					Return([]string{"id1", "id2", "id3"}, nil)
+				s.mockDatabaseRepository.EXPECT().
+					FindWordMeaningsByWordAndUserId(
+						mock.AnythingOfType("todoCtx"), args.word, args.userId).
+					Return(mockWordMeanings01, nil)
+			},
+		},
+		{
+			name: "Find wordMeanings02",
+			args: &args{
+				word:   word02,
+				userId: "user01",
+			},
+			expected: &result{
+				wordMeanings: mockWordMeanings02,
+				err:          nil,
+			},
+			on: func(s *MyTestSuite, args *args) {
+				s.mockDatabaseRepository.EXPECT().
+					FindWordMeaningsByWordAndUserId(
+						mock.AnythingOfType("todoCtx"), args.word, args.userId).
+					Return(nil, nil).
+					Once()
+				s.mockSpider.EXPECT().FindWordMeaningsFromDictionary(args.word).
+					Return(mockWordMeanings02, nil)
+				s.mockDatabaseRepository.EXPECT().
+					CreateWordMeanings(mock.AnythingOfType("todoCtx"), mockWordMeanings02).
+					Return([]string{"id1", "id2", "id3"}, nil)
+				s.mockDatabaseRepository.EXPECT().
+					FindWordMeaningsByWordAndUserId(
+						mock.AnythingOfType("todoCtx"), args.word, args.userId).
+					Return(mockWordMeanings02, nil)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.args
+			tc.on(s, args)
+
+			// Test
+			wordMeanings, err := s.wordService.FindWordByDictionary(
+				args.word, args.userId,
+			)
+			expected := tc.expected
+			s.Equal(expected.wordMeanings, wordMeanings)
+			s.Equal(expected.err, err)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestCreateFavoriteWordMeaning() {
-	// Setup
-	userId := "user01"
-	wordMeaningId := "aaa01"
-	mockFavoriteWordMeaningId := "bbb01"
+	type args struct {
+		userId        string
+		wordMeaningId string
+	}
 
-	s.mockDatabaseRepository.EXPECT().
-		CreateFavoriteWordMeaning(mock.Anything, userId, wordMeaningId).
-		Return(mockFavoriteWordMeaningId, nil)
+	type result struct {
+		favoriteWordMeaningId string
+		err                   error
+	}
 
-	// Test
-	favoriteWordMeaningId, err := s.wordService.CreateFavoriteWordMeaning(userId, wordMeaningId)
-	s.Nil(err)
-	s.Equal(mockFavoriteWordMeaningId, favoriteWordMeaningId)
+	mockFavoriteWordMeaningId01 := "f01"
+	mockFavoriteWordMeaningId02 := "f02"
+
+	testCases := []struct {
+		name     string
+		args     *args
+		expected *result
+		on       func(s *MyTestSuite, args *args)
+	}{
+		{
+			name: "Create favoriteWordMeaning01",
+			args: &args{
+				userId:        "user01",
+				wordMeaningId: "w01",
+			},
+			expected: &result{
+				favoriteWordMeaningId: mockFavoriteWordMeaningId01,
+				err:                   nil,
+			},
+			on: func(s *MyTestSuite, args *args) {
+				s.mockDatabaseRepository.EXPECT().
+					CreateFavoriteWordMeaning(
+						mock.AnythingOfType("todoCtx"), args.userId, args.wordMeaningId).
+					Return(mockFavoriteWordMeaningId01, nil)
+			},
+		},
+		{
+			name: "Create favoriteWordMeaning02",
+			args: &args{
+				userId:        "user02",
+				wordMeaningId: "w02",
+			},
+			expected: &result{
+				favoriteWordMeaningId: mockFavoriteWordMeaningId02,
+				err:                   nil,
+			},
+			on: func(s *MyTestSuite, args *args) {
+				s.mockDatabaseRepository.EXPECT().
+					CreateFavoriteWordMeaning(
+						mock.AnythingOfType("todoCtx"), args.userId, args.wordMeaningId).
+					Return(mockFavoriteWordMeaningId02, nil)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.args
+			tc.on(s, args)
+
+			// Test
+			favoriteWordMeaningId, err := s.wordService.CreateFavoriteWordMeaning(
+				args.userId, args.wordMeaningId,
+			)
+			expected := tc.expected
+			s.Equal(expected.favoriteWordMeaningId, favoriteWordMeaningId)
+			s.Equal(expected.err, err)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestDeleteFavoriteWordMeaning() {
-	// Setup
-	userId := "user01"
-	favoriteWordMeaningId := primitive.NewObjectID().Hex()
+	type args struct {
+		favoriteWordMeaningId string
+		userId                string
+	}
 
-	s.mockDatabaseRepository.EXPECT().
-		GetFavoriteWordMeaningById(mock.Anything, favoriteWordMeaningId).
-		Return(&model.FavoriteWordMeaning{
-			UserId:        userId,
-			WordMeaningId: primitive.NewObjectID(),
-		}, nil)
-	s.mockDatabaseRepository.EXPECT().
-		DeleteFavoriteWordMeaningById(mock.Anything, favoriteWordMeaningId).
-		Return(int32(1), nil)
+	type result struct {
+		err error
+	}
 
-	// Test
-	err := s.wordService.DeleteFavoriteWordMeaning(favoriteWordMeaningId, userId)
-	s.Nil(err)
+	favoriteWordMeaningId01 := primitive.NewObjectID().Hex()
+	favoriteWordMeaningId02 := primitive.NewObjectID().Hex()
+
+	testCases := []struct {
+		name     string
+		args     *args
+		expected *result
+		on       func(s *MyTestSuite, args *args)
+	}{
+		{
+			name: "Delete favoriteWordMeaning01",
+			args: &args{
+				favoriteWordMeaningId: favoriteWordMeaningId01,
+				userId:                "user01",
+			},
+			expected: &result{
+				err: nil,
+			},
+			on: func(s *MyTestSuite, args *args) {
+				s.mockDatabaseRepository.EXPECT().
+					GetFavoriteWordMeaningById(
+						mock.AnythingOfType("todoCtx"), args.favoriteWordMeaningId).
+					Return(&model.FavoriteWordMeaning{
+						UserId:        args.userId,
+						WordMeaningId: primitive.NewObjectID(),
+					}, nil)
+				s.mockDatabaseRepository.EXPECT().
+					DeleteFavoriteWordMeaningById(
+						mock.AnythingOfType("todoCtx"), args.favoriteWordMeaningId).
+					Return(int32(1), nil)
+			},
+		},
+		{
+			name: "Delete favoriteWordMeaning02",
+			args: &args{
+				favoriteWordMeaningId: favoriteWordMeaningId02,
+				userId:                "user02",
+			},
+			expected: &result{
+				err: nil,
+			},
+			on: func(s *MyTestSuite, args *args) {
+				s.mockDatabaseRepository.EXPECT().
+					GetFavoriteWordMeaningById(
+						mock.AnythingOfType("todoCtx"), args.favoriteWordMeaningId).
+					Return(&model.FavoriteWordMeaning{
+						UserId:        args.userId,
+						WordMeaningId: primitive.NewObjectID(),
+					}, nil)
+				s.mockDatabaseRepository.EXPECT().
+					DeleteFavoriteWordMeaningById(
+						mock.AnythingOfType("todoCtx"), args.favoriteWordMeaningId).
+					Return(int32(1), nil)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.args
+			tc.on(s, args)
+
+			// Test
+			err := s.wordService.DeleteFavoriteWordMeaning(
+				args.favoriteWordMeaningId,
+				args.userId,
+			)
+			expected := tc.expected
+			s.Equal(expected.err, err)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestFindFavoriteWordMeanings() {
-	// Setup
-	userId := "user01"
-	word := "TestFindFavoriteWordMeanings"
-	pageIndex := int32(1)
-	pageSize := int32(10)
-	skip := pageSize * pageIndex
-	limit := pageSize
-	mockTotal := int32(13)
+	type args struct {
+		pageIndex int32
+		pageSize  int32
+		userId    string
+		word      string
+	}
 
-	s.mockDatabaseRepository.EXPECT().
-		FindFavoriteWordMeaningsByUserIdAndWord(mock.Anything, userId, word, skip, limit).
-		Return([]model.WordMeaning{
-			{},
-			{},
-			{},
-		}, nil)
-	s.mockDatabaseRepository.EXPECT().
-		CountFavoriteWordMeaningsByUserIdAndWord(mock.Anything, userId, word).
-		Return(mockTotal, nil)
+	type result struct {
+		total        int32
+		pageCount    int32
+		wordMeanings []model.WordMeaning
+		err          error
+	}
 
-	// Test
-	total, pageCount, wordMeanings, err := s.wordService.FindFavoriteWordMeanings(
-		pageIndex,
-		pageSize,
-		userId,
-		word,
-	)
-	s.Nil(err)
-	s.Equal(total, mockTotal)
-	s.Equal(int32(2), pageCount)
-	s.Equal(3, len(wordMeanings))
+	word01 := "test"
+	mockWordMeanings01 := []model.WordMeaning{
+		{
+			Word: word01,
+		},
+		{
+			Word: word01,
+		},
+		{
+			Word: word01,
+		},
+	}
+
+	word02 := "book"
+	mockWordMeanings02 := []model.WordMeaning{
+		{
+			Word: word02,
+		},
+	}
+
+	testCases := []struct {
+		name     string
+		args     *args
+		expected *result
+		on       func(s *MyTestSuite, args *args)
+	}{
+		{
+			name: "Find favoriteWordMeanings01",
+			args: &args{
+				pageIndex: 0,
+				pageSize:  10,
+				userId:    "user01",
+				word:      word01,
+			},
+			expected: &result{
+				total:        3,
+				pageCount:    1,
+				wordMeanings: mockWordMeanings01,
+				err:          nil,
+			},
+			on: func(s *MyTestSuite, args *args) {
+				skip := args.pageSize * args.pageIndex
+				limit := args.pageSize
+
+				s.mockDatabaseRepository.EXPECT().
+					FindFavoriteWordMeaningsByUserIdAndWord(
+						mock.AnythingOfType("todoCtx"), args.userId, args.word, skip, limit).
+					Return(mockWordMeanings01, nil)
+				s.mockDatabaseRepository.EXPECT().
+					CountFavoriteWordMeaningsByUserIdAndWord(
+						mock.AnythingOfType("todoCtx"), args.userId, args.word).
+					Return(int32(3), nil)
+			},
+		},
+		{
+			name: "Find favoriteWordMeanings02",
+			args: &args{
+				pageIndex: 1,
+				pageSize:  10,
+				userId:    "user02",
+				word:      word02,
+			},
+			expected: &result{
+				total:        11,
+				pageCount:    2,
+				wordMeanings: mockWordMeanings02,
+				err:          nil,
+			},
+			on: func(s *MyTestSuite, args *args) {
+				skip := args.pageSize * args.pageIndex
+				limit := args.pageSize
+
+				s.mockDatabaseRepository.EXPECT().
+					FindFavoriteWordMeaningsByUserIdAndWord(
+						mock.AnythingOfType("todoCtx"), args.userId, args.word, skip, limit).
+					Return(mockWordMeanings02, nil)
+				s.mockDatabaseRepository.EXPECT().
+					CountFavoriteWordMeaningsByUserIdAndWord(
+						mock.AnythingOfType("todoCtx"), args.userId, args.word).
+					Return(int32(11), nil)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.args
+			tc.on(s, args)
+
+			// Test
+			total, pageCount, wordMeanings, err := s.wordService.FindFavoriteWordMeanings(
+				args.pageIndex,
+				args.pageSize,
+				args.userId,
+				args.word,
+			)
+			expected := tc.expected
+			s.Equal(expected.total, total)
+			s.Equal(expected.pageCount, pageCount)
+			s.Equal(expected.wordMeanings, wordMeanings)
+			s.Equal(expected.err, err)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestFindRandomFavoriteWordMeanings() {
-	// Setup
-	userId := "user01"
-	word := ""
-	size := int32(10)
-	mockTotal := int32(13)
-	limit := int32(1)
+	type args struct {
+		userId string
+		size   int32
+	}
 
-	s.mockDatabaseRepository.EXPECT().
-		FindFavoriteWordMeaningsByUserIdAndWord(mock.Anything, userId, word, mock.Anything, limit).
-		Return([]model.WordMeaning{
-			{},
-		}, nil)
-	s.mockDatabaseRepository.EXPECT().
-		CountFavoriteWordMeaningsByUserIdAndWord(mock.Anything, userId, word).
-		Return(mockTotal, nil)
+	type result struct {
+		wordMeanings []model.WordMeaning
+		err          error
+	}
 
-	// Test
-	wordMeanings, err := s.wordService.FindRandomFavoriteWordMeanings(
-		userId,
-		size,
-	)
-	s.Nil(err)
-	s.EqualValues(min(mockTotal, size), len(wordMeanings))
+	testCases := []struct {
+		name     string
+		args     *args
+		expected *result
+		on       func(s *MyTestSuite, args *args)
+	}{
+		{
+			name: "Find random favoriteWordMeanings01",
+			args: &args{
+				userId: "user01",
+				size:   10,
+			},
+			expected: &result{
+				wordMeanings: []model.WordMeaning{
+					{}, {}, {},
+				},
+				err: nil,
+			},
+			on: func(s *MyTestSuite, args *args) {
+				s.mockDatabaseRepository.EXPECT().
+					FindFavoriteWordMeaningsByUserIdAndWord(
+						mock.AnythingOfType("todoCtx"),
+						args.userId,
+						"",
+						mock.AnythingOfType("int32"),
+						int32(1),
+					).
+					Return([]model.WordMeaning{
+						{},
+					}, nil)
+				s.mockDatabaseRepository.EXPECT().
+					CountFavoriteWordMeaningsByUserIdAndWord(
+						mock.AnythingOfType("todoCtx"), args.userId, "").
+					Return(int32(3), nil)
+			},
+		},
+		{
+			name: "Find random favoriteWordMeanings02",
+			args: &args{
+				userId: "user02",
+				size:   10,
+			},
+			expected: &result{
+				wordMeanings: []model.WordMeaning{
+					{},
+				},
+				err: nil,
+			},
+			on: func(s *MyTestSuite, args *args) {
+				s.mockDatabaseRepository.EXPECT().
+					FindFavoriteWordMeaningsByUserIdAndWord(
+						mock.AnythingOfType("todoCtx"),
+						args.userId,
+						"",
+						mock.AnythingOfType("int32"),
+						int32(1),
+					).
+					Return([]model.WordMeaning{
+						{},
+					}, nil)
+				s.mockDatabaseRepository.EXPECT().
+					CountFavoriteWordMeaningsByUserIdAndWord(
+						mock.AnythingOfType("todoCtx"), args.userId, "").
+					Return(int32(1), nil)
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.args
+			tc.on(s, args)
+
+			// Test
+			wordMeanings, err := s.wordService.FindRandomFavoriteWordMeanings(
+				args.userId,
+				args.size,
+			)
+			expected := tc.expected
+			s.Equal(expected.wordMeanings, wordMeanings)
+			s.Equal(expected.err, err)
+		})
+	}
 }
