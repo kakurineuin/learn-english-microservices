@@ -52,7 +52,9 @@ func (s *MyTestSuite) SetupSuite() {
 	}
 
 	s.repo = NewMongoDBRepository(DATABASE)
-	s.repo.ConnectDB(uri)
+	err = s.repo.ConnectDB(uri)
+	s.Nil(err)
+
 	s.uri = uri
 	s.ctx = ctx
 	s.mongodbContainer = mongodbContainer
@@ -122,278 +124,900 @@ func (s *MyTestSuite) TestConnectDBAndDisconnectDB() {
 }
 
 func (s *MyTestSuite) TestCreateWordMeanings() {
-	ctx := context.TODO()
-
-	now := time.Now()
-	size := 10
-	wordMeanings := []model.WordMeaning{}
-
-	for i := 0; i < size; i++ {
-		wordMeanings = append(wordMeanings, model.WordMeaning{
-			Word:         "test",
-			PartOfSpeech: "partOfSpeech",
-			Gram:         "gram",
-			Pronunciation: model.Pronunciation{
-				Text:       "text",
-				UkAudioUrl: "uk",
-				UsAudioUrl: "us",
-			},
-			DefGram:    "defGram",
-			Definition: fmt.Sprintf("this is a definition %d", i+1),
-			Examples: []model.Example{
-				{
-					Pattern: "pattern",
-					Examples: []model.Sentence{
-						{
-							AudioUrl: "audioUrl",
-							Text:     "text",
-						},
-					},
-				},
-			},
-			OrderByNo:             int32(i + 1),
-			QueryByWords:          []string{"test"},
-			FavoriteWordMeaningId: primitive.NewObjectID(),
-			CreatedAt:             now,
-			UpdatedAt:             now,
-		})
+	type args struct {
+		ctx          context.Context
+		wordMeanings []model.WordMeaning
 	}
 
-	wordMeaningIds, err := s.repo.CreateWordMeanings(ctx, wordMeanings)
-	s.Nil(err)
-	s.Equal(size, len(wordMeaningIds))
+	type setupDBResult struct{}
+
+	ctx := context.TODO()
+
+	testCases := []struct {
+		name    string
+		setupDB func(s *MyTestSuite) *setupDBResult
+		newArgs func(dbResult setupDBResult) *args
+	}{
+		{
+			name: "Create wordMeanings01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				return &setupDBResult{}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				now := time.Now()
+				size := 10
+				wordMeanings := []model.WordMeaning{}
+
+				for i := 0; i < size; i++ {
+					wordMeanings = append(wordMeanings, model.WordMeaning{
+						Word:         "test",
+						PartOfSpeech: "partOfSpeech",
+						Gram:         "gram",
+						Pronunciation: model.Pronunciation{
+							Text:       "text",
+							UkAudioUrl: "uk",
+							UsAudioUrl: "us",
+						},
+						DefGram:    "defGram",
+						Definition: fmt.Sprintf("this is a definition %d", i+1),
+						Examples: []model.Example{
+							{
+								Pattern: "pattern",
+								Examples: []model.Sentence{
+									{
+										AudioUrl: "audioUrl",
+										Text:     "text",
+									},
+								},
+							},
+						},
+						OrderByNo:             int32(i + 1),
+						QueryByWords:          []string{"test"},
+						FavoriteWordMeaningId: primitive.NewObjectID(),
+						CreatedAt:             now,
+						UpdatedAt:             now,
+					})
+				}
+
+				return &args{
+					ctx:          ctx,
+					wordMeanings: wordMeanings,
+				}
+			},
+		},
+		{
+			name: "Create wordMeanings02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				return &setupDBResult{}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				now := time.Now()
+				size := 3
+				wordMeanings := []model.WordMeaning{}
+
+				for i := 0; i < size; i++ {
+					wordMeanings = append(wordMeanings, model.WordMeaning{
+						Word:         "book",
+						PartOfSpeech: "partOfSpeech",
+						Gram:         "gram",
+						Pronunciation: model.Pronunciation{
+							Text:       "text",
+							UkAudioUrl: "uk",
+							UsAudioUrl: "us",
+						},
+						DefGram:    "defGram",
+						Definition: fmt.Sprintf("this is a definition %d", i+1),
+						Examples: []model.Example{
+							{
+								Pattern: "pattern",
+								Examples: []model.Sentence{
+									{
+										AudioUrl: "audioUrl",
+										Text:     "text",
+									},
+								},
+							},
+						},
+						OrderByNo:             int32(i + 1),
+						QueryByWords:          []string{"test"},
+						FavoriteWordMeaningId: primitive.NewObjectID(),
+						CreatedAt:             now,
+						UpdatedAt:             now,
+					})
+				}
+
+				return &args{
+					ctx:          ctx,
+					wordMeanings: wordMeanings,
+				}
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			wordMeaningIds, err := s.repo.CreateWordMeanings(
+				args.ctx,
+				args.wordMeanings,
+			)
+			s.Nil(err)
+			s.Equal(len(args.wordMeanings), len(wordMeaningIds))
+		})
+	}
 }
 
 func (s *MyTestSuite) TestFindWordMeaningsByWordAndUserId() {
-	ctx := context.TODO()
-
-	size := 10
-	word := "TestFindWordMeaningsByWordAndUserId"
-	userId := "user01"
-	now := time.Now()
-	documents := []interface{}{}
-
-	for i := 0; i < size; i++ {
-		documents = append(documents, model.WordMeaning{
-			Word:         word,
-			PartOfSpeech: "partOfSpeech",
-			Gram:         "gram",
-			Pronunciation: model.Pronunciation{
-				Text:       "text",
-				UkAudioUrl: "uk",
-				UsAudioUrl: "us",
-			},
-			DefGram:    "defGram",
-			Definition: fmt.Sprintf("this is a definition %d", i+1),
-			Examples: []model.Example{
-				{
-					Pattern: "pattern",
-					Examples: []model.Sentence{
-						{
-							AudioUrl: "audioUrl",
-							Text:     "text",
-						},
-					},
-				},
-			},
-			OrderByNo:             int32(i + 1),
-			QueryByWords:          []string{word},
-			FavoriteWordMeaningId: primitive.NewObjectID(),
-			CreatedAt:             now,
-			UpdatedAt:             now,
-		})
+	type args struct {
+		ctx    context.Context
+		word   string
+		userId string
 	}
 
-	_, err := s.wordMeaningCollection.InsertMany(ctx, documents)
-	s.Nil(err)
+	type setupDBResult struct {
+		word   string
+		userId string
+	}
 
-	wordMeanings, err := s.repo.FindWordMeaningsByWordAndUserId(ctx, word, userId)
-	s.Nil(err)
-	s.Equal(size, len(wordMeanings))
+	ctx := context.TODO()
+
+	testCases := []struct {
+		name           string
+		setupDB        func(s *MyTestSuite) *setupDBResult
+		newArgs        func(dbResult setupDBResult) *args
+		expectedLength int
+	}{
+		{
+			name: "Find wordMeanings01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				size := 10
+				word := "TestFindWordMeaningsByWordAndUserId01"
+				userId := "user01"
+				now := time.Now()
+				documents := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.WordMeaning{
+						Word:         word,
+						PartOfSpeech: "partOfSpeech",
+						Gram:         "gram",
+						Pronunciation: model.Pronunciation{
+							Text:       "text",
+							UkAudioUrl: "uk",
+							UsAudioUrl: "us",
+						},
+						DefGram:    "defGram",
+						Definition: fmt.Sprintf("this is a definition %d", i+1),
+						Examples: []model.Example{
+							{
+								Pattern: "pattern",
+								Examples: []model.Sentence{
+									{
+										AudioUrl: "audioUrl",
+										Text:     "text",
+									},
+								},
+							},
+						},
+						OrderByNo:             int32(i + 1),
+						QueryByWords:          []string{word},
+						FavoriteWordMeaningId: primitive.NewObjectID(),
+						CreatedAt:             now,
+						UpdatedAt:             now,
+					})
+				}
+
+				_, err := s.wordMeaningCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					word:   word,
+					userId: userId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					word:   dbResult.word,
+					userId: dbResult.userId,
+				}
+			},
+			expectedLength: 10,
+		},
+		{
+			name: "Find wordMeanings02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				size := 3
+				word := "TestFindWordMeaningsByWordAndUserId02"
+				userId := "user02"
+				now := time.Now()
+				documents := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.WordMeaning{
+						Word:         word,
+						PartOfSpeech: "partOfSpeech",
+						Gram:         "gram",
+						Pronunciation: model.Pronunciation{
+							Text:       "text",
+							UkAudioUrl: "uk",
+							UsAudioUrl: "us",
+						},
+						DefGram:    "defGram",
+						Definition: fmt.Sprintf("this is a definition %d", i+1),
+						Examples: []model.Example{
+							{
+								Pattern: "pattern",
+								Examples: []model.Sentence{
+									{
+										AudioUrl: "audioUrl",
+										Text:     "text",
+									},
+								},
+							},
+						},
+						OrderByNo:             int32(i + 1),
+						QueryByWords:          []string{word},
+						FavoriteWordMeaningId: primitive.NewObjectID(),
+						CreatedAt:             now,
+						UpdatedAt:             now,
+					})
+				}
+
+				_, err := s.wordMeaningCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					word:   word,
+					userId: userId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					word:   dbResult.word,
+					userId: dbResult.userId,
+				}
+			},
+			expectedLength: 3,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			wordMeanings, err := s.repo.FindWordMeaningsByWordAndUserId(
+				args.ctx, args.word, args.userId,
+			)
+			s.Nil(err)
+			s.Len(wordMeanings, tc.expectedLength)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestCreateFavoriteWordMeaning() {
+	type args struct {
+		ctx           context.Context
+		userId        string
+		wordMeaningId string
+	}
+
+	type setupDBResult struct{}
+
 	ctx := context.TODO()
 
-	userId := "user01"
-	wordMeaningId := "658dfc0d26c7337ddf4ab0cf"
-	favoriteWordMeaningId, err := s.repo.CreateFavoriteWordMeaning(ctx, userId, wordMeaningId)
-	s.Nil(err)
-	s.NotEmpty(favoriteWordMeaningId)
+	testCases := []struct {
+		name    string
+		setupDB func(s *MyTestSuite) *setupDBResult
+		newArgs func(dbResult setupDBResult) *args
+	}{
+		{
+			name: "Create favoriteWordMeaning01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				return &setupDBResult{}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:           ctx,
+					userId:        "user01",
+					wordMeaningId: primitive.NewObjectID().Hex(),
+				}
+			},
+		},
+		{
+			name: "Create favoriteWordMeaning02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				return &setupDBResult{}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:           ctx,
+					userId:        "user02",
+					wordMeaningId: primitive.NewObjectID().Hex(),
+				}
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			favoriteWordMeaningId, err := s.repo.CreateFavoriteWordMeaning(
+				args.ctx,
+				args.userId,
+				args.wordMeaningId,
+			)
+			s.Nil(err)
+			s.NotEmpty(favoriteWordMeaningId)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestGetFavoriteWordMeaningById() {
+	type args struct {
+		ctx                   context.Context
+		favoriteWordMeaningId string
+	}
+
+	type setupDBResult struct {
+		favoriteWordMeaningId string
+	}
+
 	ctx := context.TODO()
 
-	userId := "user01"
-	wordMeaningId := primitive.NewObjectID()
-	result, err := s.favoriteWordMeaningCollection.InsertOne(ctx, model.FavoriteWordMeaning{
-		UserId:        userId,
-		WordMeaningId: wordMeaningId,
-	})
-	s.Nil(err)
-	favoriteWordMeaningId := result.InsertedID.(primitive.ObjectID).Hex()
+	testCases := []struct {
+		name    string
+		setupDB func(s *MyTestSuite) *setupDBResult
+		newArgs func(dbResult setupDBResult) *args
+	}{
+		{
+			name: "Get favoriteWordMeaning01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				userId := "user01"
+				wordMeaningId := primitive.NewObjectID()
+				result, err := s.favoriteWordMeaningCollection.InsertOne(
+					ctx,
+					model.FavoriteWordMeaning{
+						UserId:        userId,
+						WordMeaningId: wordMeaningId,
+					},
+				)
+				s.Nil(err)
 
-	favoriteWordMeaning, err := s.repo.GetFavoriteWordMeaningById(ctx, favoriteWordMeaningId)
-	s.Nil(err)
-	s.NotEmpty(favoriteWordMeaning)
+				return &setupDBResult{
+					favoriteWordMeaningId: result.InsertedID.(primitive.ObjectID).Hex(),
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					favoriteWordMeaningId: dbResult.favoriteWordMeaningId,
+				}
+			},
+		},
+		{
+			name: "Get favoriteWordMeaning02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				userId := "user02"
+				wordMeaningId := primitive.NewObjectID()
+				result, err := s.favoriteWordMeaningCollection.InsertOne(
+					ctx,
+					model.FavoriteWordMeaning{
+						UserId:        userId,
+						WordMeaningId: wordMeaningId,
+					},
+				)
+				s.Nil(err)
+
+				return &setupDBResult{
+					favoriteWordMeaningId: result.InsertedID.(primitive.ObjectID).Hex(),
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					favoriteWordMeaningId: dbResult.favoriteWordMeaningId,
+				}
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			favoriteWordMeaning, err := s.repo.GetFavoriteWordMeaningById(
+				args.ctx,
+				args.favoriteWordMeaningId,
+			)
+			s.Nil(err)
+			s.NotEmpty(favoriteWordMeaning)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestFindFavoriteWordMeaningsByUserIdAndWord() {
+	type args struct {
+		ctx    context.Context
+		userId string
+		word   string
+		skip   int32
+		limit  int32
+	}
+
+	type setupDBResult struct {
+		userId string
+		word   string
+	}
+
 	ctx := context.TODO()
 
-	userId := "user01"
-	word := "TestFindFavoriteWordMeaningsByUserIdAndWord"
-	now := time.Now()
-	size := 30
-	wordMeaningDocuments := []interface{}{}
+	testCases := []struct {
+		name           string
+		setupDB        func(s *MyTestSuite) *setupDBResult
+		newArgs        func(dbResult setupDBResult) *args
+		expectedLength int
+	}{
+		{
+			name: "Find favoriteWordMeaning01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				userId := "user01"
+				word := "TestFindFavoriteWordMeaningsByUserIdAndWord01"
+				now := time.Now()
+				size := 10
+				wordMeaningDocuments := []interface{}{}
 
-	for i := 0; i < size; i++ {
-		wordMeaningDocuments = append(wordMeaningDocuments, model.WordMeaning{
-			Word:         word,
-			PartOfSpeech: "partOfSpeech",
-			Gram:         "gram",
-			Pronunciation: model.Pronunciation{
-				Text:       "text",
-				UkAudioUrl: "uk",
-				UsAudioUrl: "us",
-			},
-			DefGram:    "defGram",
-			Definition: fmt.Sprintf("this is a definition %d", i+1),
-			Examples: []model.Example{
-				{
-					Pattern: "pattern",
-					Examples: []model.Sentence{
-						{
-							AudioUrl: "audioUrl",
-							Text:     "text",
+				for i := 0; i < size; i++ {
+					wordMeaningDocuments = append(wordMeaningDocuments, model.WordMeaning{
+						Word:         word,
+						PartOfSpeech: "partOfSpeech",
+						Gram:         "gram",
+						Pronunciation: model.Pronunciation{
+							Text:       "text",
+							UkAudioUrl: "uk",
+							UsAudioUrl: "us",
 						},
-					},
-				},
+						DefGram:    "defGram",
+						Definition: fmt.Sprintf("this is a definition %d", i+1),
+						Examples: []model.Example{
+							{
+								Pattern: "pattern",
+								Examples: []model.Sentence{
+									{
+										AudioUrl: "audioUrl",
+										Text:     "text",
+									},
+								},
+							},
+						},
+						OrderByNo:             int32(i + 1),
+						QueryByWords:          []string{word},
+						FavoriteWordMeaningId: primitive.NewObjectID(),
+						CreatedAt:             now,
+						UpdatedAt:             now,
+					})
+				}
+
+				result, err := s.wordMeaningCollection.InsertMany(ctx, wordMeaningDocuments)
+				s.Nil(err)
+				s.Equal(size, len(result.InsertedIDs))
+
+				favoriteWordMeaningDocuments := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					favoriteWordMeaningDocuments = append(
+						favoriteWordMeaningDocuments,
+						model.FavoriteWordMeaning{
+							UserId:        userId,
+							WordMeaningId: result.InsertedIDs[i].(primitive.ObjectID),
+						},
+					)
+				}
+
+				result2, err := s.favoriteWordMeaningCollection.InsertMany(
+					ctx,
+					favoriteWordMeaningDocuments,
+				)
+				s.Nil(err)
+				s.Equal(size, len(result2.InsertedIDs))
+
+				return &setupDBResult{
+					userId: userId,
+					word:   word,
+				}
 			},
-			OrderByNo:             int32(i + 1),
-			QueryByWords:          []string{word},
-			FavoriteWordMeaningId: primitive.NewObjectID(),
-			CreatedAt:             now,
-			UpdatedAt:             now,
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					userId: dbResult.userId,
+					word:   dbResult.word,
+					skip:   0,
+					limit:  10,
+				}
+			},
+			expectedLength: 10,
+		},
+		{
+			name: "Find favoriteWordMeaning02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				userId := "user02"
+				word := "TestFindFavoriteWordMeaningsByUserIdAndWord02"
+				now := time.Now()
+				size := 3
+				wordMeaningDocuments := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					wordMeaningDocuments = append(wordMeaningDocuments, model.WordMeaning{
+						Word:         word,
+						PartOfSpeech: "partOfSpeech",
+						Gram:         "gram",
+						Pronunciation: model.Pronunciation{
+							Text:       "text",
+							UkAudioUrl: "uk",
+							UsAudioUrl: "us",
+						},
+						DefGram:    "defGram",
+						Definition: fmt.Sprintf("this is a definition %d", i+1),
+						Examples: []model.Example{
+							{
+								Pattern: "pattern",
+								Examples: []model.Sentence{
+									{
+										AudioUrl: "audioUrl",
+										Text:     "text",
+									},
+								},
+							},
+						},
+						OrderByNo:             int32(i + 1),
+						QueryByWords:          []string{word},
+						FavoriteWordMeaningId: primitive.NewObjectID(),
+						CreatedAt:             now,
+						UpdatedAt:             now,
+					})
+				}
+
+				result, err := s.wordMeaningCollection.InsertMany(ctx, wordMeaningDocuments)
+				s.Nil(err)
+				s.Equal(size, len(result.InsertedIDs))
+
+				favoriteWordMeaningDocuments := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					favoriteWordMeaningDocuments = append(
+						favoriteWordMeaningDocuments,
+						model.FavoriteWordMeaning{
+							UserId:        userId,
+							WordMeaningId: result.InsertedIDs[i].(primitive.ObjectID),
+						},
+					)
+				}
+
+				result2, err := s.favoriteWordMeaningCollection.InsertMany(
+					ctx,
+					favoriteWordMeaningDocuments,
+				)
+				s.Nil(err)
+				s.Equal(size, len(result2.InsertedIDs))
+
+				return &setupDBResult{
+					userId: userId,
+					word:   word,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					userId: dbResult.userId,
+					word:   dbResult.word,
+					skip:   0,
+					limit:  10,
+				}
+			},
+			expectedLength: 3,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			wordMeanings, err := s.repo.FindFavoriteWordMeaningsByUserIdAndWord(
+				args.ctx,
+				args.userId,
+				args.word,
+				args.skip,
+				args.limit,
+			)
+			s.Nil(err)
+			s.Len(wordMeanings, tc.expectedLength)
 		})
 	}
-
-	result, err := s.wordMeaningCollection.InsertMany(ctx, wordMeaningDocuments)
-	s.Nil(err)
-	s.Equal(size, len(result.InsertedIDs))
-
-	favoriteWordMeaningDocuments := []interface{}{}
-
-	for i := 0; i < size; i++ {
-		favoriteWordMeaningDocuments = append(
-			favoriteWordMeaningDocuments,
-			model.FavoriteWordMeaning{
-				UserId:        userId,
-				WordMeaningId: result.InsertedIDs[i].(primitive.ObjectID),
-			},
-		)
-	}
-
-	result2, err := s.favoriteWordMeaningCollection.InsertMany(ctx, favoriteWordMeaningDocuments)
-	s.Nil(err)
-	s.Equal(size, len(result2.InsertedIDs))
-
-	skip := int32(10)
-	limit := int32(10)
-	wordMeanings, err := s.repo.FindFavoriteWordMeaningsByUserIdAndWord(
-		ctx,
-		userId,
-		word,
-		skip,
-		limit,
-	)
-	s.Nil(err)
-	s.Equal(int(limit), len(wordMeanings))
 }
 
 func (s *MyTestSuite) TestCountFavoriteWordMeaningsByUserIdAndWord() {
+	type args struct {
+		ctx    context.Context
+		userId string
+		word   string
+	}
+
+	type setupDBResult struct {
+		userId string
+		word   string
+	}
+
 	ctx := context.TODO()
 
-	userId := "user01"
-	word := "TestCountFavoriteWordMeaningsByUserIdAndWord"
-	now := time.Now()
-	size := 30
-	wordMeaningDocuments := []interface{}{}
+	testCases := []struct {
+		name          string
+		setupDB       func(s *MyTestSuite) *setupDBResult
+		newArgs       func(dbResult setupDBResult) *args
+		expectedCount int32
+	}{
+		{
+			name: "Count favoriteWordMeaning01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				userId := "user01"
+				word := "TestCountFavoriteWordMeaningsByUserIdAndWord01"
+				now := time.Now()
+				size := 10
+				wordMeaningDocuments := []interface{}{}
 
-	for i := 0; i < size; i++ {
-		wordMeaningDocuments = append(wordMeaningDocuments, model.WordMeaning{
-			Word:         word,
-			PartOfSpeech: "partOfSpeech",
-			Gram:         "gram",
-			Pronunciation: model.Pronunciation{
-				Text:       "text",
-				UkAudioUrl: "uk",
-				UsAudioUrl: "us",
-			},
-			DefGram:    "defGram",
-			Definition: fmt.Sprintf("this is a definition %d", i+1),
-			Examples: []model.Example{
-				{
-					Pattern: "pattern",
-					Examples: []model.Sentence{
-						{
-							AudioUrl: "audioUrl",
-							Text:     "text",
+				for i := 0; i < size; i++ {
+					wordMeaningDocuments = append(wordMeaningDocuments, model.WordMeaning{
+						Word:         word,
+						PartOfSpeech: "partOfSpeech",
+						Gram:         "gram",
+						Pronunciation: model.Pronunciation{
+							Text:       "text",
+							UkAudioUrl: "uk",
+							UsAudioUrl: "us",
 						},
-					},
-				},
+						DefGram:    "defGram",
+						Definition: fmt.Sprintf("this is a definition %d", i+1),
+						Examples: []model.Example{
+							{
+								Pattern: "pattern",
+								Examples: []model.Sentence{
+									{
+										AudioUrl: "audioUrl",
+										Text:     "text",
+									},
+								},
+							},
+						},
+						OrderByNo:             int32(i + 1),
+						QueryByWords:          []string{word},
+						FavoriteWordMeaningId: primitive.NewObjectID(),
+						CreatedAt:             now,
+						UpdatedAt:             now,
+					})
+				}
+
+				result, err := s.wordMeaningCollection.InsertMany(ctx, wordMeaningDocuments)
+				s.Nil(err)
+				s.Equal(size, len(result.InsertedIDs))
+
+				favoriteWordMeaningDocuments := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					favoriteWordMeaningDocuments = append(
+						favoriteWordMeaningDocuments,
+						model.FavoriteWordMeaning{
+							UserId:        userId,
+							WordMeaningId: result.InsertedIDs[i].(primitive.ObjectID),
+						},
+					)
+				}
+
+				result2, err := s.favoriteWordMeaningCollection.InsertMany(
+					ctx,
+					favoriteWordMeaningDocuments,
+				)
+				s.Nil(err)
+				s.Equal(size, len(result2.InsertedIDs))
+
+				return &setupDBResult{
+					userId: userId,
+					word:   word,
+				}
 			},
-			OrderByNo:             int32(i + 1),
-			QueryByWords:          []string{word},
-			FavoriteWordMeaningId: primitive.NewObjectID(),
-			CreatedAt:             now,
-			UpdatedAt:             now,
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					userId: dbResult.userId,
+					word:   dbResult.word,
+				}
+			},
+			expectedCount: 10,
+		},
+		{
+			name: "Count favoriteWordMeaning02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				userId := "user02"
+				word := "TestCountFavoriteWordMeaningsByUserIdAndWord02"
+				now := time.Now()
+				size := 3
+				wordMeaningDocuments := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					wordMeaningDocuments = append(wordMeaningDocuments, model.WordMeaning{
+						Word:         word,
+						PartOfSpeech: "partOfSpeech",
+						Gram:         "gram",
+						Pronunciation: model.Pronunciation{
+							Text:       "text",
+							UkAudioUrl: "uk",
+							UsAudioUrl: "us",
+						},
+						DefGram:    "defGram",
+						Definition: fmt.Sprintf("this is a definition %d", i+1),
+						Examples: []model.Example{
+							{
+								Pattern: "pattern",
+								Examples: []model.Sentence{
+									{
+										AudioUrl: "audioUrl",
+										Text:     "text",
+									},
+								},
+							},
+						},
+						OrderByNo:             int32(i + 1),
+						QueryByWords:          []string{word},
+						FavoriteWordMeaningId: primitive.NewObjectID(),
+						CreatedAt:             now,
+						UpdatedAt:             now,
+					})
+				}
+
+				result, err := s.wordMeaningCollection.InsertMany(ctx, wordMeaningDocuments)
+				s.Nil(err)
+				s.Equal(size, len(result.InsertedIDs))
+
+				favoriteWordMeaningDocuments := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					favoriteWordMeaningDocuments = append(
+						favoriteWordMeaningDocuments,
+						model.FavoriteWordMeaning{
+							UserId:        userId,
+							WordMeaningId: result.InsertedIDs[i].(primitive.ObjectID),
+						},
+					)
+				}
+
+				result2, err := s.favoriteWordMeaningCollection.InsertMany(
+					ctx,
+					favoriteWordMeaningDocuments,
+				)
+				s.Nil(err)
+				s.Equal(size, len(result2.InsertedIDs))
+
+				return &setupDBResult{
+					userId: userId,
+					word:   word,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					userId: dbResult.userId,
+					word:   dbResult.word,
+				}
+			},
+			expectedCount: 3,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			count, err := s.repo.CountFavoriteWordMeaningsByUserIdAndWord(
+				args.ctx,
+				args.userId,
+				args.word,
+			)
+			s.Nil(err)
+			s.Equal(tc.expectedCount, count)
 		})
 	}
-
-	result, err := s.wordMeaningCollection.InsertMany(ctx, wordMeaningDocuments)
-	s.Nil(err)
-	s.Equal(size, len(result.InsertedIDs))
-
-	favoriteWordMeaningDocuments := []interface{}{}
-
-	for i := 0; i < size; i++ {
-		favoriteWordMeaningDocuments = append(
-			favoriteWordMeaningDocuments,
-			model.FavoriteWordMeaning{
-				UserId:        userId,
-				WordMeaningId: result.InsertedIDs[i].(primitive.ObjectID),
-			},
-		)
-	}
-
-	result2, err := s.favoriteWordMeaningCollection.InsertMany(ctx, favoriteWordMeaningDocuments)
-	s.Nil(err)
-	s.Equal(size, len(result2.InsertedIDs))
-
-	count, err := s.repo.CountFavoriteWordMeaningsByUserIdAndWord(
-		ctx,
-		userId,
-		word,
-	)
-	s.Nil(err)
-	s.Equal(int32(size), count)
 }
 
 func (s *MyTestSuite) TestDeleteFavoriteWordMeaningById() {
+	type args struct {
+		ctx                   context.Context
+		favoriteWordMeaningId string
+	}
+
+	type setupDBResult struct {
+		favoriteWordMeaningId string
+	}
+
 	ctx := context.TODO()
 
-	userId := "user01"
-	wordMeaningId := primitive.NewObjectID()
-	result, err := s.favoriteWordMeaningCollection.InsertOne(ctx, model.FavoriteWordMeaning{
-		UserId:        userId,
-		WordMeaningId: wordMeaningId,
-	})
-	s.Nil(err)
-	favoriteWordMeaningId := result.InsertedID.(primitive.ObjectID).Hex()
+	testCases := []struct {
+		name    string
+		setupDB func(s *MyTestSuite) *setupDBResult
+		newArgs func(dbResult setupDBResult) *args
+	}{
+		{
+			name: "Delete favoriteWordMeaning01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				userId := "user01"
+				wordMeaningId := primitive.NewObjectID()
+				result, err := s.favoriteWordMeaningCollection.InsertOne(
+					ctx,
+					model.FavoriteWordMeaning{
+						UserId:        userId,
+						WordMeaningId: wordMeaningId,
+					},
+				)
+				s.Nil(err)
 
-	deletedCount, err := s.repo.DeleteFavoriteWordMeaningById(ctx, favoriteWordMeaningId)
-	s.Nil(err)
-	s.Equal(int32(1), deletedCount)
+				return &setupDBResult{
+					favoriteWordMeaningId: result.InsertedID.(primitive.ObjectID).Hex(),
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:                   ctx,
+					favoriteWordMeaningId: dbResult.favoriteWordMeaningId,
+				}
+			},
+		},
+		{
+			name: "Delete favoriteWordMeaning02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				userId := "user02"
+				wordMeaningId := primitive.NewObjectID()
+				result, err := s.favoriteWordMeaningCollection.InsertOne(
+					ctx,
+					model.FavoriteWordMeaning{
+						UserId:        userId,
+						WordMeaningId: wordMeaningId,
+					},
+				)
+				s.Nil(err)
+
+				return &setupDBResult{
+					favoriteWordMeaningId: result.InsertedID.(primitive.ObjectID).Hex(),
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:                   ctx,
+					favoriteWordMeaningId: dbResult.favoriteWordMeaningId,
+				}
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			deletedCount, err := s.repo.DeleteFavoriteWordMeaningById(
+				args.ctx,
+				args.favoriteWordMeaningId,
+			)
+			s.Nil(err)
+			s.EqualValues(1, deletedCount)
+		})
+	}
 }
