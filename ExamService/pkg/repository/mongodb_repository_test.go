@@ -126,588 +126,2225 @@ func (s *MyTestSuite) TestConnectDBAndDisconnectDB() {
 }
 
 func (s *MyTestSuite) TestCreateExam() {
+	type args struct {
+		ctx  context.Context
+		exam model.Exam
+	}
+
+	type setupDBResult struct{}
+
 	ctx := context.TODO()
 
-	examId, err := s.repo.CreateExam(ctx, model.Exam{
-		Topic:       "TestCreateExam",
-		Description: "desc01",
-		IsPublic:    true,
-		Tags:        []string{},
-		UserId:      "user01",
-	})
-	s.Nil(err)
-	s.NotEmpty(examId)
+	testCases := []struct {
+		name    string
+		setupDB func(s *MyTestSuite) *setupDBResult
+		newArgs func(dbResult setupDBResult) *args
+	}{
+		{
+			name: "Create exam01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				return &setupDBResult{}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx: ctx,
+					exam: model.Exam{
+						Topic:       "topic01",
+						Description: "desc01",
+						IsPublic:    true,
+						Tags:        []string{"a01"},
+						UserId:      "user01",
+					},
+				}
+			},
+		},
+		{
+			name: "Create exam02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				return &setupDBResult{}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx: ctx,
+					exam: model.Exam{
+						Topic:       "topic02",
+						Description: "desc02",
+						IsPublic:    false,
+						Tags:        []string{"b01"},
+						UserId:      "user02",
+					},
+				}
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			examId, err := s.repo.CreateExam(
+				args.ctx,
+				args.exam,
+			)
+			s.Nil(err)
+			s.NotEmpty(examId)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestUpdateExam() {
+	type args struct {
+		ctx  context.Context
+		exam model.Exam
+	}
+
+	type setupDBResult struct {
+		exam *model.Exam
+	}
+
 	ctx := context.TODO()
 
-	result, err := s.examCollection.InsertOne(ctx, model.Exam{
-		Topic:       "TestUpdateExam",
-		Description: "jsut for test",
-		Tags:        []string{"tag01", "tag02"},
-		IsPublic:    true,
-		UserId:      "user01",
-	})
-	s.Nil(err)
-	id := result.InsertedID.(primitive.ObjectID)
+	testCases := []struct {
+		name    string
+		setupDB func(s *MyTestSuite) *setupDBResult
+		newArgs func(dbResult setupDBResult) *args
+	}{
+		{
+			name: "Update exam topic",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				exam := model.Exam{
+					Topic:       "topic01",
+					Description: "jsut for test",
+					Tags:        []string{"tag01", "tag02"},
+					IsPublic:    true,
+					UserId:      "user03",
+				}
+				result, err := s.examCollection.InsertOne(ctx, exam)
+				s.Nil(err)
 
-	err = s.repo.UpdateExam(ctx, model.Exam{
-		Id:          id,
-		Topic:       "TestUpdateExam_u01",
-		Description: "desc01_u01",
-		IsPublic:    false,
-		Tags:        []string{"aaa", "bbb", "ccc"},
-		UserId:      "user01",
-	})
-	s.Nil(err)
+				exam.Id = result.InsertedID.(primitive.ObjectID)
+
+				return &setupDBResult{
+					exam: &exam,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				exam := dbResult.exam
+				exam.Topic = "TestCreateExam01-updated"
+				return &args{
+					ctx:  ctx,
+					exam: *exam,
+				}
+			},
+		},
+		{
+			name: "Update exam isPublic",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				exam := model.Exam{
+					Topic:       "topic02",
+					Description: "jsut for test",
+					Tags:        []string{"tag01", "tag02"},
+					IsPublic:    true,
+					UserId:      "user04",
+				}
+				result, err := s.examCollection.InsertOne(ctx, exam)
+				s.Nil(err)
+
+				exam.Id = result.InsertedID.(primitive.ObjectID)
+
+				return &setupDBResult{
+					exam: &exam,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				exam := dbResult.exam
+				exam.IsPublic = false
+				return &args{
+					ctx:  ctx,
+					exam: *exam,
+				}
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			err := s.repo.UpdateExam(
+				args.ctx,
+				args.exam,
+			)
+			s.Nil(err)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestGetExamById() {
+	type args struct {
+		ctx    context.Context
+		examId string
+	}
+
+	type setupDBResult struct {
+		examId string
+	}
+
 	ctx := context.TODO()
 
-	result, err := s.examCollection.InsertOne(ctx, model.Exam{
-		Topic:       "TestGetExamById",
-		Description: "jsut for test",
-		Tags:        []string{"tag01", "tag02"},
-		IsPublic:    true,
-		UserId:      "user01",
-	})
-	s.Nil(err)
-	examId := result.InsertedID.(primitive.ObjectID).Hex()
+	testCases := []struct {
+		name    string
+		setupDB func(s *MyTestSuite) *setupDBResult
+		newArgs func(dbResult setupDBResult) *args
+	}{
+		{
+			name: "Get exam01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				exam := model.Exam{
+					Topic:       "topic01",
+					Description: "jsut for test",
+					Tags:        []string{"tag01", "tag02"},
+					IsPublic:    true,
+					UserId:      "user05",
+				}
+				result, err := s.examCollection.InsertOne(ctx, exam)
+				s.Nil(err)
 
-	exam, err := s.repo.GetExamById(ctx, examId)
-	s.Nil(err)
-	s.NotNil(exam)
+				return &setupDBResult{
+					examId: result.InsertedID.(primitive.ObjectID).Hex(),
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+				}
+			},
+		},
+		{
+			name: "Get exam02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				exam := model.Exam{
+					Topic:       "topic02",
+					Description: "jsut for test",
+					Tags:        []string{"tag01", "tag02"},
+					IsPublic:    false,
+					UserId:      "user06",
+				}
+				result, err := s.examCollection.InsertOne(ctx, exam)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: result.InsertedID.(primitive.ObjectID).Hex(),
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+				}
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			exam, err := s.repo.GetExamById(
+				args.ctx,
+				args.examId,
+			)
+			s.Nil(err)
+			s.NotNil(exam)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestFindExamsByUserIdOrderByUpdateAtDesc() {
+	type args struct {
+		ctx    context.Context
+		userId string
+		skip   int32
+		limit  int32
+	}
+
+	type setupDBResult struct {
+		userId string
+	}
+
 	ctx := context.TODO()
 
-	userId := "user01"
-	documents := []interface{}{}
+	testCases := []struct {
+		name           string
+		setupDB        func(s *MyTestSuite) *setupDBResult
+		newArgs        func(dbResult setupDBResult) *args
+		expectedLength int
+	}{
+		{
+			name: "Find exams by userId: user07",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				userId := "user07"
+				size := 10
+				documents := []interface{}{}
 
-	for i := 0; i < 30; i++ {
-		documents = append(documents, model.Exam{
-			Topic:       fmt.Sprintf("topic_%d", i),
-			Description: "jsut for test",
-			Tags:        []string{"tag01", "tag02"},
-			IsPublic:    true,
-			UserId:      userId,
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.Exam{
+						Topic:       fmt.Sprintf("topic_%d", i),
+						Description: "jsut for test",
+						Tags:        []string{"tag01", "tag02"},
+						IsPublic:    true,
+						UserId:      userId,
+					})
+				}
+				_, err := s.examCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					userId: userId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					userId: dbResult.userId,
+					skip:   0,
+					limit:  10,
+				}
+			},
+			expectedLength: 10,
+		},
+		{
+			name: "Find exams by userId: user08",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				userId := "user08"
+				size := 13
+				documents := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.Exam{
+						Topic:       fmt.Sprintf("topic_%d", i),
+						Description: "jsut for test",
+						Tags:        []string{"tag01", "tag02"},
+						IsPublic:    true,
+						UserId:      userId,
+					})
+				}
+				_, err := s.examCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					userId: userId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					userId: dbResult.userId,
+					skip:   10,
+					limit:  10,
+				}
+			},
+			expectedLength: 3,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			exams, err := s.repo.FindExamsByUserIdOrderByUpdateAtDesc(
+				args.ctx,
+				args.userId,
+				args.skip,
+				args.limit,
+			)
+			s.Nil(err)
+			s.Len(exams, tc.expectedLength)
 		})
 	}
-	_, err := s.examCollection.InsertMany(ctx, documents)
-	s.Nil(err)
-
-	exams, err := s.repo.FindExamsByUserIdOrderByUpdateAtDesc(ctx, userId, 10, 10)
-	s.Nil(err)
-	s.NotEmpty(exams)
-	s.Equal(10, len(exams))
 }
 
 func (s *MyTestSuite) TestFindExamsByUserIdAndIsPublicOrderByUpdateAtDesc() {
+	type args struct {
+		ctx      context.Context
+		userId   string
+		isPublic bool
+	}
+
+	type setupDBResult struct {
+		userId   string
+		isPublic bool
+	}
+
 	ctx := context.TODO()
 
-	userId := "TestFindExamsByUserIdAndIsPublicOrderByUpdateAtDesc"
-	isPublic := true
-	size := 10
-	documents := []interface{}{}
+	testCases := []struct {
+		name           string
+		setupDB        func(s *MyTestSuite) *setupDBResult
+		newArgs        func(dbResult setupDBResult) *args
+		expectedLength int
+	}{
+		{
+			name: "Find exams by userId: user09, isPublic: true",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				userId := "user09"
+				isPublic := true
+				size := 10
+				documents := []interface{}{}
 
-	for i := 0; i < size; i++ {
-		documents = append(documents, model.Exam{
-			Topic:       fmt.Sprintf("topic_%d", i),
-			Description: "jsut for test",
-			Tags:        []string{"tag01", "tag02"},
-			IsPublic:    isPublic,
-			UserId:      userId,
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.Exam{
+						Topic:       fmt.Sprintf("topic_%d", i),
+						Description: "jsut for test",
+						Tags:        []string{"tag01", "tag02"},
+						IsPublic:    isPublic,
+						UserId:      userId,
+					})
+				}
+				_, err := s.examCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					userId:   userId,
+					isPublic: isPublic,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:      ctx,
+					userId:   dbResult.userId,
+					isPublic: dbResult.isPublic,
+				}
+			},
+			expectedLength: 10,
+		},
+		{
+			name: "Find exams by userId: user10, isPublic: false",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				userId := "user10"
+				isPublic := false
+				size := 10
+				documents := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.Exam{
+						Topic:       fmt.Sprintf("topic_%d", i),
+						Description: "jsut for test",
+						Tags:        []string{"tag01", "tag02"},
+						IsPublic:    isPublic,
+						UserId:      userId,
+					})
+				}
+				_, err := s.examCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					userId:   userId,
+					isPublic: isPublic,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:      ctx,
+					userId:   dbResult.userId,
+					isPublic: dbResult.isPublic,
+				}
+			},
+			expectedLength: 10,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			exams, err := s.repo.FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc(
+				args.ctx,
+				args.userId,
+				args.isPublic,
+			)
+			s.Nil(err)
+			s.Len(exams, tc.expectedLength)
 		})
 	}
-	_, err := s.examCollection.InsertMany(ctx, documents)
-	s.Nil(err)
-
-	exams, err := s.repo.FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc(ctx, userId, isPublic)
-	s.Nil(err)
-	s.Equal(size, len(exams))
 }
 
 func (s *MyTestSuite) TestDeleteExamById() {
+	type args struct {
+		ctx    context.Context
+		examId string
+	}
+
+	type setupDBResult struct {
+		examId string
+	}
+
 	ctx := context.TODO()
 
-	result, err := s.examCollection.InsertOne(ctx, model.Exam{
-		Topic:       "TestDeleteExamById",
-		Description: "jsut for test",
-		Tags:        []string{"tag01", "tag02"},
-		IsPublic:    true,
-		UserId:      "user01",
-	})
-	s.Nil(err)
-	examId := result.InsertedID.(primitive.ObjectID).Hex()
+	testCases := []struct {
+		name    string
+		setupDB func(s *MyTestSuite) *setupDBResult
+		newArgs func(dbResult setupDBResult) *args
+	}{
+		{
+			name: "Delete exam01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				exam := model.Exam{
+					Topic:       "topic01",
+					Description: "jsut for test",
+					Tags:        []string{"tag01", "tag02"},
+					IsPublic:    true,
+					UserId:      "TestDeleteExamById",
+				}
+				result, err := s.examCollection.InsertOne(ctx, exam)
+				s.Nil(err)
 
-	deletedCount, err := s.repo.DeleteExamById(ctx, examId)
-	s.Nil(err)
-	s.Equal(int32(1), deletedCount)
+				return &setupDBResult{
+					examId: result.InsertedID.(primitive.ObjectID).Hex(),
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+				}
+			},
+		},
+		{
+			name: "Delete exam02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				exam := model.Exam{
+					Topic:       "topic02",
+					Description: "desc02",
+					Tags:        []string{},
+					IsPublic:    false,
+					UserId:      "TestDeleteExamById",
+				}
+				result, err := s.examCollection.InsertOne(ctx, exam)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: result.InsertedID.(primitive.ObjectID).Hex(),
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+				}
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			deletedCount, err := s.repo.DeleteExamById(
+				args.ctx,
+				args.examId,
+			)
+			s.Nil(err)
+			s.EqualValues(1, deletedCount)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestCountExamsByUserId() {
+	type args struct {
+		ctx    context.Context
+		userId string
+	}
+
+	type setupDBResult struct {
+		userId string
+	}
+
 	ctx := context.TODO()
 
-	userId := "user01"
-	documents := []interface{}{}
-	size := 10
+	testCases := []struct {
+		name          string
+		setupDB       func(s *MyTestSuite) *setupDBResult
+		newArgs       func(dbResult setupDBResult) *args
+		expectedCount int32
+	}{
+		{
+			name: "Count exams by userId: TestCountExamsByUserId01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				userId := "TestCountExamsByUserId01"
+				documents := []interface{}{}
+				size := 10
 
-	for i := 0; i < size; i++ {
-		documents = append(documents, model.Exam{
-			Topic:       fmt.Sprintf("topic_%d", i),
-			Description: "jsut for test",
-			Tags:        []string{"tag01", "tag02"},
-			IsPublic:    true,
-			UserId:      userId,
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.Exam{
+						Topic:       fmt.Sprintf("topic_%d", i),
+						Description: "jsut for test",
+						Tags:        []string{"tag01", "tag02"},
+						IsPublic:    true,
+						UserId:      userId,
+					})
+				}
+				_, err := s.examCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					userId: userId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					userId: dbResult.userId,
+				}
+			},
+			expectedCount: 10,
+		},
+		{
+			name: "Count exams by userId: TestCountExamsByUserId02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				userId := "TestCountExamsByUserId02"
+				documents := []interface{}{}
+				size := 13
+
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.Exam{
+						Topic:       fmt.Sprintf("topic_%d", i),
+						Description: "desc02",
+						Tags:        []string{},
+						IsPublic:    false,
+						UserId:      userId,
+					})
+				}
+				_, err := s.examCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					userId: userId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					userId: dbResult.userId,
+				}
+			},
+			expectedCount: 13,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			count, err := s.repo.CountExamsByUserId(
+				args.ctx,
+				args.userId,
+			)
+			s.Nil(err)
+			s.Equal(tc.expectedCount, count)
 		})
 	}
-	_, err := s.examCollection.InsertMany(ctx, documents)
-	s.Nil(err)
-
-	count, err := s.repo.CountExamsByUserId(ctx, userId)
-	s.Nil(err)
-	s.Equal(int32(size), count)
 }
 
 func (s *MyTestSuite) TestCreateQuestion() {
+	type args struct {
+		ctx      context.Context
+		question model.Question
+	}
+
+	type setupDBResult struct{}
+
 	ctx := context.TODO()
-	questionId, err := s.repo.CreateQuestion(ctx, model.Question{
-		ExamId:  "exam01",
-		Ask:     "ask01",
-		Answers: []string{"a01", "a02"},
-		UserId:  "user01",
-	})
-	s.Nil(err)
-	s.NotEmpty(questionId)
+
+	testCases := []struct {
+		name    string
+		setupDB func(s *MyTestSuite) *setupDBResult
+		newArgs func(dbResult setupDBResult) *args
+	}{
+		{
+			name: "Create question01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				return &setupDBResult{}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx: ctx,
+					question: model.Question{
+						ExamId:  "exam01",
+						Ask:     "q01",
+						Answers: []string{"a01"},
+						UserId:  "TestCreateQuestion01",
+					},
+				}
+			},
+		},
+		{
+			name: "Create question02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				return &setupDBResult{}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx: ctx,
+					question: model.Question{
+						ExamId:  "exam02",
+						Ask:     "q02",
+						Answers: []string{"a01", "a02"},
+						UserId:  "TestCreateQuestion02",
+					},
+				}
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			questionId, err := s.repo.CreateQuestion(
+				args.ctx,
+				args.question,
+			)
+			s.Nil(err)
+			s.NotEmpty(questionId)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestUpdateQuestion() {
+	type args struct {
+		ctx      context.Context
+		question model.Question
+	}
+
+	type setupDBResult struct {
+		question *model.Question
+	}
+
 	ctx := context.TODO()
 
-	result, err := s.questionCollection.InsertOne(ctx, model.Question{
-		ExamId:  "exam01",
-		Ask:     "TestUpdateQuestion",
-		Answers: []string{"a01", "a02"},
-		UserId:  "user01",
-	})
-	s.Nil(err)
-	id := result.InsertedID.(primitive.ObjectID)
+	testCases := []struct {
+		name    string
+		setupDB func(s *MyTestSuite) *setupDBResult
+		newArgs func(dbResult setupDBResult) *args
+	}{
+		{
+			name: "Update question ask",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				question := model.Question{
+					ExamId:  "exam01",
+					Ask:     "TestUpdateQuestion01",
+					Answers: []string{"a01", "a02"},
+					UserId:  "user01",
+				}
+				result, err := s.questionCollection.InsertOne(ctx, question)
+				s.Nil(err)
 
-	err = s.repo.UpdateQuestion(ctx, model.Question{
-		Id:      id,
-		ExamId:  "exam02",
-		Ask:     "TestUpdateQuestion02",
-		Answers: []string{"a011", "a022"},
-		UserId:  "user01",
-	})
-	s.Nil(err)
+				question.Id = result.InsertedID.(primitive.ObjectID)
+
+				return &setupDBResult{
+					question: &question,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				question := dbResult.question
+				question.Ask = "TestUpdateQuestion01-updated"
+				return &args{
+					ctx:      ctx,
+					question: *question,
+				}
+			},
+		},
+		{
+			name: "Update question answers",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				question := model.Question{
+					ExamId:  "exam01",
+					Ask:     "TestUpdateQuestion02",
+					Answers: []string{"a01"},
+					UserId:  "user01",
+				}
+				result, err := s.questionCollection.InsertOne(ctx, question)
+				s.Nil(err)
+
+				question.Id = result.InsertedID.(primitive.ObjectID)
+
+				return &setupDBResult{
+					question: &question,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				question := dbResult.question
+				question.Answers = []string{"b01", "b02"}
+				return &args{
+					ctx:      ctx,
+					question: *question,
+				}
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			err := s.repo.UpdateQuestion(
+				args.ctx,
+				args.question,
+			)
+			s.Nil(err)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestGetQuestionById() {
+	type args struct {
+		ctx        context.Context
+		questionId string
+	}
+
+	type setupDBResult struct {
+		questionId string
+	}
+
 	ctx := context.TODO()
 
-	result, err := s.questionCollection.InsertOne(ctx, model.Question{
-		ExamId:  "exam01",
-		Ask:     "TestGetQuestion",
-		Answers: []string{"a01", "a02"},
-		UserId:  "user01",
-	})
-	s.Nil(err)
-	questionId := result.InsertedID.(primitive.ObjectID).Hex()
+	testCases := []struct {
+		name    string
+		setupDB func(s *MyTestSuite) *setupDBResult
+		newArgs func(dbResult setupDBResult) *args
+	}{
+		{
+			name: "Get question01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				result, err := s.questionCollection.InsertOne(ctx, model.Question{
+					ExamId:  "exam01",
+					Ask:     "TestGetQuestion01",
+					Answers: []string{"a01", "a02"},
+					UserId:  "user01",
+				})
+				s.Nil(err)
 
-	question, err := s.repo.GetQuestionById(ctx, questionId)
-	s.Nil(err)
-	s.NotNil(question)
+				return &setupDBResult{
+					questionId: result.InsertedID.(primitive.ObjectID).Hex(),
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:        ctx,
+					questionId: dbResult.questionId,
+				}
+			},
+		},
+		{
+			name: "Get question02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				result, err := s.questionCollection.InsertOne(ctx, model.Question{
+					ExamId:  "exam02",
+					Ask:     "TestGetQuestion02",
+					Answers: []string{"b01"},
+					UserId:  "user02",
+				})
+				s.Nil(err)
+
+				return &setupDBResult{
+					questionId: result.InsertedID.(primitive.ObjectID).Hex(),
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:        ctx,
+					questionId: dbResult.questionId,
+				}
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			question, err := s.repo.GetQuestionById(
+				args.ctx,
+				args.questionId,
+			)
+			s.Nil(err)
+			s.NotNil(question)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestFindQuestionsByQuestionIds() {
+	type args struct {
+		ctx         context.Context
+		questionIds []string
+	}
+
+	type setupDBResult struct {
+		questionIds []string
+	}
+
 	ctx := context.TODO()
 
-	examId := "TestFindQuestionsByQuestionIds"
-	userId := "user01"
-	documents := []interface{}{}
-	size := 10
+	testCases := []struct {
+		name           string
+		setupDB        func(s *MyTestSuite) *setupDBResult
+		newArgs        func(dbResult setupDBResult) *args
+		expectedLength int
+	}{
+		{
+			name: "Find questions01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestFindQuestionsByQuestionIds01"
+				userId := "user01"
+				documents := []interface{}{}
+				size := 10
 
-	for i := 0; i < size; i++ {
-		documents = append(documents, model.Question{
-			ExamId:  examId,
-			Ask:     fmt.Sprintf("Question_%d", i),
-			Answers: []string{"a01", "a02"},
-			UserId:  userId,
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.Question{
+						ExamId:  examId,
+						Ask:     fmt.Sprintf("Question_%d", i),
+						Answers: []string{"a01", "a02"},
+						UserId:  userId,
+					})
+				}
+				result, err := s.questionCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				questionIds := []string{}
+
+				for _, id := range result.InsertedIDs {
+					questionIds = append(questionIds, id.(primitive.ObjectID).Hex())
+				}
+
+				return &setupDBResult{
+					questionIds: questionIds,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:         ctx,
+					questionIds: dbResult.questionIds,
+				}
+			},
+			expectedLength: 10,
+		},
+		{
+			name: "Find questions02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestFindQuestionsByQuestionIds02"
+				userId := "user01"
+				documents := []interface{}{}
+				size := 13
+
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.Question{
+						ExamId:  examId,
+						Ask:     fmt.Sprintf("Question_%d", i),
+						Answers: []string{"a01", "a02"},
+						UserId:  userId,
+					})
+				}
+				result, err := s.questionCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				questionIds := []string{}
+
+				for _, id := range result.InsertedIDs {
+					questionIds = append(questionIds, id.(primitive.ObjectID).Hex())
+				}
+
+				return &setupDBResult{
+					questionIds: questionIds,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:         ctx,
+					questionIds: dbResult.questionIds,
+				}
+			},
+			expectedLength: 13,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			questions, err := s.repo.FindQuestionsByQuestionIds(
+				args.ctx,
+				args.questionIds,
+			)
+			s.Nil(err)
+			s.Len(questions, tc.expectedLength)
 		})
 	}
-	result, err := s.questionCollection.InsertMany(ctx, documents)
-	s.Nil(err)
-
-	questionIds := []string{}
-
-	for _, id := range result.InsertedIDs {
-		questionIds = append(questionIds, id.(primitive.ObjectID).Hex())
-	}
-
-	questions, err := s.repo.FindQuestionsByQuestionIds(
-		ctx,
-		questionIds,
-	)
-	s.Nil(err)
-	s.Equal(size, len(questions))
 }
 
 func (s *MyTestSuite) TestFindQuestionsByExamIdOrderByUpdateAtDesc() {
+	type args struct {
+		ctx    context.Context
+		examId string
+		skip   int32
+		limit  int32
+	}
+
+	type setupDBResult struct {
+		examId string
+	}
+
 	ctx := context.TODO()
 
-	examId := "TestFindQuestionsByExamIdOrderByUpdateAtDesc"
-	userId := "user01"
-	documents := []interface{}{}
+	testCases := []struct {
+		name           string
+		setupDB        func(s *MyTestSuite) *setupDBResult
+		newArgs        func(dbResult setupDBResult) *args
+		expectedLength int
+	}{
+		{
+			name: "Find questions by examId: TestFindQuestionsByExamIdOrderByUpdateAtDesc01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestFindQuestionsByExamIdOrderByUpdateAtDesc01"
+				userId := "user01"
+				documents := []interface{}{}
+				size := 10
 
-	for i := 0; i < 30; i++ {
-		documents = append(documents, model.Question{
-			ExamId:  examId,
-			Ask:     fmt.Sprintf("Question_%d", i),
-			Answers: []string{"a01", "a02"},
-			UserId:  userId,
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.Question{
+						ExamId:  examId,
+						Ask:     fmt.Sprintf("Question_%d", i),
+						Answers: []string{"a01", "a02"},
+						UserId:  userId,
+					})
+				}
+				_, err := s.questionCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+					skip:   0,
+					limit:  10,
+				}
+			},
+			expectedLength: 10,
+		},
+		{
+			name: "Find questions by examId: TestFindQuestionsByExamIdOrderByUpdateAtDesc02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestFindQuestionsByExamIdOrderByUpdateAtDesc02"
+				userId := "user01"
+				documents := []interface{}{}
+				size := 3
+
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.Question{
+						ExamId:  examId,
+						Ask:     fmt.Sprintf("Question_%d", i),
+						Answers: []string{"a01", "a02"},
+						UserId:  userId,
+					})
+				}
+				_, err := s.questionCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+					skip:   0,
+					limit:  10,
+				}
+			},
+			expectedLength: 3,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			questions, err := s.repo.FindQuestionsByExamIdOrderByUpdateAtDesc(
+				args.ctx,
+				args.examId,
+				args.skip,
+				args.limit,
+			)
+			s.Nil(err)
+			s.Len(questions, tc.expectedLength)
 		})
 	}
-	_, err := s.questionCollection.InsertMany(ctx, documents)
-	s.Nil(err)
-
-	questions, err := s.repo.FindQuestionsByExamIdOrderByUpdateAtDesc(
-		ctx,
-		examId,
-		10,
-		10,
-	)
-	s.Nil(err)
-	s.NotEmpty(questions)
-	s.Equal(10, len(questions))
 }
 
 func (s *MyTestSuite) TestDeleteQuestionById() {
+	type args struct {
+		ctx        context.Context
+		questionId string
+	}
+
+	type setupDBResult struct {
+		questionId string
+	}
+
 	ctx := context.TODO()
 
-	result, err := s.questionCollection.InsertOne(ctx, model.Question{
-		ExamId:  "exam01",
-		Ask:     "TestDeleteQuestion",
-		Answers: []string{"a01", "a02"},
-		UserId:  "user01",
-	})
-	s.Nil(err)
-	questionId := result.InsertedID.(primitive.ObjectID).Hex()
+	testCases := []struct {
+		name    string
+		setupDB func(s *MyTestSuite) *setupDBResult
+		newArgs func(dbResult setupDBResult) *args
+	}{
+		{
+			name: "Delete question01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				result, err := s.questionCollection.InsertOne(ctx, model.Question{
+					ExamId:  "exam01",
+					Ask:     "TestDeleteQuestion01",
+					Answers: []string{"a01", "a02"},
+					UserId:  "user01",
+				})
+				s.Nil(err)
 
-	deletedCount, err := s.repo.DeleteQuestionById(ctx, questionId)
-	s.Nil(err)
-	s.Equal(int32(1), deletedCount)
+				return &setupDBResult{
+					questionId: result.InsertedID.(primitive.ObjectID).Hex(),
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:        ctx,
+					questionId: dbResult.questionId,
+				}
+			},
+		},
+		{
+			name: "Delete question02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				result, err := s.questionCollection.InsertOne(ctx, model.Question{
+					ExamId:  "exam02",
+					Ask:     "TestDeleteQuestion02",
+					Answers: []string{"b01"},
+					UserId:  "user02",
+				})
+				s.Nil(err)
+
+				return &setupDBResult{
+					questionId: result.InsertedID.(primitive.ObjectID).Hex(),
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:        ctx,
+					questionId: dbResult.questionId,
+				}
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			deletedCount, err := s.repo.DeleteQuestionById(
+				args.ctx,
+				args.questionId,
+			)
+			s.Nil(err)
+			s.EqualValues(1, deletedCount)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestDeleteQuestionsByExamId() {
+	type args struct {
+		ctx    context.Context
+		examId string
+	}
+
+	type setupDBResult struct {
+		examId string
+	}
+
 	ctx := context.TODO()
 
-	examId := "TestDeleteQuestionsByExamId"
-	size := 10
-	questions := []interface{}{}
+	testCases := []struct {
+		name          string
+		setupDB       func(s *MyTestSuite) *setupDBResult
+		newArgs       func(dbResult setupDBResult) *args
+		expectedCount int32
+	}{
+		{
+			name: "Delete questions by examId: TestDeleteQuestionsByExamId01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestDeleteQuestionsByExamId01"
+				size := 10
+				questions := []interface{}{}
 
-	for i := 0; i < size; i++ {
-		questions = append(questions, model.Question{
-			ExamId:  examId,
-			Ask:     fmt.Sprintf("Question_%d", i),
-			Answers: []string{"a01", "a02"},
-			UserId:  "user01",
+				for i := 0; i < size; i++ {
+					questions = append(questions, model.Question{
+						ExamId:  examId,
+						Ask:     fmt.Sprintf("Question_%d", i),
+						Answers: []string{"a01", "a02"},
+						UserId:  "user01",
+					})
+				}
+				_, err := s.questionCollection.InsertMany(ctx, questions)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+				}
+			},
+			expectedCount: 10,
+		},
+		{
+			name: "Delete questions by examId: TestDeleteQuestionsByExamId02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestDeleteQuestionsByExamId02"
+				size := 3
+				questions := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					questions = append(questions, model.Question{
+						ExamId:  examId,
+						Ask:     fmt.Sprintf("Question_%d", i),
+						Answers: []string{"a01", "a02"},
+						UserId:  "user01",
+					})
+				}
+				_, err := s.questionCollection.InsertMany(ctx, questions)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+				}
+			},
+			expectedCount: 3,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			deletedCount, err := s.repo.DeleteQuestionsByExamId(
+				args.ctx,
+				args.examId,
+			)
+			s.Nil(err)
+			s.Equal(tc.expectedCount, deletedCount)
 		})
 	}
-	_, err := s.questionCollection.InsertMany(ctx, questions)
-	s.Nil(err)
-
-	deletedCount, err := s.repo.DeleteQuestionsByExamId(ctx, examId)
-	s.Nil(err)
-	s.Equal(int32(size), deletedCount)
 }
 
 func (s *MyTestSuite) TestCountQuestionsByExamId() {
+	type args struct {
+		ctx    context.Context
+		examId string
+	}
+
+	type setupDBResult struct {
+		examId string
+	}
+
 	ctx := context.TODO()
 
-	examId := "TestCountQuestionsByExamId"
-	userId := "user01"
-	size := 10
-	questions := []interface{}{}
+	testCases := []struct {
+		name          string
+		setupDB       func(s *MyTestSuite) *setupDBResult
+		newArgs       func(dbResult setupDBResult) *args
+		expectedCount int32
+	}{
+		{
+			name: "Count questions by examId: TestCountQuestionsByExamId01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestCountQuestionsByExamId01"
+				userId := "user01"
+				size := 10
+				questions := []interface{}{}
 
-	for i := 0; i < size; i++ {
-		questions = append(questions, model.Question{
-			ExamId:  examId,
-			Ask:     fmt.Sprintf("Question_%d", i),
-			Answers: []string{"a01", "a02"},
-			UserId:  userId,
+				for i := 0; i < size; i++ {
+					questions = append(questions, model.Question{
+						ExamId:  examId,
+						Ask:     fmt.Sprintf("Question_%d", i),
+						Answers: []string{"a01", "a02"},
+						UserId:  userId,
+					})
+				}
+				_, err := s.questionCollection.InsertMany(ctx, questions)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+				}
+			},
+			expectedCount: 10,
+		},
+		{
+			name: "Count questions by examId: TestCountQuestionsByExamId02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestCountQuestionsByExamId02"
+				userId := "user01"
+				size := 3
+				questions := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					questions = append(questions, model.Question{
+						ExamId:  examId,
+						Ask:     fmt.Sprintf("Question_%d", i),
+						Answers: []string{"a01", "a02"},
+						UserId:  userId,
+					})
+				}
+				_, err := s.questionCollection.InsertMany(ctx, questions)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+				}
+			},
+			expectedCount: 3,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			count, err := s.repo.CountQuestionsByExamId(
+				args.ctx,
+				args.examId,
+			)
+			s.Nil(err)
+			s.Equal(tc.expectedCount, count)
 		})
 	}
-	_, err := s.questionCollection.InsertMany(ctx, questions)
-	s.Nil(err)
-
-	count, err := s.repo.CountQuestionsByExamId(ctx, examId)
-	s.Nil(err)
-	s.Equal(int32(size), count)
 }
 
 func (s *MyTestSuite) TestDeleteAnswerWrongsByQuestionId() {
-	ctx := context.TODO()
-
-	questionId := "TestDeleteAnswerWrongsByQuestionId"
-	size := 10
-	documents := []interface{}{}
-
-	for i := 0; i < size; i++ {
-		documents = append(documents, model.AnswerWrong{
-			ExamId:     "exam_abc_01",
-			QuestionId: questionId,
-			Times:      10,
-			UserId:     "user01",
-		})
+	type args struct {
+		ctx        context.Context
+		questionId string
 	}
 
-	_, err := s.answerWrongCollection.InsertMany(ctx, documents)
-	s.Nil(err)
+	type setupDBResult struct {
+		questionId string
+	}
 
-	deletedCount, err := s.repo.DeleteAnswerWrongsByQuestionId(ctx, questionId)
-	s.Nil(err)
-	s.Equal(int32(size), deletedCount)
+	ctx := context.TODO()
+
+	testCases := []struct {
+		name          string
+		setupDB       func(s *MyTestSuite) *setupDBResult
+		newArgs       func(dbResult setupDBResult) *args
+		expectedCount int32
+	}{
+		{
+			name: "Delete answerWrongs by questionId: TestDeleteAnswerWrongsByQuestionId01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				questionId := "TestDeleteAnswerWrongsByQuestionId01"
+				size := 10
+				documents := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.AnswerWrong{
+						ExamId:     "exam_abc_01",
+						QuestionId: questionId,
+						Times:      10,
+						UserId:     "user01",
+					})
+				}
+
+				_, err := s.answerWrongCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					questionId: questionId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:        ctx,
+					questionId: dbResult.questionId,
+				}
+			},
+			expectedCount: 10,
+		},
+		{
+			name: "Delete answerWrongs by questionId: TestDeleteAnswerWrongsByQuestionId02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				questionId := "TestDeleteAnswerWrongsByQuestionId02"
+				size := 3
+				documents := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.AnswerWrong{
+						ExamId:     "exam_abc_01",
+						QuestionId: questionId,
+						Times:      10,
+						UserId:     "user01",
+					})
+				}
+
+				_, err := s.answerWrongCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					questionId: questionId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:        ctx,
+					questionId: dbResult.questionId,
+				}
+			},
+			expectedCount: 3,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			deletedCount, err := s.repo.DeleteAnswerWrongsByQuestionId(
+				args.ctx,
+				args.questionId,
+			)
+			s.Nil(err)
+			s.Equal(tc.expectedCount, deletedCount)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestDeleteAnswerWrongsByExamId() {
+	type args struct {
+		ctx    context.Context
+		examId string
+	}
+
+	type setupDBResult struct {
+		examId string
+	}
+
 	ctx := context.TODO()
 
-	examId := "TestDeleteAnswerWrongsByExamId"
-	size := 10
-	documents := []interface{}{}
+	testCases := []struct {
+		name          string
+		setupDB       func(s *MyTestSuite) *setupDBResult
+		newArgs       func(dbResult setupDBResult) *args
+		expectedCount int32
+	}{
+		{
+			name: "Delete answerWrongs by examId: TestDeleteAnswerWrongsByExamId01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestDeleteAnswerWrongsByExamId01"
+				size := 10
+				documents := []interface{}{}
 
-	for i := 0; i < size; i++ {
-		documents = append(documents, model.AnswerWrong{
-			ExamId:     examId,
-			QuestionId: "q01",
-			Times:      10,
-			UserId:     "user01",
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.AnswerWrong{
+						ExamId:     examId,
+						QuestionId: "q01",
+						Times:      10,
+						UserId:     "user01",
+					})
+				}
+				_, err := s.answerWrongCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					examId: dbResult.examId,
+				}
+			},
+			expectedCount: 10,
+		},
+		{
+			name: "Delete answerWrongs by examId: TestDeleteAnswerWrongsByExamId02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestDeleteAnswerWrongsByExamId02"
+				size := 3
+				documents := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.AnswerWrong{
+						ExamId:     examId,
+						QuestionId: "q01",
+						Times:      10,
+						UserId:     "user01",
+					})
+				}
+				_, err := s.answerWrongCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					examId: dbResult.examId,
+				}
+			},
+			expectedCount: 3,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			deletedCount, err := s.repo.DeleteAnswerWrongsByExamId(
+				args.ctx,
+				args.examId,
+			)
+			s.Nil(err)
+			s.Equal(tc.expectedCount, deletedCount)
 		})
 	}
-	_, err := s.answerWrongCollection.InsertMany(ctx, documents)
-	s.Nil(err)
-
-	deletedCount, err := s.repo.DeleteAnswerWrongsByExamId(ctx, examId)
-	s.Nil(err)
-	s.Equal(int32(size), deletedCount)
 }
 
 func (s *MyTestSuite) TestUpsertAnswerWrongByTimesPlusOne() {
+	type args struct {
+		ctx        context.Context
+		examId     string
+		questionId string
+		userId     string
+	}
+
+	type setupDBResult struct{}
+
+	type result struct {
+		modifiedCount int32
+		upsertedCount int32
+	}
+
 	ctx := context.TODO()
 
-	examId := "TestUpsertAnswerWrongByTimesPlusOne"
-	questionId := "TestUpsertAnswerWrongByTimesPlusOne_q01"
-	userId := "TestUpsertAnswerWrongByTimesPlusOne_u01"
+	testCases := []struct {
+		name     string
+		setupDB  func(s *MyTestSuite) *setupDBResult
+		newArgs  func(dbResult setupDBResult) *args
+		expected result
+	}{
+		{
+			name: "Upsert(create) answerWrong by times plus one",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				return &setupDBResult{}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:        ctx,
+					examId:     "TestUpsertAnswerWrongByTimesPlusOne",
+					questionId: "TestUpsertAnswerWrongByTimesPlusOne_q01",
+					userId:     "TestUpsertAnswerWrongByTimesPlusOne_u01",
+				}
+			},
+			expected: result{
+				modifiedCount: 0,
+				upsertedCount: 1,
+			},
+		},
+		{
+			name: "Upsert(update) answerWrong by times plus one",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				return &setupDBResult{}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:        ctx,
+					examId:     "TestUpsertAnswerWrongByTimesPlusOne",
+					questionId: "TestUpsertAnswerWrongByTimesPlusOne_q01",
+					userId:     "TestUpsertAnswerWrongByTimesPlusOne_u01",
+				}
+			},
+			expected: result{
+				modifiedCount: 1,
+				upsertedCount: 0,
+			},
+		},
+	}
 
-	modifiedCount, upsertedCount, err := s.repo.UpsertAnswerWrongByTimesPlusOne(
-		ctx,
-		examId,
-		questionId,
-		userId,
-	)
-	s.Nil(err)
-	s.Equal(int32(0), modifiedCount)
-	s.Equal(int32(1), upsertedCount)
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
 
-	modifiedCount, upsertedCount, err = s.repo.UpsertAnswerWrongByTimesPlusOne(
-		ctx,
-		examId,
-		questionId,
-		userId,
-	)
-	s.Nil(err)
-	s.Equal(int32(1), modifiedCount)
-	s.Equal(int32(0), upsertedCount)
+			// Test
+			modifiedCount, upsertedCount, err := s.repo.UpsertAnswerWrongByTimesPlusOne(
+				args.ctx,
+				args.examId,
+				args.questionId,
+				args.userId,
+			)
+			s.Nil(err)
+			s.Equal(tc.expected.modifiedCount, modifiedCount)
+			s.Equal(tc.expected.upsertedCount, upsertedCount)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestFindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc() {
+	type args struct {
+		ctx    context.Context
+		examId string
+		userId string
+		size   int32
+	}
+
+	type setupDBResult struct {
+		examId string
+		userId string
+	}
+
 	ctx := context.TODO()
 
-	examId := "FindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc"
-	userId := "user01"
-	documents := []interface{}{}
-	size := 10
+	testCases := []struct {
+		name           string
+		setupDB        func(s *MyTestSuite) *setupDBResult
+		newArgs        func(dbResult setupDBResult) *args
+		expectedLength int
+	}{
+		{
+			name: "Find answerWrongs by examId: FindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "FindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc01"
+				userId := "user01"
+				documents := []interface{}{}
+				size := 10
 
-	for i := 0; i < size; i++ {
-		documents = append(documents, model.AnswerWrong{
-			ExamId:     examId,
-			QuestionId: fmt.Sprintf("question%d", i+1),
-			Times:      int32(i + 1),
-			UserId:     userId,
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.AnswerWrong{
+						ExamId:     examId,
+						QuestionId: fmt.Sprintf("question%d", i+1),
+						Times:      int32(i + 1),
+						UserId:     userId,
+					})
+				}
+				_, err := s.answerWrongCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+					userId: userId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+					userId: dbResult.userId,
+					size:   10,
+				}
+			},
+			expectedLength: 10,
+		},
+		{
+			name: "Find answerWrongs by examId: FindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "FindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc02"
+				userId := "user01"
+				documents := []interface{}{}
+				size := 3
+
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.AnswerWrong{
+						ExamId:     examId,
+						QuestionId: fmt.Sprintf("question%d", i+1),
+						Times:      int32(i + 1),
+						UserId:     userId,
+					})
+				}
+				_, err := s.answerWrongCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+					userId: userId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+					userId: dbResult.userId,
+					size:   10,
+				}
+			},
+			expectedLength: 3,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			answerWrongs, err := s.repo.FindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc(
+				args.ctx,
+				args.examId,
+				args.userId,
+				args.size,
+			)
+			s.Nil(err)
+			s.Len(answerWrongs, tc.expectedLength)
 		})
 	}
-	_, err := s.answerWrongCollection.InsertMany(ctx, documents)
-	s.Nil(err)
-
-	answerWrongs, err := s.repo.FindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc(
-		ctx,
-		examId,
-		userId,
-		int32(size),
-	)
-	s.Nil(err)
-	s.Equal(size, len(answerWrongs))
 }
 
 func (s *MyTestSuite) TestDeleteExamRecordsByExamId() {
+	type args struct {
+		ctx    context.Context
+		examId string
+	}
+
+	type setupDBResult struct {
+		examId string
+	}
+
 	ctx := context.TODO()
 
-	examId := "TestDeleteExamRecordsByExamId"
-	size := 10
-	documents := []interface{}{}
+	testCases := []struct {
+		name          string
+		setupDB       func(s *MyTestSuite) *setupDBResult
+		newArgs       func(dbResult setupDBResult) *args
+		expectedCount int32
+	}{
+		{
+			name: "Delete examRecords by examId: TestDeleteExamRecordsByExamId01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestDeleteExamRecordsByExamId01"
+				size := 10
+				documents := []interface{}{}
 
-	for i := 0; i < size; i++ {
-		documents = append(documents, model.ExamRecord{
-			ExamId: examId,
-			Score:  6,
-			UserId: "user01",
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.ExamRecord{
+						ExamId: examId,
+						Score:  6,
+						UserId: "user01",
+					})
+				}
+				_, err := s.examRecordCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+				}
+			},
+			expectedCount: 10,
+		},
+		{
+			name: "Delete examRecords by examId: TestDeleteExamRecordsByExamId02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestDeleteExamRecordsByExamId02"
+				size := 3
+				documents := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.ExamRecord{
+						ExamId: examId,
+						Score:  6,
+						UserId: "user01",
+					})
+				}
+				_, err := s.examRecordCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+				}
+			},
+			expectedCount: 3,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			deletedCount, err := s.repo.DeleteExamRecordsByExamId(
+				args.ctx,
+				args.examId,
+			)
+			s.Nil(err)
+			s.Equal(tc.expectedCount, deletedCount)
 		})
 	}
-	_, err := s.examRecordCollection.InsertMany(ctx, documents)
-	s.Nil(err)
-
-	deletedCount, err := s.repo.DeleteExamRecordsByExamId(ctx, examId)
-	s.Nil(err)
-	s.Equal(int32(size), deletedCount)
 }
 
 func (s *MyTestSuite) TestCreateExamRecord() {
+	type args struct {
+		ctx        context.Context
+		examRecord model.ExamRecord
+	}
+
+	type setupDBResult struct{}
+
 	ctx := context.TODO()
 
-	examRecordId, err := s.repo.CreateExamRecord(ctx, model.ExamRecord{
-		ExamId: "TestCreateExamRecord",
-		Score:  10,
-		UserId: "user01",
-	})
-	s.Nil(err)
-	s.NotEmpty(examRecordId)
+	testCases := []struct {
+		name    string
+		setupDB func(s *MyTestSuite) *setupDBResult
+		newArgs func(dbResult setupDBResult) *args
+	}{
+		{
+			name: "Create examRecord01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				return &setupDBResult{}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx: ctx,
+					examRecord: model.ExamRecord{
+						ExamId: "TestCreateExamRecord01",
+						Score:  10,
+						UserId: "user01",
+					},
+				}
+			},
+		},
+		{
+			name: "Create examRecord02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				return &setupDBResult{}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx: ctx,
+					examRecord: model.ExamRecord{
+						ExamId: "TestCreateExamRecord02",
+						Score:  6,
+						UserId: "user02",
+					},
+				}
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			examRecordId, err := s.repo.CreateExamRecord(
+				args.ctx,
+				args.examRecord,
+			)
+			s.Nil(err)
+			s.NotEmpty(examRecordId)
+		})
+	}
 }
 
 func (s *MyTestSuite) TestFindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc() {
+	type args struct {
+		ctx    context.Context
+		examId string
+		userId string
+		skip   int32
+		limit  int32
+	}
+
+	type setupDBResult struct {
+		examId string
+		userId string
+	}
+
 	ctx := context.TODO()
 
-	examId := "exam01"
-	userId := "user01"
-	documents := []interface{}{}
+	testCases := []struct {
+		name           string
+		setupDB        func(s *MyTestSuite) *setupDBResult
+		newArgs        func(dbResult setupDBResult) *args
+		expectedLength int
+	}{
+		{
+			name: "Find examRecords 01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestFindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc01"
+				userId := "user01"
+				documents := []interface{}{}
+				size := 10
 
-	for i := 0; i < 30; i++ {
-		documents = append(documents, model.ExamRecord{
-			ExamId: examId,
-			Score:  10,
-			UserId: userId,
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.ExamRecord{
+						ExamId: examId,
+						Score:  10,
+						UserId: userId,
+					})
+				}
+				_, err := s.examRecordCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+					userId: userId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+					userId: dbResult.userId,
+					skip:   0,
+					limit:  10,
+				}
+			},
+			expectedLength: 10,
+		},
+		{
+			name: "Find examRecords 02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestFindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc02"
+				userId := "user02"
+				documents := []interface{}{}
+				size := 3
+
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.ExamRecord{
+						ExamId: examId,
+						Score:  10,
+						UserId: userId,
+					})
+				}
+				_, err := s.examRecordCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+					userId: userId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+					userId: dbResult.userId,
+					skip:   0,
+					limit:  10,
+				}
+			},
+			expectedLength: 3,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			examRecords, err := s.repo.FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc(
+				args.ctx,
+				args.examId,
+				args.userId,
+				args.skip,
+				args.limit,
+			)
+			s.Nil(err)
+			s.Len(examRecords, tc.expectedLength)
 		})
 	}
-	_, err := s.examRecordCollection.InsertMany(ctx, documents)
-	s.Nil(err)
-
-	examRecords, err := s.repo.FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc(
-		ctx,
-		examId,
-		userId,
-		10,
-		10,
-	)
-	s.Nil(err)
-	s.Equal(10, len(examRecords))
 }
 
 func (s *MyTestSuite) TestCountExamRecordsByExamIdAndUserId() {
+	type args struct {
+		ctx    context.Context
+		examId string
+		userId string
+	}
+
+	type setupDBResult struct {
+		examId string
+		userId string
+	}
+
 	ctx := context.TODO()
 
-	examId := "exam01"
-	userId := "user01"
-	size := 10
-	documents := []interface{}{}
+	testCases := []struct {
+		name          string
+		setupDB       func(s *MyTestSuite) *setupDBResult
+		newArgs       func(dbResult setupDBResult) *args
+		expectedCount int32
+	}{
+		{
+			name: "Count examRecords01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestCountExamRecordsByExamIdAndUserId01"
+				userId := "user01"
+				size := 10
+				documents := []interface{}{}
 
-	for i := 0; i < size; i++ {
-		documents = append(documents, model.ExamRecord{
-			ExamId: examId,
-			Score:  10,
-			UserId: userId,
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.ExamRecord{
+						ExamId: examId,
+						Score:  10,
+						UserId: userId,
+					})
+				}
+				_, err := s.examRecordCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+					userId: userId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+					userId: dbResult.userId,
+				}
+			},
+			expectedCount: 10,
+		},
+		{
+			name: "Count examRecords02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestCountExamRecordsByExamIdAndUserId02"
+				userId := "user01"
+				size := 3
+				documents := []interface{}{}
+
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.ExamRecord{
+						ExamId: examId,
+						Score:  10,
+						UserId: userId,
+					})
+				}
+				_, err := s.examRecordCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+					userId: userId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					ctx:    ctx,
+					examId: dbResult.examId,
+					userId: dbResult.userId,
+				}
+			},
+			expectedCount: 3,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			count, err := s.repo.CountExamRecordsByExamIdAndUserId(
+				args.ctx,
+				args.examId,
+				args.userId,
+			)
+			s.Nil(err)
+			s.Equal(tc.expectedCount, count)
 		})
 	}
-	_, err := s.examRecordCollection.InsertMany(ctx, documents)
-	s.Nil(err)
-
-	count, err := s.repo.CountExamRecordsByExamIdAndUserId(ctx, examId, userId)
-	s.Nil(err)
-	s.Equal(int32(size), count)
 }
 
 func (s *MyTestSuite) TestFindExamRecordsByExamIdAndUserIdAndCreatedAt() {
+	type args struct {
+		ctx       context.Context
+		examId    string
+		userId    string
+		createdAt time.Time
+	}
+
+	type setupDBResult struct {
+		examId string
+		userId string
+	}
+
 	ctx := context.TODO()
 
-	examId := "TestFindExamRecordsByExamIdAndUserIdAndCreatedAt"
-	userId := "user01"
-	documents := []interface{}{}
-	size := 10
-	now := time.Now()
+	testCases := []struct {
+		name           string
+		setupDB        func(s *MyTestSuite) *setupDBResult
+		newArgs        func(dbResult setupDBResult) *args
+		expectedLength int
+	}{
+		{
+			name: "Find examRecords01",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestFindExamRecordsByExamIdAndUserIdAndCreatedAt01"
+				userId := "user01"
+				documents := []interface{}{}
+				size := 10
+				now := time.Now()
 
-	for i := 0; i < size; i++ {
-		documents = append(documents, model.ExamRecord{
-			ExamId:    examId,
-			Score:     10,
-			UserId:    userId,
-			CreatedAt: now,
-			UpdatedAt: now,
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.ExamRecord{
+						ExamId:    examId,
+						Score:     10,
+						UserId:    userId,
+						CreatedAt: now,
+						UpdatedAt: now,
+					})
+				}
+				_, err := s.examRecordCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+					userId: userId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					examId:    dbResult.examId,
+					userId:    dbResult.userId,
+					createdAt: time.Now().AddDate(0, 0, -29),
+				}
+			},
+			expectedLength: 10,
+		},
+		{
+			name: "Find examRecords02",
+			setupDB: func(s *MyTestSuite) *setupDBResult {
+				examId := "TestFindExamRecordsByExamIdAndUserIdAndCreatedAt02"
+				userId := "user02"
+				documents := []interface{}{}
+				size := 3
+				now := time.Now()
+
+				for i := 0; i < size; i++ {
+					documents = append(documents, model.ExamRecord{
+						ExamId:    examId,
+						Score:     10,
+						UserId:    userId,
+						CreatedAt: now,
+						UpdatedAt: now,
+					})
+				}
+				_, err := s.examRecordCollection.InsertMany(ctx, documents)
+				s.Nil(err)
+
+				return &setupDBResult{
+					examId: examId,
+					userId: userId,
+				}
+			},
+			newArgs: func(dbResult setupDBResult) *args {
+				return &args{
+					examId:    dbResult.examId,
+					userId:    dbResult.userId,
+					createdAt: time.Now().AddDate(0, 0, -29),
+				}
+			},
+			expectedLength: 3,
+		},
+	}
+
+	for _, tc := range testCases {
+		s.SetupTest()
+		s.Run(tc.name, func() {
+			args := tc.newArgs(*tc.setupDB(s))
+
+			// Test
+			examRecords, err := s.repo.FindExamRecordsByExamIdAndUserIdAndCreatedAt(
+				args.ctx,
+				args.examId,
+				args.userId,
+				args.createdAt,
+			)
+			s.Nil(err)
+			s.Len(examRecords, tc.expectedLength)
 		})
 	}
-	_, err := s.examRecordCollection.InsertMany(ctx, documents)
-	s.Nil(err)
-
-	createdAt := time.Now().AddDate(0, 0, -29)
-	examRecords, err := s.repo.FindExamRecordsByExamIdAndUserIdAndCreatedAt(
-		ctx,
-		examId,
-		userId,
-		createdAt,
-	)
-	s.Nil(err)
-	s.Equal(size, len(examRecords))
 }
-
-// testcontainers mongodb 不支援交易功能，所以註解此測試
-// func (s *MyTestSuite) TestWithTransaction() {
-// 	userId := "user_mongodb_test_002"
-//
-// 	_, err := s.repo.WithTransaction(func(ctx context.Context) (interface{}, error) {
-// 		deleteExamId := ""
-//
-// 		// 新增 10 筆資料
-// 		for i := 0; i < 10; i++ {
-// 			examId, err := s.repo.CreateExam(ctx, model.Exam{
-// 				Topic:       fmt.Sprintf("TestWithTransaction_%d", i),
-// 				Description: "jsut for test",
-// 				Tags:        []string{"tag01", "tag02"},
-// 				IsPublic:    true,
-// 				UserId:      userId,
-// 			})
-// 			if err != nil {
-// 				return nil, err
-// 			}
-//
-// 			if i == 0 {
-// 				deleteExamId = examId
-// 			}
-// 		}
-//
-// 		// 刪除 1 筆資料
-// 		err := s.repo.DeleteExam(ctx, deleteExamId)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-//
-// 		return nil, nil
-// 	})
-// 	s.Nil(err)
-//
-// 	// 查詢看看交易是否真的成功新增資料
-// 	ctx := context.TODO()
-// 	exams, err := s.repo.FindExamsOrderByUpdateAtDesc(ctx, userId, 0, 100)
-// 	s.Nil(err)
-// 	s.Equal(9, len(exams))
-// }
