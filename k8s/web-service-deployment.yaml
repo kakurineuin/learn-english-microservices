@@ -17,3 +17,22 @@ spec:
           image: mises/web-service
           ports:
             - containerPort: 1323
+          env:
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: learn-english-secret
+                  key: JWT_SECRET_KEY
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: learn-english-secret
+                  key: MONGODB_URI
+            - name: DATABASE_NAME
+              value: Test_LearnEnglishMicroservices
+            - name: SERVER_ADDRESS
+              value: :1323
+            - name: EXAM_SERVICE_SERVER_ADDRESS
+              value: exam-service-cluster-ip-service:8090
+            - name: WORD_SERVICE_SERVER_ADDRESS
+              value: word-service-cluster-ip-service:8091

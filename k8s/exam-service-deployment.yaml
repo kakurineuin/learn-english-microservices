@@ -17,3 +17,13 @@ spec:
           image: mises/exam-service
           ports:
             - containerPort: 8090
+          env:
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: learn-english-secret
+                  key: MONGODB_URI
+            - name: DATABASE_NAME
+              value: Test_LearnEnglishMicroservices
+            - name: SERVER_ADDRESS
+              value: :8090
