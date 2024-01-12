@@ -45,16 +45,20 @@ func (s *MyTestSuite) SetupSuite() {
 	ctx := context.Background()
 	mongodbContainer, err := mongodb.RunContainer(ctx, testcontainers.WithImage("mongo:6"))
 	if err != nil {
-		panic(err)
+		s.FailNow(err.Error())
 	}
 
 	uri, err := mongodbContainer.ConnectionString(ctx)
 	if err != nil {
-		panic(err)
+		s.FailNow(err.Error())
 	}
 
 	s.repo = NewMongoDBRepository(DATABASE)
-	s.repo.ConnectDB(uri)
+	err = s.repo.ConnectDB(uri)
+	if err != nil {
+		s.FailNow(err.Error())
+	}
+
 	s.uri = uri
 	s.ctx = ctx
 	s.mongodbContainer = mongodbContainer
@@ -65,7 +69,7 @@ func (s *MyTestSuite) SetupSuite() {
 		options.Client().ApplyURI(uri).SetTimeout(10*time.Second),
 	)
 	if err != nil {
-		panic(err)
+		s.FailNow(err.Error())
 	}
 
 	s.client = client
@@ -91,7 +95,7 @@ func (s *MyTestSuite) TearDownSuite() {
 
 	// Terminate container
 	if err := s.mongodbContainer.Terminate(s.ctx); err != nil {
-		panic(err)
+		log.Printf("mongodbContainer.Terminate() error: %v", err)
 	}
 }
 

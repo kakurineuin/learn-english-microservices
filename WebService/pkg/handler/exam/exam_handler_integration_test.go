@@ -49,13 +49,18 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 
 	// Setup ExamService
 	compose, err := tc.NewDockerCompose("./docker-compose.yml")
-	s.Nil(err)
+	if err != nil {
+		s.FailNow(err.Error())
+	}
+
 	s.compose = compose
 
 	ctx, cancel := context.WithCancel(context.Background())
 	s.T().Cleanup(cancel)
 	err = compose.Up(ctx, tc.Wait(true))
-	s.Nil(err)
+	if err != nil {
+		s.FailNow(err.Error())
+	}
 
 	databaseName := "Test_LearnEnglish"
 	mongoDBURI := "mongodb://127.0.0.1:27017"
@@ -63,19 +68,25 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 	// 連線到資料庫
 	databaseRepository := repository.NewMongoDBRepository(databaseName)
 	err = databaseRepository.ConnectDB(mongoDBURI)
-	s.Nil(err)
+	if err != nil {
+		s.FailNow(err.Error())
+	}
 
 	// ExamService
 	examService := examservice.New(":8090")
 	err = examService.Connect()
-	s.Nil(err)
+	if err != nil {
+		s.FailNow(err.Error())
+	}
 
 	// 用來建立測試資料的 client
 	client, err := mongo.Connect(
 		context.TODO(),
 		options.Client().ApplyURI(mongoDBURI).SetTimeout(10*time.Second),
 	)
-	s.Nil(err)
+	if err != nil {
+		s.FailNow(err.Error())
+	}
 
 	s.client = client
 	s.userCollection = client.Database(databaseName).Collection("users")
@@ -93,7 +104,9 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 		CreatedAt: now,
 		UpdatedAt: now,
 	})
-	s.Nil(err)
+	if err != nil {
+		s.FailNow(err.Error())
+	}
 
 	s.adminUserId = result.InsertedID.(primitive.ObjectID).Hex()
 
@@ -106,7 +119,9 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 		CreatedAt: now,
 		UpdatedAt: now,
 	})
-	s.Nil(err)
+	if err != nil {
+		s.FailNow(err.Error())
+	}
 
 	s.userId = result.InsertedID.(primitive.ObjectID).Hex()
 
