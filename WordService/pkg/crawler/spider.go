@@ -2,10 +2,12 @@ package crawler
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly"
+	"github.com/gocolly/colly/extensions"
 
 	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/model"
 )
@@ -37,10 +39,14 @@ func (mySpider spider) FindWordMeaningsFromDictionary(
 		colly.AllowedDomains(LONGMAN_DICTIONARY_DOMAIN),
 	)
 
+	// 隨機設定 user agent，避免被網站認出是爬蟲而被網站擋住
+	extensions.RandomUserAgent(c)
+
 	var parseHtmlErr error
 
 	// Set error handler
 	c.OnError(func(r *colly.Response, err error) {
+		log.Printf("parse html error: %v", err)
 		parseHtmlErr = fmt.Errorf(
 			"Request URL: %s, failed with response: %v, \nError: %w",
 			r.Request.URL,
