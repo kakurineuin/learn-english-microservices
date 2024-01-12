@@ -26,7 +26,7 @@ func main() {
 	errorLogger := level.Error(logger)
 
 	// 連線到資料庫
-	databaseRepository := repository.NewMongoDBRepository("learnEnglish")
+	databaseRepository := repository.NewMongoDBRepository(config.EnvDatabaseName())
 	err := databaseRepository.ConnectDB(config.EnvMongoDBURI())
 	if err != nil {
 		errorLogger.Log("msg", "Connect DB fail", "err", err)
