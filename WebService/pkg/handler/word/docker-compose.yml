@@ -1,0 +1,14 @@
+# For word_handler_integration_test.go
+services:
+  mongodb:
+    image: mongo:6
+    ports:
+      - 27017:27017
+  word-service:
+    image: mises/word-service:1.0.0
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017
+      DATABASE_NAME: Test_LearnEnglish
+      SERVER_ADDRESS: :8091
+    ports:
+      - 8091:8091

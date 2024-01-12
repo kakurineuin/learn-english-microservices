@@ -36,7 +36,7 @@ func (handler wordHandler) FindWordMeanings(c echo.Context) error {
 
 	word := c.Param("word")
 	userId := utilGetJWTClaims(c).UserId
-	c.Logger().Infof("word: %s, userId: %s", word, userId)
+	c.Logger().Infof("============== word: %s, userId: %s", word, userId)
 
 	microserviceResponse, err := handler.wordService.FindWordByDictionary(word, userId)
 	if err != nil {
