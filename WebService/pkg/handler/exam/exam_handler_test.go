@@ -50,7 +50,7 @@ func (s *MyTestSuite) SetupSuite() {
 	}
 
 	s.examHandler = examHandler{
-		examServce:         nil,
+		examService:        nil,
 		databaseRepository: nil,
 	}
 }
@@ -66,7 +66,7 @@ func (s *MyTestSuite) SetupTest() {
 
 	// Reset mock，避免在不同測試方法之間互相影響
 	mockExamService := examservice.NewMockExamService(s.T())
-	s.examHandler.examServce = mockExamService
+	s.examHandler.examService = mockExamService
 	s.mockExamService = mockExamService
 
 	mockDatabaseRepository := repository.NewMockDatabaseRepository(s.T())

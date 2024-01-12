@@ -38,7 +38,7 @@ type ExamHandler interface {
 }
 
 type examHandler struct {
-	examServce         examservice.ExamService
+	examService        examservice.ExamService
 	databaseRepository repository.DatabaseRepository
 }
 
@@ -47,7 +47,7 @@ func NewHandler(
 	databaseRepository repository.DatabaseRepository,
 ) ExamHandler {
 	return &examHandler{
-		examServce:         examServce,
+		examService:        examServce,
 		databaseRepository: databaseRepository,
 	}
 }
@@ -69,7 +69,7 @@ func (handler examHandler) CreateExam(c echo.Context) error {
 
 	userId := utilGetJWTClaims(c).UserId
 
-	microserviceResponse, err := handler.examServce.CreateExam(
+	microserviceResponse, err := handler.examService.CreateExam(
 		requestBody.Topic,
 		requestBody.Description,
 		requestBody.IsPublic,
@@ -102,7 +102,7 @@ func (handler examHandler) FindExams(c echo.Context) error {
 
 	userId := utilGetJWTClaims(c).UserId
 
-	microserviceResponse, err := handler.examServce.FindExams(
+	microserviceResponse, err := handler.examService.FindExams(
 		pageIndex,
 		pageSize,
 		userId,
@@ -133,7 +133,7 @@ func (handler examHandler) UpdateExam(c echo.Context) error {
 
 	userId := utilGetJWTClaims(c).UserId
 
-	microserviceResponse, err := handler.examServce.UpdateExam(
+	microserviceResponse, err := handler.examService.UpdateExam(
 		requestBody.ExamId,
 		requestBody.Topic,
 		requestBody.Description,
@@ -162,7 +162,7 @@ func (handler examHandler) DeleteExam(c echo.Context) error {
 
 	userId := utilGetJWTClaims(c).UserId
 
-	_, err = handler.examServce.DeleteExam(examId, userId)
+	_, err = handler.examService.DeleteExam(examId, userId)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONInternalServerError(c)
@@ -199,7 +199,7 @@ func (handler examHandler) FindQuestions(c echo.Context) error {
 
 	userId := utilGetJWTClaims(c).UserId
 
-	microserviceResponse, err := handler.examServce.FindQuestions(
+	microserviceResponse, err := handler.examService.FindQuestions(
 		pageIndex,
 		pageSize,
 		examId,
@@ -237,7 +237,7 @@ func (handler examHandler) CreateQuestion(c echo.Context) error {
 	}
 
 	userId := utilGetJWTClaims(c).UserId
-	microserviceResponse, err := handler.examServce.CreateQuestion(
+	microserviceResponse, err := handler.examService.CreateQuestion(
 		examId,
 		requestBody.Ask,
 		requestBody.Answers,
@@ -267,7 +267,7 @@ func (handler examHandler) UpdateQuestion(c echo.Context) error {
 	}
 
 	userId := utilGetJWTClaims(c).UserId
-	microserviceResponse, err := handler.examServce.UpdateQuestion(
+	microserviceResponse, err := handler.examService.UpdateQuestion(
 		requestBody.QuestionId,
 		requestBody.Ask,
 		requestBody.Answers,
@@ -294,7 +294,7 @@ func (handler examHandler) DeleteQuestion(c echo.Context) error {
 	}
 
 	userId := utilGetJWTClaims(c).UserId
-	_, err = handler.examServce.DeleteQuestion(
+	_, err = handler.examService.DeleteQuestion(
 		questionId,
 		userId,
 	)
@@ -321,7 +321,7 @@ func (handler examHandler) FindRandomQuestions(c echo.Context) error {
 	userId := utilGetJWTClaims(c).UserId
 	var size int32 = 10
 
-	microserviceResponse, err := handler.examServce.FindRandomQuestions(
+	microserviceResponse, err := handler.examService.FindRandomQuestions(
 		examId,
 		userId,
 		size,
@@ -358,7 +358,7 @@ func (handler examHandler) CreateExamRecord(c echo.Context) error {
 	}
 
 	userId := utilGetJWTClaims(c).UserId
-	microserviceResponse, err := handler.examServce.CreateExamRecord(
+	microserviceResponse, err := handler.examService.CreateExamRecord(
 		examId,
 		requestBody.Score,
 		requestBody.WrongQuestionIds,
@@ -386,7 +386,7 @@ func (handler examHandler) FindExamRecordOverview(c echo.Context) error {
 
 	userId := utilGetJWTClaims(c).UserId
 	startDate := time.Now().AddDate(0, 0, -29)
-	microserviceResponse, err := handler.examServce.FindExamRecordOverview(
+	microserviceResponse, err := handler.examService.FindExamRecordOverview(
 		examId,
 		userId,
 		startDate,
@@ -427,7 +427,7 @@ func (handler examHandler) FindExamRecords(c echo.Context) error {
 
 	userId := utilGetJWTClaims(c).UserId
 
-	microserviceResponse, err := handler.examServce.FindExamRecords(
+	microserviceResponse, err := handler.examService.FindExamRecords(
 		pageIndex,
 		pageSize,
 		examId,
@@ -457,7 +457,7 @@ func (handler examHandler) FindExamInfosWhenNotSignIn(c echo.Context) error {
 	}
 
 	adminUserId := adminUser.Id.Hex()
-	microserviceResponse, err := handler.examServce.FindExamInfos(
+	microserviceResponse, err := handler.examService.FindExamInfos(
 		adminUserId,
 		true,
 	)
@@ -486,7 +486,7 @@ func (handler examHandler) FindExamInfosWhenSignIn(c echo.Context) error {
 	}
 
 	adminUserId := adminUser.Id.Hex()
-	microserviceResponse, err := handler.examServce.FindExamInfos(
+	microserviceResponse, err := handler.examService.FindExamInfos(
 		adminUserId,
 		true,
 	)
@@ -506,7 +506,7 @@ func (handler examHandler) FindExamInfosWhenSignIn(c echo.Context) error {
 
 	// 若登入者不是系統管理員
 	if userId != adminUserId {
-		microserviceResponse, err = handler.examServce.FindExamInfos(
+		microserviceResponse, err = handler.examService.FindExamInfos(
 			userId,
 			true,
 		)
@@ -520,7 +520,7 @@ func (handler examHandler) FindExamInfosWhenSignIn(c echo.Context) error {
 		response.ExamInfos = append(response.ExamInfos, userPBPublicExamInfos...)
 	}
 
-	microserviceResponse, err = handler.examServce.FindExamInfos(
+	microserviceResponse, err = handler.examService.FindExamInfos(
 		userId,
 		false,
 	)
