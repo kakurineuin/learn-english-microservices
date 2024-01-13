@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"strings"
 	"testing"
 	"time"
 
@@ -13,6 +15,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"
 	tc "github.com/testcontainers/testcontainers-go/modules/compose"
+	"github.com/testcontainers/testcontainers-go/wait"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -24,13 +27,14 @@ import (
 
 type MyIntegrationTestSuite struct {
 	suite.Suite
-	wordHandler           wordHandler
-	compose               tc.ComposeStack
-	client                *mongo.Client
-	userCollection        *mongo.Collection
-	wordMeaningCollection *mongo.Collection
-	userId                string
-	adminUserId           string
+	wordHandler                   wordHandler
+	compose                       tc.ComposeStack
+	client                        *mongo.Client
+	userCollection                *mongo.Collection
+	wordMeaningCollection         *mongo.Collection
+	favoriteWordMeaningCollection *mongo.Collection
+	userId                        string
+	adminUserId                   string
 }
 
 func TestMyIntegrationTestSuite(t *testing.T) {
@@ -51,13 +55,18 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	s.T().Cleanup(cancel)
-	err = compose.Up(ctx, tc.Wait(true))
+
+	err = compose.
+		WaitForService("word-service", wait.NewLogStrategy("Starting gRPC server at")).
+		Up(ctx, tc.Wait(true))
 	if err != nil {
 		s.FailNow(err.Error())
 	}
 
 	databaseName := "Test_LearnEnglish"
-	mongoDBURI := "mongodb://127.0.0.1:27017"
+
+	// 這裡改用 27018，避免同時跑 exam 和 word 兩隻整合測試時，兩個 mongo 搶佔同一個 port 的問題
+	mongoDBURI := "mongodb://127.0.0.1:27018"
 
 	// WordService
 	wordService := wordservice.New(":8091")
@@ -78,6 +87,8 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 	s.client = client
 	s.userCollection = client.Database(databaseName).Collection("users")
 	s.wordMeaningCollection = client.Database(databaseName).Collection("wordmeanings")
+	s.favoriteWordMeaningCollection = client.Database(databaseName).
+		Collection("favoritewordmeanings")
 
 	// 新增測試資料
 	now := time.Now()
@@ -215,6 +226,123 @@ func (s *MyIntegrationTestSuite) TestFindWordMeanings() {
 
 	// Test
 	err = s.wordHandler.FindWordMeanings(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.NotEmpty(rec.Body.String())
+}
+
+func (s *MyIntegrationTestSuite) TestCreateFavoriteWordMeaning() {
+	// Setup
+	requestJSON := `{
+  	"wordMeaningId": "` + primitive.NewObjectID().Hex() + `"
+	}`
+	e := echo.New()
+	req := httptest.NewRequest(
+		http.MethodPost,
+		"/restricted/favorite",
+		strings.NewReader(requestJSON),
+	)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	// Test
+	err := s.wordHandler.CreateFavoriteWordMeaning(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.NotEmpty(rec.Body.String())
+}
+
+func (s *MyIntegrationTestSuite) TestDeleteFavoriteWordMeaning() {
+	// Setup
+	ctx := context.TODO()
+	now := time.Now()
+	result, err := s.favoriteWordMeaningCollection.InsertOne(ctx, model.FavoriteWordMeaning{
+		UserId:        s.userId,
+		WordMeaningId: primitive.NewObjectID(),
+		CreatedAt:     now,
+		UpdatedAt:     now,
+	})
+	s.Nil(err)
+
+	favoriteWordMeaningId := result.InsertedID.(primitive.ObjectID).Hex()
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodDelete, "/", nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetParamNames("favoriteWordMeaningId")
+	c.SetParamValues(favoriteWordMeaningId)
+
+	// Test
+	err = s.wordHandler.DeleteFavoriteWordMeaning(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.Empty(rec.Body.String())
+}
+
+func (s *MyIntegrationTestSuite) TestFindFavoriteWordMeanings() {
+	// Setup
+	ctx := context.TODO()
+	now := time.Now()
+	documents := []interface{}{}
+
+	for i := 0; i < 10; i++ {
+		documents = append(documents, model.FavoriteWordMeaning{
+			UserId:        s.userId,
+			WordMeaningId: primitive.NewObjectID(),
+			CreatedAt:     now,
+			UpdatedAt:     now,
+		})
+	}
+
+	_, err := s.favoriteWordMeaningCollection.InsertMany(ctx, documents)
+	s.Nil(err)
+
+	e := echo.New()
+	q := make(url.Values)
+	q.Set("pageIndex", "0")
+	q.Set("pageSize", "10")
+	q.Set("word", "test")
+	req := httptest.NewRequest(http.MethodGet, "/?"+q.Encode(), nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	// Test
+	err = s.wordHandler.FindFavoriteWordMeanings(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.NotEmpty(rec.Body.String())
+}
+
+func (s *MyIntegrationTestSuite) TestFindRandomFavoriteWordMeanings() {
+	// Setup
+	ctx := context.TODO()
+	now := time.Now()
+	documents := []interface{}{}
+
+	for i := 0; i < 10; i++ {
+		documents = append(documents, model.FavoriteWordMeaning{
+			UserId:        s.userId,
+			WordMeaningId: primitive.NewObjectID(),
+			CreatedAt:     now,
+			UpdatedAt:     now,
+		})
+	}
+
+	_, err := s.favoriteWordMeaningCollection.InsertMany(ctx, documents)
+	s.Nil(err)
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	// Test
+	err = s.wordHandler.FindRandomFavoriteWordMeanings(c)
 	s.Nil(err)
 	s.Equal(http.StatusOK, rec.Code)
 	s.NotEmpty(rec.Body.String())

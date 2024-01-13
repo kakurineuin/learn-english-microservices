@@ -15,6 +15,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"
 	tc "github.com/testcontainers/testcontainers-go/modules/compose"
+	"github.com/testcontainers/testcontainers-go/wait"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -57,7 +58,9 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	s.T().Cleanup(cancel)
-	err = compose.Up(ctx, tc.Wait(true))
+	err = compose.
+		WaitForService("exam-service", wait.NewLogStrategy("Starting gRPC server at")).
+		Up(ctx, tc.Wait(true))
 	if err != nil {
 		s.FailNow(err.Error())
 	}
