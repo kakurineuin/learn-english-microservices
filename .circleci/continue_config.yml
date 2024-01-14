@@ -25,19 +25,29 @@ workflows:
   exam-service:
     when: << pipeline.parameters.run-build-exam-service-job >>
     jobs:
-      - go/test:
-          paths: ./ExamService/...
-          covermode: atomic
-          failfast: true
-          race: true
+      test:
+        executor:
+          name: go/default
+          tag: "1.21"
+        steps:
+          - go/test:
+              paths: ./ExamService/...
+              covermode: atomic
+              failfast: true
+              race: true
   word-service:
     when: << pipeline.parameters.run-build-word-service-job >>
     jobs:
-      - go/test:
-          paths: ./WordService/...
-          covermode: atomic
-          failfast: true
-          race: true
+      test:
+        executor:
+          name: go/default
+          tag: "1.21"
+        steps:
+          - go/test:
+              paths: ./WordService/...
+              covermode: atomic
+              failfast: true
+              race: true
   run-integration-tests:
     when:
       or:
