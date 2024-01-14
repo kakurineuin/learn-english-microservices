@@ -25,7 +25,7 @@ jobs:
     steps:
       - setup_remote_docker
       - checkout:
-          path: ~/project/ExamService
+          path: ~/project
       - restore_cache:
           key: go-mod-{{ checksum "go.sum" }}
       - run:
@@ -52,7 +52,7 @@ jobs:
     steps:
       - setup_remote_docker
       - checkout:
-          path: ~/project/WordService
+          path: ~/project
       - restore_cache:
           key: go-mod-{{ checksum "go.sum" }}
       - run:
@@ -79,7 +79,7 @@ jobs:
     steps:
       - setup_remote_docker
       - checkout:
-          path: ~/project/WebService
+          path: ~/project
       - restore_cache:
           key: go-mod-{{ checksum "go.sum" }}
       - run:

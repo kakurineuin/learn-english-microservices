@@ -1554,6 +1554,6 @@ func (s *MyTestSuite) TestFindExamInfos() {
 }
 
 func (s *MyTestSuite) TestCircleCI() {
-	// test 6
+	// test 7
 	s.Fail("========= For test CircleCI !!!")
 }
