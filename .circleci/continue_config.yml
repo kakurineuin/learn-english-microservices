@@ -73,11 +73,11 @@ jobs:
           path: junit.xml
   test-web-service:
     # Install go modules and run tests
-    docker:
-      - image: cimg/go:1.21
+    machine:
+      image: ubuntu-2204:2023.10.1
     working_directory: ~/project/WebService
     steps:
-      - setup_remote_docker
+      - run: sudo apt update && sudo apt upgrade && sudo apt install golang
       - checkout:
           path: ~/project
       - restore_cache:
