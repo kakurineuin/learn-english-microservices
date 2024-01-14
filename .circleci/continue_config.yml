@@ -1,0 +1,53 @@
+version: 2.1
+
+orbs:
+  go: circleci/go@1.10.0
+
+# the default pipeline parameters, which will be updated according to
+# the results of the path-filtering orb
+parameters:
+  run-build-exam-service-job:
+    type: boolean
+    default: false
+  run-build-word-service-job:
+    type: boolean
+    default: false
+  run-build-web-service-job:
+    type: boolean
+    default: false
+
+# here we specify our workflows, most of which are conditionally
+# executed based upon pipeline parameter values. Each workflow calls a
+# specific job defined above, in the jobs section.
+workflows:
+  # when pipeline parameter, run-build-exam-service-job is true, the
+  # test-exam-service job is triggered.
+  exam-service:
+    when: << pipeline.parameters.run-build-exam-service-job >>
+    jobs:
+      - go/test:
+          paths: ./ExamService/...
+          covermode: atomic
+          failfast: true
+          race: true
+    when: << pipeline.parameters.run-build-word-service-job >>
+    jobs:
+      - go/test:
+          paths: ./WordService/...
+          covermode: atomic
+          failfast: true
+          race: true
+  run-integration-tests:
+    when:
+      or:
+        [
+          << pipeline.parameters.run-exam-service-job >>,
+          << pipeline.parameters.run-word-service-job >>,
+          << pipeline.parameters.run-web-service-job >>,
+        ]
+    jobs:
+      - go/test:
+          paths: ./WebService/...
+          covermode: atomic
+          failfast: true
+          race: true
