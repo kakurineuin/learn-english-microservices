@@ -21,6 +21,7 @@ import (
 )
 
 func main() {
+	// 讀取環境變數
 	loadEnv()
 
 	// 連線到資料庫
