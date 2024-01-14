@@ -123,7 +123,6 @@ workflows:
         [
           << pipeline.parameters.run-build-exam-service-job >>,
           << pipeline.parameters.run-build-word-service-job >>,
-          << pipeline.parameters.run-build-web-service-job >>,
         ]
     jobs:
       - test-web-service
