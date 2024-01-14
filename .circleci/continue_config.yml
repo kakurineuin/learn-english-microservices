@@ -77,9 +77,9 @@ jobs:
       image: ubuntu-2204:2023.10.1
     working_directory: ~/project/WebService
     steps:
-      - run: sudo apt install golang
       - checkout:
           path: ~/project
+      - run: sudo apt install golang
       - restore_cache:
           key: go-mod-{{ checksum "go.sum" }}
       - run:
