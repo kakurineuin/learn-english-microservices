@@ -77,7 +77,7 @@ jobs:
       image: ubuntu-2204:2023.10.1
     working_directory: ~/project/WebService
     steps:
-      - run: sudo apt update && sudo apt upgrade && sudo apt install golang
+      - run: sudo apt install golang
       - checkout:
           path: ~/project
       - restore_cache:
