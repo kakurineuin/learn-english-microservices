@@ -1,6 +1,6 @@
 module github.com/kakurineuin/learn-english-microservices/word-service
 
-go 1.21.5
+go 1.21
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.1

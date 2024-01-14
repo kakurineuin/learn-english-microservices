@@ -1,6 +1,6 @@
 module github.com/kakurineuin/learn-english-microservices/web-service
 
-go 1.21.5
+go 1.21
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.0
@@ -10,6 +10,7 @@ require (
 	github.com/labstack/gommon v0.4.2
 	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.27.0
+	github.com/testcontainers/testcontainers-go/modules/compose v0.27.0
 	github.com/testcontainers/testcontainers-go/modules/mongodb v0.27.0
 	go.mongodb.org/mongo-driver v1.13.1
 	golang.org/x/crypto v0.17.0
@@ -143,7 +144,6 @@ require (
 	github.com/spf13/cobra v1.8.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
-	github.com/testcontainers/testcontainers-go/modules/compose v0.27.0 // indirect
 	github.com/theupdateframework/notary v0.7.0 // indirect
 	github.com/tilt-dev/fsnotify v1.4.8-0.20220602155310-fff9c274a375 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
