@@ -20,7 +20,7 @@ jobs:
   test-exam-service:
     # Install go modules and run tests
     docker:
-      - image: cimg/go:1.20
+      - image: cimg/go:1.21
     working_directory: ~/project/ExamService
     steps:
       - setup_remote_docker
@@ -47,7 +47,7 @@ jobs:
   test-word-service:
     # Install go modules and run tests
     docker:
-      - image: cimg/go:1.20
+      - image: cimg/go:1.21
     working_directory: ~/project/WordService
     steps:
       - setup_remote_docker
@@ -74,7 +74,7 @@ jobs:
   test-web-service:
     # Install go modules and run tests
     docker:
-      - image: cimg/go:1.20
+      - image: cimg/go:1.21
     working_directory: ~/project/WebService
     steps:
       - setup_remote_docker
