@@ -131,7 +131,7 @@ func (s *MyTestSuite) TestFindWordByDictionary_WhenDataFromDB() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					FindWordMeaningsByWordAndUserId(
-						mock.AnythingOfType("todoCtx"), args.word, args.userId).
+						mock.Anything, args.word, args.userId).
 					Return(mockWordMeanings01, nil)
 			},
 		},
@@ -148,7 +148,7 @@ func (s *MyTestSuite) TestFindWordByDictionary_WhenDataFromDB() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					FindWordMeaningsByWordAndUserId(
-						mock.AnythingOfType("todoCtx"), args.word, args.userId).
+						mock.Anything, args.word, args.userId).
 					Return(mockWordMeanings02, nil)
 			},
 		},
@@ -221,17 +221,17 @@ func (s *MyTestSuite) TestFindWordByDictionary_WhenDataFromCrawler() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					FindWordMeaningsByWordAndUserId(
-						mock.AnythingOfType("todoCtx"), args.word, args.userId).
+						mock.Anything, args.word, args.userId).
 					Return(nil, nil).
 					Once()
 				s.mockSpider.EXPECT().FindWordMeaningsFromDictionary(args.word).
 					Return(mockWordMeanings01, nil)
 				s.mockDatabaseRepository.EXPECT().
-					CreateWordMeanings(mock.AnythingOfType("todoCtx"), mockWordMeanings01).
+					CreateWordMeanings(mock.Anything, mockWordMeanings01).
 					Return([]string{"id1", "id2", "id3"}, nil)
 				s.mockDatabaseRepository.EXPECT().
 					FindWordMeaningsByWordAndUserId(
-						mock.AnythingOfType("todoCtx"), args.word, args.userId).
+						mock.Anything, args.word, args.userId).
 					Return(mockWordMeanings01, nil)
 			},
 		},
@@ -248,17 +248,17 @@ func (s *MyTestSuite) TestFindWordByDictionary_WhenDataFromCrawler() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					FindWordMeaningsByWordAndUserId(
-						mock.AnythingOfType("todoCtx"), args.word, args.userId).
+						mock.Anything, args.word, args.userId).
 					Return(nil, nil).
 					Once()
 				s.mockSpider.EXPECT().FindWordMeaningsFromDictionary(args.word).
 					Return(mockWordMeanings02, nil)
 				s.mockDatabaseRepository.EXPECT().
-					CreateWordMeanings(mock.AnythingOfType("todoCtx"), mockWordMeanings02).
+					CreateWordMeanings(mock.Anything, mockWordMeanings02).
 					Return([]string{"id1", "id2", "id3"}, nil)
 				s.mockDatabaseRepository.EXPECT().
 					FindWordMeaningsByWordAndUserId(
-						mock.AnythingOfType("todoCtx"), args.word, args.userId).
+						mock.Anything, args.word, args.userId).
 					Return(mockWordMeanings02, nil)
 			},
 		},
@@ -314,7 +314,7 @@ func (s *MyTestSuite) TestCreateFavoriteWordMeaning() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					CreateFavoriteWordMeaning(
-						mock.AnythingOfType("todoCtx"), args.userId, args.wordMeaningId).
+						mock.Anything, args.userId, args.wordMeaningId).
 					Return(mockFavoriteWordMeaningId01, nil)
 			},
 		},
@@ -331,7 +331,7 @@ func (s *MyTestSuite) TestCreateFavoriteWordMeaning() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					CreateFavoriteWordMeaning(
-						mock.AnythingOfType("todoCtx"), args.userId, args.wordMeaningId).
+						mock.Anything, args.userId, args.wordMeaningId).
 					Return(mockFavoriteWordMeaningId02, nil)
 			},
 		},
@@ -385,14 +385,14 @@ func (s *MyTestSuite) TestDeleteFavoriteWordMeaning() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					GetFavoriteWordMeaningById(
-						mock.AnythingOfType("todoCtx"), args.favoriteWordMeaningId).
+						mock.Anything, args.favoriteWordMeaningId).
 					Return(&model.FavoriteWordMeaning{
 						UserId:        args.userId,
 						WordMeaningId: primitive.NewObjectID(),
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
 					DeleteFavoriteWordMeaningById(
-						mock.AnythingOfType("todoCtx"), args.favoriteWordMeaningId).
+						mock.Anything, args.favoriteWordMeaningId).
 					Return(int32(1), nil)
 			},
 		},
@@ -408,14 +408,14 @@ func (s *MyTestSuite) TestDeleteFavoriteWordMeaning() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					GetFavoriteWordMeaningById(
-						mock.AnythingOfType("todoCtx"), args.favoriteWordMeaningId).
+						mock.Anything, args.favoriteWordMeaningId).
 					Return(&model.FavoriteWordMeaning{
 						UserId:        args.userId,
 						WordMeaningId: primitive.NewObjectID(),
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
 					DeleteFavoriteWordMeaningById(
-						mock.AnythingOfType("todoCtx"), args.favoriteWordMeaningId).
+						mock.Anything, args.favoriteWordMeaningId).
 					Return(int32(1), nil)
 			},
 		},
@@ -499,11 +499,11 @@ func (s *MyTestSuite) TestFindFavoriteWordMeanings() {
 
 				s.mockDatabaseRepository.EXPECT().
 					FindFavoriteWordMeaningsByUserIdAndWord(
-						mock.AnythingOfType("todoCtx"), args.userId, args.word, skip, limit).
+						mock.Anything, args.userId, args.word, skip, limit).
 					Return(mockWordMeanings01, nil)
 				s.mockDatabaseRepository.EXPECT().
 					CountFavoriteWordMeaningsByUserIdAndWord(
-						mock.AnythingOfType("todoCtx"), args.userId, args.word).
+						mock.Anything, args.userId, args.word).
 					Return(int32(3), nil)
 			},
 		},
@@ -527,11 +527,11 @@ func (s *MyTestSuite) TestFindFavoriteWordMeanings() {
 
 				s.mockDatabaseRepository.EXPECT().
 					FindFavoriteWordMeaningsByUserIdAndWord(
-						mock.AnythingOfType("todoCtx"), args.userId, args.word, skip, limit).
+						mock.Anything, args.userId, args.word, skip, limit).
 					Return(mockWordMeanings02, nil)
 				s.mockDatabaseRepository.EXPECT().
 					CountFavoriteWordMeaningsByUserIdAndWord(
-						mock.AnythingOfType("todoCtx"), args.userId, args.word).
+						mock.Anything, args.userId, args.word).
 					Return(int32(11), nil)
 			},
 		},
@@ -591,7 +591,7 @@ func (s *MyTestSuite) TestFindRandomFavoriteWordMeanings() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					FindFavoriteWordMeaningsByUserIdAndWord(
-						mock.AnythingOfType("todoCtx"),
+						mock.Anything,
 						args.userId,
 						"",
 						mock.AnythingOfType("int32"),
@@ -602,7 +602,7 @@ func (s *MyTestSuite) TestFindRandomFavoriteWordMeanings() {
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
 					CountFavoriteWordMeaningsByUserIdAndWord(
-						mock.AnythingOfType("todoCtx"), args.userId, "").
+						mock.Anything, args.userId, "").
 					Return(int32(3), nil)
 			},
 		},
@@ -621,7 +621,7 @@ func (s *MyTestSuite) TestFindRandomFavoriteWordMeanings() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					FindFavoriteWordMeaningsByUserIdAndWord(
-						mock.AnythingOfType("todoCtx"),
+						mock.Anything,
 						args.userId,
 						"",
 						mock.AnythingOfType("int32"),
@@ -632,7 +632,7 @@ func (s *MyTestSuite) TestFindRandomFavoriteWordMeanings() {
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
 					CountFavoriteWordMeaningsByUserIdAndWord(
-						mock.AnythingOfType("todoCtx"), args.userId, "").
+						mock.Anything, args.userId, "").
 					Return(int32(1), nil)
 			},
 		},

@@ -108,7 +108,7 @@ func (s *MyTestSuite) TestCreateExam() {
 			},
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
-					CreateExam(mock.AnythingOfType("todoCtx"), model.Exam{
+					CreateExam(mock.Anything, model.Exam{
 						Topic:       args.topic,
 						Description: args.description,
 						Tags:        []string{},
@@ -132,7 +132,7 @@ func (s *MyTestSuite) TestCreateExam() {
 			},
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
-					CreateExam(mock.AnythingOfType("todoCtx"), model.Exam{
+					CreateExam(mock.Anything, model.Exam{
 						Topic:       args.topic,
 						Description: args.description,
 						Tags:        []string{},
@@ -204,7 +204,7 @@ func (s *MyTestSuite) TestUpdateExam() {
 			},
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
-					GetExamById(mock.AnythingOfType("todoCtx"), args.examId).
+					GetExamById(mock.Anything, args.examId).
 					Return(&model.Exam{
 						Id:          id,
 						Topic:       "topic01",
@@ -214,7 +214,7 @@ func (s *MyTestSuite) TestUpdateExam() {
 						UserId:      userId,
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
-					UpdateExam(mock.AnythingOfType("todoCtx"), model.Exam{
+					UpdateExam(mock.Anything, model.Exam{
 						Id:          id,
 						Topic:       args.topic,
 						Description: args.description,
@@ -240,7 +240,7 @@ func (s *MyTestSuite) TestUpdateExam() {
 			},
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
-					GetExamById(mock.AnythingOfType("todoCtx"), args.examId).
+					GetExamById(mock.Anything, args.examId).
 					Return(&model.Exam{
 						Id:          id,
 						Topic:       "topic01",
@@ -250,7 +250,7 @@ func (s *MyTestSuite) TestUpdateExam() {
 						UserId:      userId,
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
-					UpdateExam(mock.AnythingOfType("todoCtx"), model.Exam{
+					UpdateExam(mock.Anything, model.Exam{
 						Id:          id,
 						Topic:       args.topic,
 						Description: args.description,
@@ -328,14 +328,14 @@ func (s *MyTestSuite) TestFindExams() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					FindExamsByUserIdOrderByUpdateAtDesc(
-						mock.AnythingOfType("todoCtx"),
+						mock.Anything,
 						args.userId,
 						args.pageIndex*args.pageSize,
 						args.pageSize,
 					).
 					Return(mockExams, nil)
 				s.mockDatabaseRepository.EXPECT().
-					CountExamsByUserId(mock.AnythingOfType("todoCtx"), args.userId).
+					CountExamsByUserId(mock.Anything, args.userId).
 					Return(int32(3), nil)
 			},
 		},
@@ -355,14 +355,14 @@ func (s *MyTestSuite) TestFindExams() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					FindExamsByUserIdOrderByUpdateAtDesc(
-						mock.AnythingOfType("todoCtx"),
+						mock.Anything,
 						args.userId,
 						args.pageIndex*args.pageSize,
 						args.pageSize,
 					).
 					Return(mockExams, nil)
 				s.mockDatabaseRepository.EXPECT().
-					CountExamsByUserId(mock.AnythingOfType("todoCtx"), args.userId).
+					CountExamsByUserId(mock.Anything, args.userId).
 					Return(int32(13), nil)
 			},
 		},
@@ -424,7 +424,7 @@ func (s *MyTestSuite) TestDeleteExam() {
 			},
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
-					GetExamById(mock.AnythingOfType("todoCtx"), args.examId).
+					GetExamById(mock.Anything, args.examId).
 					Return(&model.Exam{
 						Id:          id01,
 						Topic:       "topic01",
@@ -449,7 +449,7 @@ func (s *MyTestSuite) TestDeleteExam() {
 			},
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
-					GetExamById(mock.AnythingOfType("todoCtx"), args.examId).
+					GetExamById(mock.Anything, args.examId).
 					Return(&model.Exam{
 						Id:          id02,
 						Topic:       "topic02",
@@ -522,7 +522,7 @@ func (s *MyTestSuite) TestCreateQuestion() {
 			},
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
-					GetExamById(mock.AnythingOfType("todoCtx"), args.examId).
+					GetExamById(mock.Anything, args.examId).
 					Return(&model.Exam{
 						Id:          id01,
 						Topic:       "topic01",
@@ -532,7 +532,7 @@ func (s *MyTestSuite) TestCreateQuestion() {
 						UserId:      args.userId,
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
-					CreateQuestion(mock.AnythingOfType("todoCtx"), model.Question{
+					CreateQuestion(mock.Anything, model.Question{
 						ExamId:  args.examId,
 						Ask:     args.ask,
 						Answers: args.answers,
@@ -555,7 +555,7 @@ func (s *MyTestSuite) TestCreateQuestion() {
 			},
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
-					GetExamById(mock.AnythingOfType("todoCtx"), args.examId).
+					GetExamById(mock.Anything, args.examId).
 					Return(&model.Exam{
 						Id:          id02,
 						Topic:       "topic02",
@@ -565,7 +565,7 @@ func (s *MyTestSuite) TestCreateQuestion() {
 						UserId:      args.userId,
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
-					CreateQuestion(mock.AnythingOfType("todoCtx"), model.Question{
+					CreateQuestion(mock.Anything, model.Question{
 						ExamId:  args.examId,
 						Ask:     args.ask,
 						Answers: args.answers,
@@ -636,7 +636,7 @@ func (s *MyTestSuite) TestUpdaetQuestion() {
 			},
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
-					GetQuestionById(mock.AnythingOfType("todoCtx"), args.questionId).
+					GetQuestionById(mock.Anything, args.questionId).
 					Return(&model.Question{
 						Id:      id01,
 						ExamId:  "exam01",
@@ -663,7 +663,7 @@ func (s *MyTestSuite) TestUpdaetQuestion() {
 			},
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
-					GetQuestionById(mock.AnythingOfType("todoCtx"), args.questionId).
+					GetQuestionById(mock.Anything, args.questionId).
 					Return(&model.Question{
 						Id:      id02,
 						ExamId:  "exam01",
@@ -745,7 +745,7 @@ func (s *MyTestSuite) TestFindQuestions() {
 			},
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
-					GetExamById(mock.AnythingOfType("todoCtx"), args.examId).
+					GetExamById(mock.Anything, args.examId).
 					Return(&model.Exam{
 						Id:          id,
 						Topic:       "topic01",
@@ -756,13 +756,13 @@ func (s *MyTestSuite) TestFindQuestions() {
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
 					FindQuestionsByExamIdOrderByUpdateAtDesc(
-						mock.AnythingOfType("todoCtx"),
+						mock.Anything,
 						args.examId,
 						args.pageIndex*args.pageSize,
 						args.pageSize).
 					Return(mockQuestions, nil)
 				s.mockDatabaseRepository.EXPECT().
-					CountQuestionsByExamId(mock.AnythingOfType("todoCtx"), args.examId).
+					CountQuestionsByExamId(mock.Anything, args.examId).
 					Return(int32(3), nil)
 			},
 		},
@@ -782,7 +782,7 @@ func (s *MyTestSuite) TestFindQuestions() {
 			},
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
-					GetExamById(mock.AnythingOfType("todoCtx"), args.examId).
+					GetExamById(mock.Anything, args.examId).
 					Return(&model.Exam{
 						Id:          id,
 						Topic:       "topic01",
@@ -793,13 +793,13 @@ func (s *MyTestSuite) TestFindQuestions() {
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
 					FindQuestionsByExamIdOrderByUpdateAtDesc(
-						mock.AnythingOfType("todoCtx"),
+						mock.Anything,
 						args.examId,
 						args.pageIndex*args.pageSize,
 						args.pageSize).
 					Return(mockQuestions, nil)
 				s.mockDatabaseRepository.EXPECT().
-					CountQuestionsByExamId(mock.AnythingOfType("todoCtx"), args.examId).
+					CountQuestionsByExamId(mock.Anything, args.examId).
 					Return(int32(13), nil)
 			},
 		},
@@ -862,7 +862,7 @@ func (s *MyTestSuite) TestDeleteQuestion() {
 			},
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
-					GetQuestionById(mock.AnythingOfType("todoCtx"), args.questionId).
+					GetQuestionById(mock.Anything, args.questionId).
 					Return(&model.Question{
 						Id:      id01,
 						ExamId:  "exam01",
@@ -886,7 +886,7 @@ func (s *MyTestSuite) TestDeleteQuestion() {
 			},
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
-					GetQuestionById(mock.AnythingOfType("todoCtx"), args.questionId).
+					GetQuestionById(mock.Anything, args.questionId).
 					Return(&model.Question{
 						Id:      id02,
 						ExamId:  "exam01",
@@ -961,11 +961,11 @@ func (s *MyTestSuite) TestFindRandomQuestions() {
 			},
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
-					GetExamById(mock.AnythingOfType("todoCtx"), args.examId).
+					GetExamById(mock.Anything, args.examId).
 					Return(&mockExam, nil)
 				s.mockDatabaseRepository.EXPECT().
 					FindQuestionsByExamIdOrderByUpdateAtDesc(
-						mock.AnythingOfType("todoCtx"),
+						mock.Anything,
 						args.examId,
 						mock.AnythingOfType("int32"),
 						int32(1)).
@@ -993,11 +993,11 @@ func (s *MyTestSuite) TestFindRandomQuestions() {
 			},
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
-					GetExamById(mock.AnythingOfType("todoCtx"), args.examId).
+					GetExamById(mock.Anything, args.examId).
 					Return(&mockExam, nil)
 				s.mockDatabaseRepository.EXPECT().
 					FindQuestionsByExamIdOrderByUpdateAtDesc(
-						mock.AnythingOfType("todoCtx"),
+						mock.Anything,
 						args.examId,
 						mock.AnythingOfType("int32"),
 						int32(1)).
@@ -1177,7 +1177,7 @@ func (s *MyTestSuite) TestFindExamRecords() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc(
-						mock.AnythingOfType("todoCtx"),
+						mock.Anything,
 						args.examId,
 						args.userId,
 						args.pageIndex*args.pageSize,
@@ -1185,7 +1185,7 @@ func (s *MyTestSuite) TestFindExamRecords() {
 					).
 					Return(mockExamRecords, nil)
 				s.mockDatabaseRepository.EXPECT().
-					CountExamRecordsByExamIdAndUserId(mock.AnythingOfType("todoCtx"), args.examId, args.userId).
+					CountExamRecordsByExamIdAndUserId(mock.Anything, args.examId, args.userId).
 					Return(int32(3), nil)
 			},
 		},
@@ -1206,7 +1206,7 @@ func (s *MyTestSuite) TestFindExamRecords() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc(
-						mock.AnythingOfType("todoCtx"),
+						mock.Anything,
 						args.examId,
 						args.userId,
 						args.pageIndex*args.pageSize,
@@ -1214,7 +1214,7 @@ func (s *MyTestSuite) TestFindExamRecords() {
 					).
 					Return(mockExamRecords, nil)
 				s.mockDatabaseRepository.EXPECT().
-					CountExamRecordsByExamIdAndUserId(mock.AnythingOfType("todoCtx"), args.examId, args.userId).
+					CountExamRecordsByExamIdAndUserId(mock.Anything, args.examId, args.userId).
 					Return(int32(13), nil)
 			},
 		},
@@ -1312,23 +1312,23 @@ func (s *MyTestSuite) TestFindExamRecordOverview() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					GetExamById(
-						mock.AnythingOfType("todoCtx"),
+						mock.Anything,
 						args.examId,
 					).
 					Return(mockExam, nil)
 				s.mockDatabaseRepository.EXPECT().
 					FindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc(
-						mock.AnythingOfType("todoCtx"),
+						mock.Anything,
 						args.examId,
 						args.userId,
 						int32(10)).
 					Return(mockWrongAnswers, nil)
 				s.mockDatabaseRepository.EXPECT().
-					FindQuestionsByQuestionIds(mock.AnythingOfType("todoCtx"), []string{"q01", "q02"}).
+					FindQuestionsByQuestionIds(mock.Anything, []string{"q01", "q02"}).
 					Return(mockQuestions, nil)
 				s.mockDatabaseRepository.EXPECT().
 					FindExamRecordsByExamIdAndUserIdAndCreatedAt(
-						mock.AnythingOfType("todoCtx"), args.examId, args.userId, args.startDate).
+						mock.Anything, args.examId, args.userId, args.startDate).
 					Return(mockExamRecords, nil)
 			},
 		},
@@ -1350,23 +1350,23 @@ func (s *MyTestSuite) TestFindExamRecordOverview() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					GetExamById(
-						mock.AnythingOfType("todoCtx"),
+						mock.Anything,
 						args.examId,
 					).
 					Return(mockExam02, nil)
 				s.mockDatabaseRepository.EXPECT().
 					FindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc(
-						mock.AnythingOfType("todoCtx"),
+						mock.Anything,
 						args.examId,
 						args.userId,
 						int32(10)).
 					Return(mockWrongAnswers02, nil)
 				s.mockDatabaseRepository.EXPECT().
-					FindQuestionsByQuestionIds(mock.AnythingOfType("todoCtx"), []string{}).
+					FindQuestionsByQuestionIds(mock.Anything, []string{}).
 					Return(mockQuestions02, nil)
 				s.mockDatabaseRepository.EXPECT().
 					FindExamRecordsByExamIdAndUserIdAndCreatedAt(
-						mock.AnythingOfType("todoCtx"), args.examId, args.userId, args.startDate).
+						mock.Anything, args.examId, args.userId, args.startDate).
 					Return(mockExamRecords02, nil)
 			},
 		},
@@ -1458,7 +1458,7 @@ func (s *MyTestSuite) TestFindExamInfos() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc(
-						mock.AnythingOfType("todoCtx"), args.userId, args.isPublic).
+						mock.Anything, args.userId, args.isPublic).
 					Return([]model.Exam{
 						{
 							Id:          id01,
@@ -1478,16 +1478,16 @@ func (s *MyTestSuite) TestFindExamInfos() {
 						},
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
-					CountQuestionsByExamId(mock.AnythingOfType("todoCtx"), examId01).
+					CountQuestionsByExamId(mock.Anything, examId01).
 					Return(questionCount1, nil)
 				s.mockDatabaseRepository.EXPECT().
-					CountQuestionsByExamId(mock.AnythingOfType("todoCtx"), examId02).
+					CountQuestionsByExamId(mock.Anything, examId02).
 					Return(questionCount2, nil)
 				s.mockDatabaseRepository.EXPECT().
-					CountExamRecordsByExamIdAndUserId(mock.AnythingOfType("todoCtx"), examId01, args.userId).
+					CountExamRecordsByExamIdAndUserId(mock.Anything, examId01, args.userId).
 					Return(recordCount1, nil)
 				s.mockDatabaseRepository.EXPECT().
-					CountExamRecordsByExamIdAndUserId(mock.AnythingOfType("todoCtx"), examId02, args.userId).
+					CountExamRecordsByExamIdAndUserId(mock.Anything, examId02, args.userId).
 					Return(recordCount2, nil)
 			},
 		},
@@ -1513,7 +1513,7 @@ func (s *MyTestSuite) TestFindExamInfos() {
 			on: func(s *MyTestSuite, args *args) {
 				s.mockDatabaseRepository.EXPECT().
 					FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc(
-						mock.AnythingOfType("todoCtx"), args.userId, args.isPublic).
+						mock.Anything, args.userId, args.isPublic).
 					Return([]model.Exam{
 						{
 							Id:          id01,
@@ -1525,10 +1525,10 @@ func (s *MyTestSuite) TestFindExamInfos() {
 						},
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
-					CountQuestionsByExamId(mock.AnythingOfType("todoCtx"), examId01).
+					CountQuestionsByExamId(mock.Anything, examId01).
 					Return(questionCount1, nil)
 				s.mockDatabaseRepository.EXPECT().
-					CountExamRecordsByExamIdAndUserId(mock.AnythingOfType("todoCtx"), examId01, args.userId).
+					CountExamRecordsByExamIdAndUserId(mock.Anything, examId01, args.userId).
 					Return(recordCount1, nil)
 			},
 		},
