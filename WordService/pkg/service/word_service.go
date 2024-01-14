@@ -270,3 +270,11 @@ func (wordService wordService) FindRandomFavoriteWordMeanings(
 
 	return wordMeanings, nil
 }
+
+func min(a, b int32) int32 {
+	if a < b {
+		return a
+	}
+
+	return b
+}
