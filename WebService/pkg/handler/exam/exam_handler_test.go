@@ -639,3 +639,8 @@ func (s *MyTestSuite) TestFindExamInfosWhenSignIn() {
 		"recordCount": 3
 	}]}`, rec.Body.String())
 }
+
+func (s *MyTestSuite) TestCircleCI() {
+	// test 7
+	s.Fail("========= WebService For test CircleCI !!!")
+}

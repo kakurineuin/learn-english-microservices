@@ -113,6 +113,10 @@ workflows:
     when: << pipeline.parameters.run-build-word-service-job >>
     jobs:
       - test-word-service
+  web-service:
+    when: << pipeline.parameters.run-build-web-service-job >>
+    jobs:
+      - test-web-service
   run-integration-tests:
     when:
       or:
