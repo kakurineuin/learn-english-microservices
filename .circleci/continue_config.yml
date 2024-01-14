@@ -79,6 +79,8 @@ jobs:
     steps:
       - checkout:
           path: ~/project
+      - run: docker build -t mises/exam-service:test -f ../ExamService/Dockerfile
+      - run: docker build -t mises/word-service:test -f ../WordService/Dockerfile
       - run: sudo apt install golang gotestsum
       - restore_cache:
           key: go-mod-{{ checksum "go.sum" }}

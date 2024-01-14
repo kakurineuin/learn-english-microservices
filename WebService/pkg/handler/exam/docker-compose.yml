@@ -5,7 +5,7 @@ services:
     ports:
       - 27017:27017
   exam-service:
-    image: mises/exam-service:1.0.0
+    image: mises/exam-service:test
     environment:
       MONGODB_URI: mongodb://mongodb:27017
       DATABASE_NAME: Test_LearnEnglish
