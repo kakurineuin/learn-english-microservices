@@ -8,16 +8,13 @@ orbs:
 parameters:
   run-build-exam-service-job:
     type: boolean
-    # default: false
-    default: true
+    default: false
   run-build-word-service-job:
     type: boolean
-    # default: false
-    default: true
+    default: false
   run-build-web-service-job:
     type: boolean
-    # default: false
-    default: true
+    default: false
 
 # here we specify our workflows, most of which are conditionally
 # executed based upon pipeline parameter values. Each workflow calls a
