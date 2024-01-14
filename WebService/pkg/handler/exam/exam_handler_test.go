@@ -641,6 +641,6 @@ func (s *MyTestSuite) TestFindExamInfosWhenSignIn() {
 }
 
 func (s *MyTestSuite) TestCircleCI() {
-	// test 10
+	// test 11
 	s.Fail("========= WebService For test CircleCI !!!")
 }

@@ -79,7 +79,7 @@ jobs:
     steps:
       - checkout:
           path: ~/project
-      - run: sudo apt install golang
+      - run: sudo apt -y install golang gotestsum
       - restore_cache:
           key: go-mod-{{ checksum "go.sum" }}
       - run:
