@@ -30,6 +30,7 @@ workflows:
           covermode: atomic
           failfast: true
           race: true
+  word-service:
     when: << pipeline.parameters.run-build-word-service-job >>
     jobs:
       - go/test:
