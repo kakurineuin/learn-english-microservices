@@ -25,29 +25,63 @@ workflows:
   exam-service:
     when: << pipeline.parameters.run-build-exam-service-job >>
     jobs:
-      test:
-        executor:
-          name: go/default
-          tag: "1.21"
+      test-exam-service:
+        # Install go modules and run tests
+        docker:
+          - image: cimg/go:1.20
+        working_directory: ~/project/ExamService
         steps:
-          - go/test:
-              paths: ./ExamService/...
-              covermode: atomic
-              failfast: true
-              race: true
+          - setup_remote_docker
+          - checkout:
+              path: ~/project/ExamService
+          - restore_cache:
+              key: go-mod-{{ checksum "go.sum" }}
+          - run:
+              name: Download Go modules
+              command: go mod download
+          - run:
+              name: Print go mod help instructions
+              command: "echo \"go mod download will fail if you have private repositories \nOne way to fix this for private go modules that are hosted in github:\n  1. Add a GITHUB_TOKEN and GITHUB_USER to an org context. Please refer to https://circleci.com/docs/contexts/ for more informaiton on how to use contexts.\n  2. Add a .circleci/config.yml to your repository or use this config.yml as a starting template\n  3. Configure the jobs to use the newly created context which includes GITHUB_TOKEN and GITHUB_USER  \n  4. Before downloading the modules you will need to add a step to execute \\\"go env -w GOPRIVATE=github.com/<OrgNameHere>\\\". \n\tThis allows go mod to install private repos under OrgNameHere.\n  5. You will also need to run \\\"git config --global url.\\\"https://$GITHUB_USER:$GITHUB_TOKEN@github.com/<OrgNameHere>/\\\".insteadOf \\\"https://github.com/<OrgNameHere>/\\\"\\\"\n  6. Finally include the \\\"go mod download\\\" it should be able to fetch your private libraries now. \nFor gitlab private go modules, follow the same instructions as above but include your GITLAB_TOKEN and GITLAB_USER.\nThen use gitlab.com instead of github.com in steps 4 and 5.\nSee https://go.dev/ref/mod#private-modules for more details.\""
+              when: on_fail
+          - save_cache:
+              key: go-mod-{{ checksum "go.sum" }}
+              paths:
+                - /home/circleci/go/pkg/mod
+          - run:
+              name: Run tests
+              command: gotestsum --junitfile junit.xml
+          - store_test_results:
+              path: junit.xml
   word-service:
     when: << pipeline.parameters.run-build-word-service-job >>
     jobs:
-      test:
-        executor:
-          name: go/default
-          tag: "1.21"
+      test-word-service:
+        # Install go modules and run tests
+        docker:
+          - image: cimg/go:1.20
+        working_directory: ~/project/WordService
         steps:
-          - go/test:
-              paths: ./WordService/...
-              covermode: atomic
-              failfast: true
-              race: true
+          - setup_remote_docker
+          - checkout:
+              path: ~/project/WordService
+          - restore_cache:
+              key: go-mod-{{ checksum "go.sum" }}
+          - run:
+              name: Download Go modules
+              command: go mod download
+          - run:
+              name: Print go mod help instructions
+              command: "echo \"go mod download will fail if you have private repositories \nOne way to fix this for private go modules that are hosted in github:\n  1. Add a GITHUB_TOKEN and GITHUB_USER to an org context. Please refer to https://circleci.com/docs/contexts/ for more informaiton on how to use contexts.\n  2. Add a .circleci/config.yml to your repository or use this config.yml as a starting template\n  3. Configure the jobs to use the newly created context which includes GITHUB_TOKEN and GITHUB_USER  \n  4. Before downloading the modules you will need to add a step to execute \\\"go env -w GOPRIVATE=github.com/<OrgNameHere>\\\". \n\tThis allows go mod to install private repos under OrgNameHere.\n  5. You will also need to run \\\"git config --global url.\\\"https://$GITHUB_USER:$GITHUB_TOKEN@github.com/<OrgNameHere>/\\\".insteadOf \\\"https://github.com/<OrgNameHere>/\\\"\\\"\n  6. Finally include the \\\"go mod download\\\" it should be able to fetch your private libraries now. \nFor gitlab private go modules, follow the same instructions as above but include your GITLAB_TOKEN and GITLAB_USER.\nThen use gitlab.com instead of github.com in steps 4 and 5.\nSee https://go.dev/ref/mod#private-modules for more details.\""
+              when: on_fail
+          - save_cache:
+              key: go-mod-{{ checksum "go.sum" }}
+              paths:
+                - /home/circleci/go/pkg/mod
+          - run:
+              name: Run tests
+              command: gotestsum --junitfile junit.xml
+          - store_test_results:
+              path: junit.xml
   run-integration-tests:
     when:
       or:
@@ -57,8 +91,30 @@ workflows:
           << pipeline.parameters.run-web-service-job >>,
         ]
     jobs:
-      - go/test:
-          paths: ./WebService/...
-          covermode: atomic
-          failfast: true
-          race: true
+      test-web-service:
+        # Install go modules and run tests
+        docker:
+          - image: cimg/go:1.20
+        working_directory: ~/project/WebService
+        steps:
+          - setup_remote_docker
+          - checkout:
+              path: ~/project/WebService
+          - restore_cache:
+              key: go-mod-{{ checksum "go.sum" }}
+          - run:
+              name: Download Go modules
+              command: go mod download
+          - run:
+              name: Print go mod help instructions
+              command: "echo \"go mod download will fail if you have private repositories \nOne way to fix this for private go modules that are hosted in github:\n  1. Add a GITHUB_TOKEN and GITHUB_USER to an org context. Please refer to https://circleci.com/docs/contexts/ for more informaiton on how to use contexts.\n  2. Add a .circleci/config.yml to your repository or use this config.yml as a starting template\n  3. Configure the jobs to use the newly created context which includes GITHUB_TOKEN and GITHUB_USER  \n  4. Before downloading the modules you will need to add a step to execute \\\"go env -w GOPRIVATE=github.com/<OrgNameHere>\\\". \n\tThis allows go mod to install private repos under OrgNameHere.\n  5. You will also need to run \\\"git config --global url.\\\"https://$GITHUB_USER:$GITHUB_TOKEN@github.com/<OrgNameHere>/\\\".insteadOf \\\"https://github.com/<OrgNameHere>/\\\"\\\"\n  6. Finally include the \\\"go mod download\\\" it should be able to fetch your private libraries now. \nFor gitlab private go modules, follow the same instructions as above but include your GITLAB_TOKEN and GITLAB_USER.\nThen use gitlab.com instead of github.com in steps 4 and 5.\nSee https://go.dev/ref/mod#private-modules for more details.\""
+              when: on_fail
+          - save_cache:
+              key: go-mod-{{ checksum "go.sum" }}
+              paths:
+                - /home/circleci/go/pkg/mod
+          - run:
+              name: Run tests
+              command: gotestsum --junitfile junit.xml
+          - store_test_results:
+              path: junit.xml
