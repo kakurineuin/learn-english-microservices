@@ -19,13 +19,13 @@ parameters:
 jobs:
   test-exam-service:
     # Install go modules and run tests
-    docker:
-      - image: cimg/go:1.21
+    machine:
+      image: ubuntu-2204:2023.10.1
     working_directory: ~/project/ExamService
     steps:
-      - setup_remote_docker
       - checkout:
           path: ~/project
+      - run: sudo apt install golang gotestsum
       - restore_cache:
           key: go-mod-{{ checksum "go.sum" }}
       - run:
@@ -46,13 +46,13 @@ jobs:
           path: junit.xml
   test-word-service:
     # Install go modules and run tests
-    docker:
-      - image: cimg/go:1.21
+    machine:
+      image: ubuntu-2204:2023.10.1
     working_directory: ~/project/WordService
     steps:
-      - setup_remote_docker
       - checkout:
           path: ~/project
+      - run: sudo apt install golang gotestsum
       - restore_cache:
           key: go-mod-{{ checksum "go.sum" }}
       - run:
@@ -79,7 +79,7 @@ jobs:
     steps:
       - checkout:
           path: ~/project
-      - run: sudo apt -y install golang gotestsum
+      - run: sudo apt install golang gotestsum
       - restore_cache:
           key: go-mod-{{ checksum "go.sum" }}
       - run:

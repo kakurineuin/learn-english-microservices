@@ -1552,8 +1552,3 @@ func (s *MyTestSuite) TestFindExamInfos() {
 		})
 	}
 }
-
-func (s *MyTestSuite) TestCircleCI() {
-	// test 7
-	s.Fail("========= ExamService For test CircleCI !!!")
-}

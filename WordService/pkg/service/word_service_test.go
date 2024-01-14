@@ -655,8 +655,3 @@ func (s *MyTestSuite) TestFindRandomFavoriteWordMeanings() {
 		})
 	}
 }
-
-func (s *MyTestSuite) TestCircleCI() {
-	// test 7
-	s.Fail("========= WordService For test CircleCI !!!")
-}
