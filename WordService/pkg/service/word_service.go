@@ -19,19 +19,21 @@ import (
 var unauthorizedOperationError = fmt.Errorf("Unauthorized operation")
 
 type WordService interface {
-	FindWordByDictionary(word, userId string) ([]model.WordMeaning, error)
+	FindWordByDictionary(
+		ctx context.Context, word, userId string) ([]model.WordMeaning, error)
 	CreateFavoriteWordMeaning(
-		userId, wordMeaningId string,
+		ctx context.Context, userId, wordMeaningId string,
 	) (favoriteWordMeaningId string, err error)
 	DeleteFavoriteWordMeaning(
-		favoriteWordMeaningId, userId string,
+		ctx context.Context, favoriteWordMeaningId, userId string,
 	) error
 	FindFavoriteWordMeanings(
+		ctx context.Context,
 		pageIndex, pageSize int32,
 		userId, word string,
 	) (total, pageCount int32, favoriteWordMeanings []model.WordMeaning, err error)
 	FindRandomFavoriteWordMeanings(
-		userId string, size int32,
+		ctx context.Context, userId string, size int32,
 	) (wordMeanings []model.WordMeaning, err error)
 }
 
@@ -54,7 +56,7 @@ func New(logger log.Logger, databaseRepository repository.DatabaseRepository) Wo
 }
 
 func (wordService wordService) FindWordByDictionary(
-	word, userId string,
+	ctx context.Context, word, userId string,
 ) ([]model.WordMeaning, error) {
 	logger := wordService.logger
 	errorLogger := wordService.errorLogger
@@ -67,7 +69,7 @@ func (wordService wordService) FindWordByDictionary(
 	// 統一以小寫去查詢
 	word = strings.ToLower(word)
 	wordMeanings, err := databaseRepository.FindWordMeaningsByWordAndUserId(
-		context.TODO(),
+		ctx,
 		word,
 		userId,
 	)
@@ -96,7 +98,7 @@ func (wordService wordService) FindWordByDictionary(
 		}
 
 		// 新增到資料庫
-		_, err = wordService.databaseRepository.CreateWordMeanings(context.TODO(), wordMeanings)
+		_, err = wordService.databaseRepository.CreateWordMeanings(ctx, wordMeanings)
 		if err != nil {
 			errorLogger.Log("err", err)
 			return nil, fmt.Errorf(errorMessage, err)
@@ -104,7 +106,7 @@ func (wordService wordService) FindWordByDictionary(
 
 		// 從資料庫查詢後再回傳，這樣每筆資料就會有正確的 mongodb _id
 		wordMeanings, err = databaseRepository.FindWordMeaningsByWordAndUserId(
-			context.TODO(),
+			ctx,
 			word,
 			userId,
 		)
@@ -118,14 +120,14 @@ func (wordService wordService) FindWordByDictionary(
 }
 
 func (wordService wordService) CreateFavoriteWordMeaning(
-	userId, wordMeaningId string,
+	ctx context.Context, userId, wordMeaningId string,
 ) (favoriteWordMeaningId string, err error) {
 	errorLogger := wordService.errorLogger
 	errorMessage := "CreateFavoriteWordMeaning failed! error: %w"
 
 	databaseRepository := wordService.databaseRepository
 	favoriteWordMeaningId, err = databaseRepository.CreateFavoriteWordMeaning(
-		context.TODO(),
+		ctx,
 		userId,
 		wordMeaningId,
 	)
@@ -138,7 +140,7 @@ func (wordService wordService) CreateFavoriteWordMeaning(
 }
 
 func (wordService wordService) DeleteFavoriteWordMeaning(
-	favoriteWordMeaningId, userId string,
+	ctx context.Context, favoriteWordMeaningId, userId string,
 ) error {
 	errorLogger := wordService.errorLogger
 	errorMessage := "DeleteFavoriteWordMeaning failed! error: %w"
@@ -146,7 +148,7 @@ func (wordService wordService) DeleteFavoriteWordMeaning(
 	databaseRepository := wordService.databaseRepository
 
 	favoriteWordMeaning, err := databaseRepository.GetFavoriteWordMeaningById(
-		context.TODO(),
+		ctx,
 		favoriteWordMeaningId,
 	)
 	if err != nil {
@@ -168,7 +170,7 @@ func (wordService wordService) DeleteFavoriteWordMeaning(
 	}
 
 	_, err = databaseRepository.DeleteFavoriteWordMeaningById(
-		context.TODO(),
+		ctx,
 		favoriteWordMeaningId,
 	)
 	if err != nil {
@@ -180,6 +182,7 @@ func (wordService wordService) DeleteFavoriteWordMeaning(
 }
 
 func (wordService wordService) FindFavoriteWordMeanings(
+	ctx context.Context,
 	pageIndex, pageSize int32,
 	userId, word string,
 ) (total, pageCount int32, favoriteWordMeanings []model.WordMeaning, err error) {
@@ -190,7 +193,7 @@ func (wordService wordService) FindFavoriteWordMeanings(
 	limit := pageSize
 	databaseRepository := wordService.databaseRepository
 	favoriteWordMeanings, err = databaseRepository.FindFavoriteWordMeaningsByUserIdAndWord(
-		context.TODO(),
+		ctx,
 		userId,
 		word,
 		skip,
@@ -202,7 +205,7 @@ func (wordService wordService) FindFavoriteWordMeanings(
 	}
 
 	total, err = databaseRepository.CountFavoriteWordMeaningsByUserIdAndWord(
-		context.TODO(),
+		ctx,
 		userId,
 		word,
 	)
@@ -217,14 +220,14 @@ func (wordService wordService) FindFavoriteWordMeanings(
 }
 
 func (wordService wordService) FindRandomFavoriteWordMeanings(
-	userId string, size int32,
+	ctx context.Context, userId string, size int32,
 ) (wordMeanings []model.WordMeaning, err error) {
 	errorLogger := wordService.errorLogger
 	errorMessage := "FindRandomFavoriteWordMeanings failed! error: %w"
 
 	databaseRepository := wordService.databaseRepository
 	total, err := databaseRepository.CountFavoriteWordMeaningsByUserIdAndWord(
-		context.TODO(),
+		ctx,
 		userId,
 		"",
 	)
@@ -254,7 +257,7 @@ func (wordService wordService) FindRandomFavoriteWordMeanings(
 
 	for i := int32(0); i < maxQueryTotal; i++ {
 		findWordMeanings, err := databaseRepository.FindFavoriteWordMeaningsByUserIdAndWord(
-			context.TODO(),
+			ctx,
 			userId,
 			"",
 			indexes[i],

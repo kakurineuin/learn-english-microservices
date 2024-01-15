@@ -39,11 +39,11 @@ func (repo *MongoDBRepository) ConnectDB(ctx context.Context, uri string) error 
 	}
 
 	repo.client = newClient
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	pingCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// ping the database
-	err = repo.client.Ping(ctx, nil)
+	err = repo.client.Ping(pingCtx, nil)
 	if err != nil {
 		return fmt.Errorf("ConnectDB ping database failed! error: %w", err)
 	}

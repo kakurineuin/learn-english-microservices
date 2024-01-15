@@ -24,7 +24,6 @@ type MyTestSuite struct {
 	suite.Suite
 	repo                          DatabaseRepository
 	uri                           string
-	ctx                           context.Context
 	mongodbContainer              *mongodb.MongoDBContainer
 	client                        *mongo.Client
 	wordMeaningCollection         *mongo.Collection
@@ -52,18 +51,17 @@ func (s *MyTestSuite) SetupSuite() {
 	}
 
 	s.repo = NewMongoDBRepository(DATABASE)
-	err = s.repo.ConnectDB(uri)
+	err = s.repo.ConnectDB(ctx, uri)
 	if err != nil {
 		s.FailNow(err.Error())
 	}
 
 	s.uri = uri
-	s.ctx = ctx
 	s.mongodbContainer = mongodbContainer
 
 	// 用來建立測試資料的 client
 	client, err := mongo.Connect(
-		context.TODO(),
+		ctx,
 		options.Client().ApplyURI(uri).SetTimeout(10*time.Second),
 	)
 	if err != nil {
@@ -78,19 +76,20 @@ func (s *MyTestSuite) SetupSuite() {
 // run once, after test suite methods
 func (s *MyTestSuite) TearDownSuite() {
 	log.Println("TearDownSuite()")
+	ctx := context.Background()
 
 	// 不呼叫 panic，為了繼續往下執行去關閉 container
-	if err := s.client.Disconnect(context.TODO()); err != nil {
+	if err := s.client.Disconnect(ctx); err != nil {
 		log.Printf("DisconnectDB error: %v", err)
 	}
 
 	// 不呼叫 panic，為了繼續往下執行去關閉 container
-	if err := s.repo.DisconnectDB(); err != nil {
+	if err := s.repo.DisconnectDB(ctx); err != nil {
 		log.Printf("DisconnectDB error: %v", err)
 	}
 
 	// Terminate container
-	if err := s.mongodbContainer.Terminate(s.ctx); err != nil {
+	if err := s.mongodbContainer.Terminate(ctx); err != nil {
 		log.Printf("mongodbContainer.Terminate() error: %v", err)
 	}
 }
@@ -116,12 +115,13 @@ func (s *MyTestSuite) AfterTest(suiteName, testName string) {
 }
 
 func (s *MyTestSuite) TestConnectDBAndDisconnectDB() {
+	ctx := context.Background()
 	repo := NewMongoDBRepository(DATABASE)
 
-	err := repo.ConnectDB(s.uri)
+	err := repo.ConnectDB(ctx, s.uri)
 	s.Nil(err)
 
-	err = repo.DisconnectDB()
+	err = repo.DisconnectDB(ctx)
 	s.Nil(err)
 }
 
@@ -133,7 +133,7 @@ func (s *MyTestSuite) TestCreateWordMeanings() {
 
 	type setupDBResult struct{}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name    string
@@ -264,7 +264,7 @@ func (s *MyTestSuite) TestFindWordMeaningsByWordAndUserId() {
 		userId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name           string
@@ -412,7 +412,7 @@ func (s *MyTestSuite) TestCreateFavoriteWordMeaning() {
 
 	type setupDBResult struct{}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name    string
@@ -474,7 +474,7 @@ func (s *MyTestSuite) TestGetFavoriteWordMeaningById() {
 		favoriteWordMeaningId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name    string
@@ -561,7 +561,7 @@ func (s *MyTestSuite) TestFindFavoriteWordMeaningsByUserIdAndWord() {
 		word   string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name           string
@@ -758,7 +758,7 @@ func (s *MyTestSuite) TestCountFavoriteWordMeaningsByUserIdAndWord() {
 		word   string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name          string
@@ -949,7 +949,7 @@ func (s *MyTestSuite) TestDeleteFavoriteWordMeaningById() {
 		favoriteWordMeaningId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name    string

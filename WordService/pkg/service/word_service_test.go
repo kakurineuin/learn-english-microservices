@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"log"
 	"os"
 	"testing"
@@ -154,6 +155,8 @@ func (s *MyTestSuite) TestFindWordByDictionary_WhenDataFromDB() {
 		},
 	}
 
+	ctx := context.Background()
+
 	for _, tc := range testCases {
 		s.SetupTest()
 		s.Run(tc.name, func() {
@@ -162,7 +165,7 @@ func (s *MyTestSuite) TestFindWordByDictionary_WhenDataFromDB() {
 
 			// Test
 			wordMeanings, err := s.wordService.FindWordByDictionary(
-				args.word, args.userId,
+				ctx, args.word, args.userId,
 			)
 			expected := tc.expected
 			s.Equal(expected.wordMeanings, wordMeanings)
@@ -264,6 +267,8 @@ func (s *MyTestSuite) TestFindWordByDictionary_WhenDataFromCrawler() {
 		},
 	}
 
+	ctx := context.Background()
+
 	for _, tc := range testCases {
 		s.SetupTest()
 		s.Run(tc.name, func() {
@@ -272,7 +277,7 @@ func (s *MyTestSuite) TestFindWordByDictionary_WhenDataFromCrawler() {
 
 			// Test
 			wordMeanings, err := s.wordService.FindWordByDictionary(
-				args.word, args.userId,
+				ctx, args.word, args.userId,
 			)
 			expected := tc.expected
 			s.Equal(expected.wordMeanings, wordMeanings)
@@ -337,6 +342,8 @@ func (s *MyTestSuite) TestCreateFavoriteWordMeaning() {
 		},
 	}
 
+	ctx := context.Background()
+
 	for _, tc := range testCases {
 		s.SetupTest()
 		s.Run(tc.name, func() {
@@ -345,7 +352,7 @@ func (s *MyTestSuite) TestCreateFavoriteWordMeaning() {
 
 			// Test
 			favoriteWordMeaningId, err := s.wordService.CreateFavoriteWordMeaning(
-				args.userId, args.wordMeaningId,
+				ctx, args.userId, args.wordMeaningId,
 			)
 			expected := tc.expected
 			s.Equal(expected.favoriteWordMeaningId, favoriteWordMeaningId)
@@ -421,6 +428,8 @@ func (s *MyTestSuite) TestDeleteFavoriteWordMeaning() {
 		},
 	}
 
+	ctx := context.Background()
+
 	for _, tc := range testCases {
 		s.SetupTest()
 		s.Run(tc.name, func() {
@@ -429,6 +438,7 @@ func (s *MyTestSuite) TestDeleteFavoriteWordMeaning() {
 
 			// Test
 			err := s.wordService.DeleteFavoriteWordMeaning(
+				ctx,
 				args.favoriteWordMeaningId,
 				args.userId,
 			)
@@ -537,6 +547,8 @@ func (s *MyTestSuite) TestFindFavoriteWordMeanings() {
 		},
 	}
 
+	ctx := context.Background()
+
 	for _, tc := range testCases {
 		s.SetupTest()
 		s.Run(tc.name, func() {
@@ -545,6 +557,7 @@ func (s *MyTestSuite) TestFindFavoriteWordMeanings() {
 
 			// Test
 			total, pageCount, wordMeanings, err := s.wordService.FindFavoriteWordMeanings(
+				ctx,
 				args.pageIndex,
 				args.pageSize,
 				args.userId,
@@ -638,6 +651,8 @@ func (s *MyTestSuite) TestFindRandomFavoriteWordMeanings() {
 		},
 	}
 
+	ctx := context.Background()
+
 	for _, tc := range testCases {
 		s.SetupTest()
 		s.Run(tc.name, func() {
@@ -646,6 +661,7 @@ func (s *MyTestSuite) TestFindRandomFavoriteWordMeanings() {
 
 			// Test
 			wordMeanings, err := s.wordService.FindRandomFavoriteWordMeanings(
+				ctx,
 				args.userId,
 				args.size,
 			)

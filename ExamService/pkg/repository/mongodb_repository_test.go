@@ -24,7 +24,6 @@ type MyTestSuite struct {
 	suite.Suite
 	repo                  DatabaseRepository
 	uri                   string
-	ctx                   context.Context
 	mongodbContainer      *mongodb.MongoDBContainer
 	client                *mongo.Client
 	examCollection        *mongo.Collection
@@ -54,18 +53,17 @@ func (s *MyTestSuite) SetupSuite() {
 	}
 
 	s.repo = NewMongoDBRepository(DATABASE)
-	err = s.repo.ConnectDB(uri)
+	err = s.repo.ConnectDB(ctx, uri)
 	if err != nil {
 		s.FailNow(err.Error())
 	}
 
 	s.uri = uri
-	s.ctx = ctx
 	s.mongodbContainer = mongodbContainer
 
 	// 用來建立測試資料的 client
 	client, err := mongo.Connect(
-		context.TODO(),
+		ctx,
 		options.Client().ApplyURI(uri).SetTimeout(10*time.Second),
 	)
 	if err != nil {
@@ -82,19 +80,20 @@ func (s *MyTestSuite) SetupSuite() {
 // run once, after test suite methods
 func (s *MyTestSuite) TearDownSuite() {
 	log.Println("TearDownSuite()")
+	ctx := context.Background()
 
 	// 不呼叫 panic，為了繼續往下執行去關閉 container
-	if err := s.client.Disconnect(context.TODO()); err != nil {
+	if err := s.client.Disconnect(ctx); err != nil {
 		log.Printf("DisconnectDB error: %v", err)
 	}
 
 	// 不呼叫 panic，為了繼續往下執行去關閉 container
-	if err := s.repo.DisconnectDB(); err != nil {
+	if err := s.repo.DisconnectDB(ctx); err != nil {
 		log.Printf("DisconnectDB error: %v", err)
 	}
 
 	// Terminate container
-	if err := s.mongodbContainer.Terminate(s.ctx); err != nil {
+	if err := s.mongodbContainer.Terminate(ctx); err != nil {
 		log.Printf("mongodbContainer.Terminate() error: %v", err)
 	}
 }
@@ -120,12 +119,13 @@ func (s *MyTestSuite) AfterTest(suiteName, testName string) {
 }
 
 func (s *MyTestSuite) TestConnectDBAndDisconnectDB() {
+	ctx := context.Background()
 	repo := NewMongoDBRepository(DATABASE)
 
-	err := repo.ConnectDB(s.uri)
+	err := repo.ConnectDB(ctx, s.uri)
 	s.Nil(err)
 
-	err = repo.DisconnectDB()
+	err = repo.DisconnectDB(ctx)
 	s.Nil(err)
 }
 
@@ -137,7 +137,7 @@ func (s *MyTestSuite) TestCreateExam() {
 
 	type setupDBResult struct{}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name    string
@@ -208,7 +208,7 @@ func (s *MyTestSuite) TestUpdateExam() {
 		exam *model.Exam
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name    string
@@ -298,7 +298,7 @@ func (s *MyTestSuite) TestGetExamById() {
 		examId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name    string
@@ -383,7 +383,7 @@ func (s *MyTestSuite) TestFindExamsByUserIdOrderByUpdateAtDesc() {
 		userId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name           string
@@ -489,7 +489,7 @@ func (s *MyTestSuite) TestFindExamsByUserIdAndIsPublicOrderByUpdateAtDesc() {
 		isPublic bool
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name           string
@@ -594,7 +594,7 @@ func (s *MyTestSuite) TestDeleteExamById() {
 		examId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name    string
@@ -677,7 +677,7 @@ func (s *MyTestSuite) TestCountExamsByUserId() {
 		userId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name          string
@@ -773,7 +773,7 @@ func (s *MyTestSuite) TestCreateQuestion() {
 
 	type setupDBResult struct{}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name    string
@@ -842,7 +842,7 @@ func (s *MyTestSuite) TestUpdateQuestion() {
 		question *model.Question
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name    string
@@ -930,7 +930,7 @@ func (s *MyTestSuite) TestGetQuestionById() {
 		questionId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name    string
@@ -1009,7 +1009,7 @@ func (s *MyTestSuite) TestFindQuestionsByQuestionIds() {
 		questionIds []string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name           string
@@ -1121,7 +1121,7 @@ func (s *MyTestSuite) TestFindQuestionsByExamIdOrderByUpdateAtDesc() {
 		examId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name           string
@@ -1225,7 +1225,7 @@ func (s *MyTestSuite) TestDeleteQuestionById() {
 		questionId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name    string
@@ -1304,7 +1304,7 @@ func (s *MyTestSuite) TestDeleteQuestionsByExamId() {
 		examId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name          string
@@ -1400,7 +1400,7 @@ func (s *MyTestSuite) TestCountQuestionsByExamId() {
 		examId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name          string
@@ -1498,7 +1498,7 @@ func (s *MyTestSuite) TestDeleteAnswerWrongsByQuestionId() {
 		questionId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name          string
@@ -1596,7 +1596,7 @@ func (s *MyTestSuite) TestDeleteAnswerWrongsByExamId() {
 		examId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name          string
@@ -1695,7 +1695,7 @@ func (s *MyTestSuite) TestUpsertAnswerWrongByTimesPlusOne() {
 		upsertedCount int32
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name     string
@@ -1773,7 +1773,7 @@ func (s *MyTestSuite) TestFindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc() {
 		userId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name           string
@@ -1879,7 +1879,7 @@ func (s *MyTestSuite) TestDeleteExamRecordsByExamId() {
 		examId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name          string
@@ -1971,7 +1971,7 @@ func (s *MyTestSuite) TestCreateExamRecord() {
 
 	type setupDBResult struct{}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name    string
@@ -2042,7 +2042,7 @@ func (s *MyTestSuite) TestFindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc() 
 		userId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name           string
@@ -2151,7 +2151,7 @@ func (s *MyTestSuite) TestCountExamRecordsByExamIdAndUserId() {
 		userId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name          string
@@ -2255,7 +2255,7 @@ func (s *MyTestSuite) TestFindExamRecordsByExamIdAndUserIdAndCreatedAt() {
 		userId string
 	}
 
-	ctx := context.TODO()
+	ctx := context.Background()
 
 	testCases := []struct {
 		name           string

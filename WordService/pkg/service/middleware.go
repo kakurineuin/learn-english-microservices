@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+
 	"github.com/go-kit/log"
 
 	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/model"
@@ -12,16 +14,16 @@ type loggingMiddleware struct {
 }
 
 func (mw loggingMiddleware) FindWordByDictionary(
-	word, userId string,
+	ctx context.Context, word, userId string,
 ) (wordMeanings []model.WordMeaning, err error) {
 	defer func() {
 		mw.logger.Log("method", "FindWordByDictionary", "word", word, "err", err)
 	}()
-	return mw.next.FindWordByDictionary(word, userId)
+	return mw.next.FindWordByDictionary(ctx, word, userId)
 }
 
 func (mw loggingMiddleware) CreateFavoriteWordMeaning(
-	userId, wordMeaningId string,
+	ctx context.Context, userId, wordMeaningId string,
 ) (favoriteWordMeaningId string, err error) {
 	defer func() {
 		mw.logger.Log(
@@ -35,11 +37,11 @@ func (mw loggingMiddleware) CreateFavoriteWordMeaning(
 			err,
 		)
 	}()
-	return mw.next.CreateFavoriteWordMeaning(userId, wordMeaningId)
+	return mw.next.CreateFavoriteWordMeaning(ctx, userId, wordMeaningId)
 }
 
 func (mw loggingMiddleware) DeleteFavoriteWordMeaning(
-	favoriteWordMeaningId, userId string,
+	ctx context.Context, favoriteWordMeaningId, userId string,
 ) (err error) {
 	defer func() {
 		mw.logger.Log(
@@ -53,10 +55,11 @@ func (mw loggingMiddleware) DeleteFavoriteWordMeaning(
 			err,
 		)
 	}()
-	return mw.next.DeleteFavoriteWordMeaning(favoriteWordMeaningId, userId)
+	return mw.next.DeleteFavoriteWordMeaning(ctx, favoriteWordMeaningId, userId)
 }
 
 func (mw loggingMiddleware) FindFavoriteWordMeanings(
+	ctx context.Context,
 	pageIndex, pageSize int32,
 	userId, word string,
 ) (total, pageCount int32, favoriteWordMeanings []model.WordMeaning, err error) {
@@ -76,11 +79,11 @@ func (mw loggingMiddleware) FindFavoriteWordMeanings(
 			err,
 		)
 	}()
-	return mw.next.FindFavoriteWordMeanings(pageIndex, pageSize, userId, word)
+	return mw.next.FindFavoriteWordMeanings(ctx, pageIndex, pageSize, userId, word)
 }
 
 func (mw loggingMiddleware) FindRandomFavoriteWordMeanings(
-	userId string, size int32,
+	ctx context.Context, userId string, size int32,
 ) (wordMeanings []model.WordMeaning, err error) {
 	defer func() {
 		mw.logger.Log(
@@ -94,5 +97,5 @@ func (mw loggingMiddleware) FindRandomFavoriteWordMeanings(
 			err,
 		)
 	}()
-	return mw.next.FindRandomFavoriteWordMeanings(userId, size)
+	return mw.next.FindRandomFavoriteWordMeanings(ctx, userId, size)
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net"
 	"os"
 
@@ -26,9 +27,11 @@ func main() {
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
 	errorLogger := level.Error(logger)
 
+	ctx := context.Background()
+
 	// 連線到資料庫
 	databaseRepository := repository.NewMongoDBRepository(config.EnvDatabaseName())
-	err := databaseRepository.ConnectDB(config.EnvMongoDBURI())
+	err := databaseRepository.ConnectDB(ctx, config.EnvMongoDBURI())
 	if err != nil {
 		errorLogger.Log("msg", "Connect DB fail", "err", err)
 		os.Exit(1)
@@ -36,7 +39,7 @@ func main() {
 
 	// 程式結束時，結束資料庫連線
 	defer func() {
-		if err := databaseRepository.DisconnectDB(); err != nil {
+		if err := databaseRepository.DisconnectDB(ctx); err != nil {
 			errorLogger.Log("msg", "Disconnect DB fail", "err", err)
 			os.Exit(1)
 		}

@@ -30,34 +30,52 @@ type ExamInfo struct {
 
 type ExamService interface {
 	// Exam
-	CreateExam(topic, description string, isPublic bool, userId string) (string, error)
-	UpdateExam(examId, topic, description string, isPublic bool, userId string) (string, error)
+	CreateExam(
+		ctx context.Context, topic, description string, isPublic bool, userId string) (string, error)
+	UpdateExam(
+		ctx context.Context, examId, topic, description string, isPublic bool, userId string) (string, error)
 	FindExams(
+		ctx context.Context,
 		pageIndex, pageSize int32,
 		userId string,
 	) (total, pageCount int32, exams []model.Exam, err error)
-	DeleteExam(examId, userId string) error
+	DeleteExam(
+		ctx context.Context, examId, userId string) error
 
 	// Question
-	CreateQuestion(examId, ask string, answers []string, userId string) (string, error)
-	UpdateQuestion(questionId, ask string, answers []string, userId string) (string, error)
+	CreateQuestion(
+		ctx context.Context, examId, ask string, answers []string, userId string) (string, error)
+	UpdateQuestion(
+		ctx context.Context,
+		questionId, ask string,
+		answers []string,
+		userId string,
+	) (string, error)
 	FindQuestions(
+		ctx context.Context,
 		pageIndex, pageSize int32,
 		examId, userId string,
 	) (total, pageCount int32, questions []model.Question, err error)
-	DeleteQuestion(questionId, userId string) error
+	DeleteQuestion(ctx context.Context, questionId, userId string) error
 	FindRandomQuestions(
-		examId, userId string, size int32,
+		ctx context.Context, examId, userId string, size int32,
 	) (exam *model.Exam, questions []model.Question, err error)
 
 	// ExamRecord
-	CreateExamRecord(examId string, score int32, wrongQuestionIds []string, userId string) error
+	CreateExamRecord(
+		ctx context.Context,
+		examId string,
+		score int32,
+		wrongQuestionIds []string,
+		userId string,
+	) error
 	FindExamRecords(
+		ctx context.Context,
 		pageIndex, pageSize int32,
 		examId, userId string,
 	) (total, pageCount int32, examRecords []model.ExamRecord, err error)
 	FindExamRecordOverview(
-		examId, userId string, startDate time.Time,
+		ctx context.Context, examId, userId string, startDate time.Time,
 	) (
 		strStartDate string,
 		exam *model.Exam,
@@ -68,7 +86,11 @@ type ExamService interface {
 	)
 
 	// ExamInfo
-	FindExamInfos(userId string, isPublic bool) (examInfos []ExamInfo, err error)
+	FindExamInfos(
+		ctx context.Context,
+		userId string,
+		isPublic bool,
+	) (examInfos []ExamInfo, err error)
 }
 
 type examService struct {
@@ -88,7 +110,7 @@ func New(logger log.Logger, databaseRepository repository.DatabaseRepository) Ex
 }
 
 func (examService examService) CreateExam(
-	topic, description string, isPublic bool, userId string,
+	ctx context.Context, topic, description string, isPublic bool, userId string,
 ) (string, error) {
 	logger := examService.logger
 	errorLogger := examService.errorLogger
@@ -101,7 +123,7 @@ func (examService examService) CreateExam(
 		Tags:        []string{},
 		UserId:      userId,
 	}
-	examId, err := examService.databaseRepository.CreateExam(context.TODO(), exam)
+	examId, err := examService.databaseRepository.CreateExam(ctx, exam)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return "", fmt.Errorf(errorMessage, err)
@@ -112,14 +134,14 @@ func (examService examService) CreateExam(
 }
 
 func (examService examService) UpdateExam(
-	examId, topic, description string, isPublic bool, userId string,
+	ctx context.Context, examId, topic, description string, isPublic bool, userId string,
 ) (string, error) {
 	logger := examService.logger
 	errorLogger := examService.errorLogger
 	errorMessage := "UpdateExam failed: %w"
 
 	databaseRepository := examService.databaseRepository
-	exam, err := databaseRepository.GetExamById(context.TODO(), examId)
+	exam, err := databaseRepository.GetExamById(ctx, examId)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return "", fmt.Errorf(errorMessage, err)
@@ -141,7 +163,7 @@ func (examService examService) UpdateExam(
 	exam.Topic = topic
 	exam.Description = description
 	exam.IsPublic = isPublic
-	err = databaseRepository.UpdateExam(context.TODO(), *exam)
+	err = databaseRepository.UpdateExam(ctx, *exam)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return "", fmt.Errorf(errorMessage, err)
@@ -152,6 +174,7 @@ func (examService examService) UpdateExam(
 }
 
 func (examService examService) FindExams(
+	ctx context.Context,
 	pageIndex, pageSize int32,
 	userId string,
 ) (total, pageCount int32, exams []model.Exam, err error) {
@@ -161,14 +184,14 @@ func (examService examService) FindExams(
 
 	skip := pageSize * pageIndex
 	exams, err = examService.databaseRepository.FindExamsByUserIdOrderByUpdateAtDesc(
-		context.TODO(), userId, skip, pageSize)
+		ctx, userId, skip, pageSize)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return 0, 0, nil, fmt.Errorf(errorMessage, err)
 	}
 
 	// Total
-	total, err = examService.databaseRepository.CountExamsByUserId(context.TODO(), userId)
+	total, err = examService.databaseRepository.CountExamsByUserId(ctx, userId)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return 0, 0, nil, fmt.Errorf(errorMessage, err)
@@ -180,14 +203,14 @@ func (examService examService) FindExams(
 	return
 }
 
-func (examService examService) DeleteExam(examId, userId string) error {
+func (examService examService) DeleteExam(ctx context.Context, examId, userId string) error {
 	errorLogger := examService.errorLogger
 	errorMessage := "DeleteExam failed: %w"
 
 	databaseRepository := examService.databaseRepository
 
 	// 檢查使用者是否是該測驗的擁有者
-	exam, err := databaseRepository.GetExamById(context.TODO(), examId)
+	exam, err := databaseRepository.GetExamById(ctx, examId)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return fmt.Errorf(errorMessage, err)
@@ -207,6 +230,7 @@ func (examService examService) DeleteExam(examId, userId string) error {
 	}
 
 	_, err = examService.databaseRepository.WithTransaction(
+		ctx,
 		func(ctx context.Context) (interface{}, error) {
 			// Delete Exam
 			_, err := databaseRepository.DeleteExamById(ctx, examId)
@@ -244,14 +268,14 @@ func (examService examService) DeleteExam(examId, userId string) error {
 }
 
 func (examService examService) CreateQuestion(
-	examId, ask string, answers []string, userId string,
+	ctx context.Context, examId, ask string, answers []string, userId string,
 ) (string, error) {
 	logger := examService.logger
 	errorLogger := examService.errorLogger
 	errorMessage := "CreateQuestion failed: %w"
 
 	databaseRepository := examService.databaseRepository
-	exam, err := databaseRepository.GetExamById(context.TODO(), examId)
+	exam, err := databaseRepository.GetExamById(ctx, examId)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return "", fmt.Errorf(errorMessage, err)
@@ -270,7 +294,7 @@ func (examService examService) CreateQuestion(
 		return "", fmt.Errorf(errorMessage, err)
 	}
 
-	questionId, err := databaseRepository.CreateQuestion(context.TODO(), model.Question{
+	questionId, err := databaseRepository.CreateQuestion(ctx, model.Question{
 		ExamId:  examId,
 		Ask:     ask,
 		Answers: answers,
@@ -286,14 +310,14 @@ func (examService examService) CreateQuestion(
 }
 
 func (examService examService) UpdateQuestion(
-	questionId, ask string, answers []string, userId string,
+	ctx context.Context, questionId, ask string, answers []string, userId string,
 ) (string, error) {
 	logger := examService.logger
 	errorLogger := examService.errorLogger
 	errorMessage := "UpdateQuestion failed: %w"
 
 	databaseRepository := examService.databaseRepository
-	question, err := databaseRepository.GetQuestionById(context.TODO(), questionId)
+	question, err := databaseRepository.GetQuestionById(ctx, questionId)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return "", fmt.Errorf(errorMessage, err)
@@ -312,23 +336,26 @@ func (examService examService) UpdateQuestion(
 		return "", fmt.Errorf(errorMessage, err)
 	}
 
-	_, err = databaseRepository.WithTransaction(func(ctx context.Context) (interface{}, error) {
-		// 修改 Question
-		question.Ask = ask
-		question.Answers = answers
-		err = databaseRepository.UpdateQuestion(ctx, *question)
-		if err != nil {
-			return nil, err
-		}
+	_, err = databaseRepository.WithTransaction(
+		ctx,
+		func(ctx context.Context) (interface{}, error) {
+			// 修改 Question
+			question.Ask = ask
+			question.Answers = answers
+			err = databaseRepository.UpdateQuestion(ctx, *question)
+			if err != nil {
+				return nil, err
+			}
 
-		// 刪除相關的 AnswerWrong
-		_, err = databaseRepository.DeleteAnswerWrongsByQuestionId(ctx, questionId)
-		if err != nil {
-			return nil, err
-		}
+			// 刪除相關的 AnswerWrong
+			_, err = databaseRepository.DeleteAnswerWrongsByQuestionId(ctx, questionId)
+			if err != nil {
+				return nil, err
+			}
 
-		return nil, nil
-	})
+			return nil, nil
+		},
+	)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return "", fmt.Errorf(errorMessage, err)
@@ -339,6 +366,7 @@ func (examService examService) UpdateQuestion(
 }
 
 func (examService examService) FindQuestions(
+	ctx context.Context,
 	pageIndex, pageSize int32,
 	examId, userId string,
 ) (total, pageCount int32, questions []model.Question, err error) {
@@ -348,7 +376,7 @@ func (examService examService) FindQuestions(
 
 	databaseRepository := examService.databaseRepository
 
-	exam, err := databaseRepository.GetExamById(context.TODO(), examId)
+	exam, err := databaseRepository.GetExamById(ctx, examId)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return 0, 0, nil, fmt.Errorf(errorMessage, err)
@@ -369,14 +397,14 @@ func (examService examService) FindQuestions(
 
 	skip := pageSize * pageIndex
 	questions, err = databaseRepository.FindQuestionsByExamIdOrderByUpdateAtDesc(
-		context.TODO(), examId, skip, pageSize)
+		ctx, examId, skip, pageSize)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return 0, 0, nil, fmt.Errorf(errorMessage, err)
 	}
 
 	// Total
-	total, err = databaseRepository.CountQuestionsByExamId(context.TODO(), examId)
+	total, err = databaseRepository.CountQuestionsByExamId(ctx, examId)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return 0, 0, nil, fmt.Errorf(errorMessage, err)
@@ -389,6 +417,7 @@ func (examService examService) FindQuestions(
 }
 
 func (examService examService) DeleteQuestion(
+	ctx context.Context,
 	questionId, userId string,
 ) error {
 	errorLogger := examService.errorLogger
@@ -397,7 +426,7 @@ func (examService examService) DeleteQuestion(
 	databaseRepository := examService.databaseRepository
 
 	// 檢查不能刪除別人的 question
-	question, err := databaseRepository.GetQuestionById(context.TODO(), questionId)
+	question, err := databaseRepository.GetQuestionById(ctx, questionId)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return fmt.Errorf(errorMessage, err)
@@ -415,21 +444,24 @@ func (examService examService) DeleteQuestion(
 		return fmt.Errorf(errorMessage, err)
 	}
 
-	_, err = databaseRepository.WithTransaction(func(ctx context.Context) (interface{}, error) {
-		// Delete AnswerWrong
-		_, err = databaseRepository.DeleteAnswerWrongsByQuestionId(ctx, questionId)
-		if err != nil {
-			return nil, err
-		}
+	_, err = databaseRepository.WithTransaction(
+		ctx,
+		func(ctx context.Context) (interface{}, error) {
+			// Delete AnswerWrong
+			_, err = databaseRepository.DeleteAnswerWrongsByQuestionId(ctx, questionId)
+			if err != nil {
+				return nil, err
+			}
 
-		// Delete Question
-		_, err = databaseRepository.DeleteQuestionById(ctx, questionId)
-		if err != nil {
-			return nil, err
-		}
+			// Delete Question
+			_, err = databaseRepository.DeleteQuestionById(ctx, questionId)
+			if err != nil {
+				return nil, err
+			}
 
-		return nil, nil
-	})
+			return nil, nil
+		},
+	)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return fmt.Errorf(errorMessage, err)
@@ -439,13 +471,13 @@ func (examService examService) DeleteQuestion(
 }
 
 func (examService examService) CreateExamRecord(
-	examId string, score int32, wrongQuestionIds []string, userId string,
+	ctx context.Context, examId string, score int32, wrongQuestionIds []string, userId string,
 ) error {
 	errorLogger := examService.errorLogger
 	errorMessage := "CreateExamRecord failed: %w"
 
 	databaseRepository := examService.databaseRepository
-	exam, err := databaseRepository.GetExamById(context.TODO(), examId)
+	exam, err := databaseRepository.GetExamById(ctx, examId)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return fmt.Errorf(errorMessage, err)
@@ -464,32 +496,35 @@ func (examService examService) CreateExamRecord(
 		return fmt.Errorf(errorMessage, err)
 	}
 
-	_, err = databaseRepository.WithTransaction(func(ctx context.Context) (interface{}, error) {
-		// 新增測驗紀錄
-		_, err = databaseRepository.CreateExamRecord(ctx, model.ExamRecord{
-			ExamId: examId,
-			Score:  score,
-			UserId: userId,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		// 更新問題的答錯次數
-		for _, questionId := range wrongQuestionIds {
-			_, _, err := databaseRepository.UpsertAnswerWrongByTimesPlusOne(
-				ctx,
-				examId,
-				questionId,
-				userId,
-			)
+	_, err = databaseRepository.WithTransaction(
+		ctx,
+		func(ctx context.Context) (interface{}, error) {
+			// 新增測驗紀錄
+			_, err = databaseRepository.CreateExamRecord(ctx, model.ExamRecord{
+				ExamId: examId,
+				Score:  score,
+				UserId: userId,
+			})
 			if err != nil {
 				return nil, err
 			}
-		}
 
-		return nil, nil
-	})
+			// 更新問題的答錯次數
+			for _, questionId := range wrongQuestionIds {
+				_, _, err := databaseRepository.UpsertAnswerWrongByTimesPlusOne(
+					ctx,
+					examId,
+					questionId,
+					userId,
+				)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			return nil, nil
+		},
+	)
 
 	if err != nil {
 		errorLogger.Log("err", err)
@@ -500,6 +535,7 @@ func (examService examService) CreateExamRecord(
 }
 
 func (examService examService) FindExamRecords(
+	ctx context.Context,
 	pageIndex, pageSize int32,
 	examId, userId string,
 ) (total, pageCount int32, examRecords []model.ExamRecord, err error) {
@@ -511,7 +547,7 @@ func (examService examService) FindExamRecords(
 	skip := pageSize * pageIndex
 	limit := pageSize
 	examRecords, err = databaseRepository.FindExamRecordsByExamIdAndUserIdOrderByUpdateAtDesc(
-		context.TODO(), examId, userId, skip, limit)
+		ctx, examId, userId, skip, limit)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return 0, 0, nil, fmt.Errorf(errorMessage, err)
@@ -519,7 +555,7 @@ func (examService examService) FindExamRecords(
 
 	// Total
 	count, err := databaseRepository.CountExamRecordsByExamIdAndUserId(
-		context.TODO(),
+		ctx,
 		examId,
 		userId,
 	)
@@ -536,7 +572,7 @@ func (examService examService) FindExamRecords(
 }
 
 func (examService examService) FindExamRecordOverview(
-	examId, userId string, startDate time.Time,
+	ctx context.Context, examId, userId string, startDate time.Time,
 ) (
 	strStartDate string,
 	exam *model.Exam,
@@ -551,7 +587,7 @@ func (examService examService) FindExamRecordOverview(
 	databaseRepository := examService.databaseRepository
 
 	// Exam
-	exam, err = databaseRepository.GetExamById(context.TODO(), examId)
+	exam, err = databaseRepository.GetExamById(ctx, examId)
 	if err != nil {
 		errorLogger.Log("err", err)
 		return "", nil, nil, nil, nil, fmt.Errorf(errorMessage, err)
@@ -566,7 +602,7 @@ func (examService examService) FindExamRecordOverview(
 	// AnswerWrong
 	// 查詢此測驗中，該名使用者答錯次數最多的 10 個問題
 	answerWrongs, err = databaseRepository.FindAnswerWrongsByExamIdAndUserIdOrderByTimesDesc(
-		context.TODO(),
+		ctx,
 		examId,
 		userId,
 		10,
@@ -578,7 +614,7 @@ func (examService examService) FindExamRecordOverview(
 	}
 
 	// Question
-	questions, err = databaseRepository.FindQuestionsByQuestionIds(context.TODO(), questionIds)
+	questions, err = databaseRepository.FindQuestionsByQuestionIds(ctx, questionIds)
 
 	// 依照 questionIds 原本的順序排序
 	slices.SortFunc(questions, func(q1, q2 model.Question) int {
@@ -589,7 +625,7 @@ func (examService examService) FindExamRecordOverview(
 
 	// ExamRecord
 	examRecords, err = databaseRepository.FindExamRecordsByExamIdAndUserIdAndCreatedAt(
-		context.TODO(),
+		ctx,
 		examId,
 		userId,
 		startDate,
@@ -599,6 +635,7 @@ func (examService examService) FindExamRecordOverview(
 }
 
 func (examService examService) FindExamInfos(
+	ctx context.Context,
 	userId string,
 	isPublic bool,
 ) (examInfos []ExamInfo, err error) {
@@ -608,7 +645,7 @@ func (examService examService) FindExamInfos(
 	databaseRepository := examService.databaseRepository
 
 	exams, err := databaseRepository.FindExamsByUserIdAndIsPublicOrderByUpdateAtDesc(
-		context.TODO(),
+		ctx,
 		userId,
 		isPublic,
 	)
@@ -619,7 +656,7 @@ func (examService examService) FindExamInfos(
 
 	for _, exam := range exams {
 		examId := exam.Id.Hex()
-		questionCount, err := databaseRepository.CountQuestionsByExamId(context.TODO(), examId)
+		questionCount, err := databaseRepository.CountQuestionsByExamId(ctx, examId)
 		if err != nil {
 			errorLogger.Log("err", err)
 			return nil, fmt.Errorf(errorMessage, err)
@@ -630,7 +667,7 @@ func (examService examService) FindExamInfos(
 		}
 
 		examRecordCount, err := databaseRepository.CountExamRecordsByExamIdAndUserId(
-			context.TODO(),
+			ctx,
 			examId,
 			userId,
 		)
@@ -653,13 +690,13 @@ func (examService examService) FindExamInfos(
 }
 
 func (examService examService) FindRandomQuestions(
-	examId, userId string, size int32,
+	ctx context.Context, examId, userId string, size int32,
 ) (exam *model.Exam, questions []model.Question, err error) {
 	errorLogger := examService.errorLogger
 	errorMessage := "FindRandomQuestions failed! error: %w"
 
 	databaseRepository := examService.databaseRepository
-	exam, err = databaseRepository.GetExamById(context.TODO(), examId)
+	exam, err = databaseRepository.GetExamById(ctx, examId)
 
 	if err != nil {
 		errorLogger.Log("err", err)
@@ -678,7 +715,7 @@ func (examService examService) FindRandomQuestions(
 	}
 
 	total, err := databaseRepository.CountQuestionsByExamId(
-		context.TODO(),
+		ctx,
 		examId,
 	)
 	if err != nil {
@@ -707,7 +744,7 @@ func (examService examService) FindRandomQuestions(
 
 	for i := int32(0); i < maxQueryTotal; i++ {
 		findQuestions, err := databaseRepository.FindQuestionsByExamIdOrderByUpdateAtDesc(
-			context.TODO(),
+			ctx,
 			examId,
 			indexes[i],
 			1,

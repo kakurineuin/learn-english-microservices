@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"log"
 	"os"
 	"testing"
@@ -144,6 +145,8 @@ func (s *MyTestSuite) TestCreateExam() {
 		},
 	}
 
+	ctx := context.Background()
+
 	for _, tc := range testCases {
 		s.SetupTest()
 		s.Run(tc.name, func() {
@@ -152,6 +155,7 @@ func (s *MyTestSuite) TestCreateExam() {
 
 			// Test
 			examId, err := s.examService.CreateExam(
+				ctx,
 				args.topic,
 				args.description,
 				args.isPublic,
@@ -263,6 +267,8 @@ func (s *MyTestSuite) TestUpdateExam() {
 		},
 	}
 
+	ctx := context.Background()
+
 	for _, tc := range testCases {
 		s.SetupTest()
 		s.Run(tc.name, func() {
@@ -271,6 +277,7 @@ func (s *MyTestSuite) TestUpdateExam() {
 
 			// Test
 			examId, err := s.examService.UpdateExam(
+				ctx,
 				args.examId,
 				args.topic,
 				args.description,
@@ -368,6 +375,8 @@ func (s *MyTestSuite) TestFindExams() {
 		},
 	}
 
+	ctx := context.Background()
+
 	for _, tc := range testCases {
 		s.SetupTest()
 		s.Run(tc.name, func() {
@@ -376,6 +385,7 @@ func (s *MyTestSuite) TestFindExams() {
 
 			// Test
 			total, pageCount, exams, err := s.examService.FindExams(
+				ctx,
 				args.pageIndex,
 				args.pageSize,
 				args.userId,
@@ -434,7 +444,7 @@ func (s *MyTestSuite) TestDeleteExam() {
 						UserId:      args.userId,
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
-					WithTransaction(mock.AnythingOfType("transactionFunc")).
+					WithTransaction(mock.Anything, mock.AnythingOfType("transactionFunc")).
 					Return(nil, nil)
 			},
 		},
@@ -459,11 +469,13 @@ func (s *MyTestSuite) TestDeleteExam() {
 						UserId:      args.userId,
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
-					WithTransaction(mock.AnythingOfType("transactionFunc")).
+					WithTransaction(mock.Anything, mock.AnythingOfType("transactionFunc")).
 					Return(nil, nil)
 			},
 		},
 	}
+
+	ctx := context.Background()
 
 	for _, tc := range testCases {
 		s.SetupTest()
@@ -473,6 +485,7 @@ func (s *MyTestSuite) TestDeleteExam() {
 
 			// Test
 			err := s.examService.DeleteExam(
+				ctx,
 				args.examId,
 				args.userId,
 			)
@@ -576,6 +589,8 @@ func (s *MyTestSuite) TestCreateQuestion() {
 		},
 	}
 
+	ctx := context.Background()
+
 	for _, tc := range testCases {
 		s.SetupTest()
 		s.Run(tc.name, func() {
@@ -584,6 +599,7 @@ func (s *MyTestSuite) TestCreateQuestion() {
 
 			// Test
 			questionId, err := s.examService.CreateQuestion(
+				ctx,
 				args.examId,
 				args.ask,
 				args.answers,
@@ -645,7 +661,7 @@ func (s *MyTestSuite) TestUpdaetQuestion() {
 						UserId:  args.userId,
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
-					WithTransaction(mock.AnythingOfType("transactionFunc")).
+					WithTransaction(mock.Anything, mock.AnythingOfType("transactionFunc")).
 					Return(nil, nil)
 			},
 		},
@@ -672,11 +688,13 @@ func (s *MyTestSuite) TestUpdaetQuestion() {
 						UserId:  args.userId,
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
-					WithTransaction(mock.AnythingOfType("transactionFunc")).
+					WithTransaction(mock.Anything, mock.AnythingOfType("transactionFunc")).
 					Return(nil, nil)
 			},
 		},
 	}
+
+	ctx := context.Background()
 
 	for _, tc := range testCases {
 		s.SetupTest()
@@ -686,6 +704,7 @@ func (s *MyTestSuite) TestUpdaetQuestion() {
 
 			// Test
 			questionId, err := s.examService.UpdateQuestion(
+				ctx,
 				args.questionId,
 				args.ask,
 				args.answers,
@@ -805,6 +824,8 @@ func (s *MyTestSuite) TestFindQuestions() {
 		},
 	}
 
+	ctx := context.Background()
+
 	for _, tc := range testCases {
 		s.SetupTest()
 		s.Run(tc.name, func() {
@@ -813,6 +834,7 @@ func (s *MyTestSuite) TestFindQuestions() {
 
 			// Test
 			total, pageCount, questions, err := s.examService.FindQuestions(
+				ctx,
 				args.pageIndex,
 				args.pageSize,
 				args.examId,
@@ -871,7 +893,7 @@ func (s *MyTestSuite) TestDeleteQuestion() {
 						UserId:  args.userId,
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
-					WithTransaction(mock.AnythingOfType("transactionFunc")).
+					WithTransaction(mock.Anything, mock.AnythingOfType("transactionFunc")).
 					Return(nil, nil)
 			},
 		},
@@ -895,11 +917,13 @@ func (s *MyTestSuite) TestDeleteQuestion() {
 						UserId:  args.userId,
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
-					WithTransaction(mock.AnythingOfType("transactionFunc")).
+					WithTransaction(mock.Anything, mock.AnythingOfType("transactionFunc")).
 					Return(nil, nil)
 			},
 		},
 	}
+
+	ctx := context.Background()
 
 	for _, tc := range testCases {
 		s.SetupTest()
@@ -908,7 +932,11 @@ func (s *MyTestSuite) TestDeleteQuestion() {
 			tc.on(s, args)
 
 			// Test
-			err := s.examService.DeleteQuestion(args.questionId, args.userId)
+			err := s.examService.DeleteQuestion(
+				ctx,
+				args.questionId,
+				args.userId,
+			)
 
 			expected := tc.expected
 			s.Equal(expected.err, err)
@@ -1011,6 +1039,8 @@ func (s *MyTestSuite) TestFindRandomQuestions() {
 		},
 	}
 
+	ctx := context.Background()
+
 	for _, tc := range testCases {
 		s.SetupTest()
 		s.Run(tc.name, func() {
@@ -1019,6 +1049,7 @@ func (s *MyTestSuite) TestFindRandomQuestions() {
 
 			// Test
 			exam, questions, err := s.examService.FindRandomQuestions(
+				ctx,
 				args.examId,
 				args.userId,
 				args.size,
@@ -1077,7 +1108,7 @@ func (s *MyTestSuite) TestCreateExamRecord() {
 						UserId:      args.userId,
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
-					WithTransaction(mock.Anything).
+					WithTransaction(mock.Anything, mock.AnythingOfType("transactionFunc")).
 					Return(nil, nil)
 			},
 		},
@@ -1104,11 +1135,13 @@ func (s *MyTestSuite) TestCreateExamRecord() {
 						UserId:      args.userId,
 					}, nil)
 				s.mockDatabaseRepository.EXPECT().
-					WithTransaction(mock.Anything).
+					WithTransaction(mock.Anything, mock.AnythingOfType("transactionFunc")).
 					Return(nil, nil)
 			},
 		},
 	}
+
+	ctx := context.Background()
 
 	for _, tc := range testCases {
 		s.SetupTest()
@@ -1118,6 +1151,7 @@ func (s *MyTestSuite) TestCreateExamRecord() {
 
 			// Test
 			err := s.examService.CreateExamRecord(
+				ctx,
 				args.examId,
 				args.score,
 				args.wrongQuestionIds,
@@ -1220,6 +1254,8 @@ func (s *MyTestSuite) TestFindExamRecords() {
 		},
 	}
 
+	ctx := context.Background()
+
 	for _, tc := range testCases {
 		s.SetupTest()
 		s.Run(tc.name, func() {
@@ -1228,6 +1264,7 @@ func (s *MyTestSuite) TestFindExamRecords() {
 
 			// Test
 			total, pageCount, examRecords, err := s.examService.FindExamRecords(
+				ctx,
 				args.pageIndex,
 				args.pageSize,
 				args.examId,
@@ -1372,6 +1409,8 @@ func (s *MyTestSuite) TestFindExamRecordOverview() {
 		},
 	}
 
+	ctx := context.Background()
+
 	for _, tc := range testCases {
 		s.SetupTest()
 		s.Run(tc.name, func() {
@@ -1380,6 +1419,7 @@ func (s *MyTestSuite) TestFindExamRecordOverview() {
 
 			// Test
 			strStartDate, exam, questions, answerWrongs, examRecords, err := s.examService.FindExamRecordOverview(
+				ctx,
 				args.examId,
 				args.userId,
 				args.startDate,
@@ -1534,6 +1574,8 @@ func (s *MyTestSuite) TestFindExamInfos() {
 		},
 	}
 
+	ctx := context.Background()
+
 	for _, tc := range testCases {
 		s.SetupTest()
 		s.Run(tc.name, func() {
@@ -1542,6 +1584,7 @@ func (s *MyTestSuite) TestFindExamInfos() {
 
 			// Test
 			examInfos, err := s.examService.FindExamInfos(
+				ctx,
 				args.userId,
 				args.isPublic,
 			)

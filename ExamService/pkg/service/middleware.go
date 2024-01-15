@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"time"
 
 	"github.com/go-kit/log"
@@ -14,7 +15,7 @@ type loggingMiddleware struct {
 }
 
 func (mw loggingMiddleware) CreateExam(
-	topic, description string, isPublic bool, userId string,
+	ctx context.Context, topic, description string, isPublic bool, userId string,
 ) (examId string, err error) {
 	defer func() {
 		mw.logger.Log(
@@ -25,10 +26,11 @@ func (mw loggingMiddleware) CreateExam(
 			"userId", userId,
 			"err", err)
 	}()
-	return mw.next.CreateExam(topic, description, isPublic, userId)
+	return mw.next.CreateExam(ctx, topic, description, isPublic, userId)
 }
 
 func (mw loggingMiddleware) UpdateExam(
+	ctx context.Context,
 	examId,
 	topic, description string, isPublic bool, userId string,
 ) (updatedExamId string, err error) {
@@ -42,11 +44,11 @@ func (mw loggingMiddleware) UpdateExam(
 			"userId", userId,
 			"err", err)
 	}()
-	return mw.next.UpdateExam(examId, topic, description, isPublic, userId)
+	return mw.next.UpdateExam(ctx, examId, topic, description, isPublic, userId)
 }
 
 func (mw loggingMiddleware) FindExams(
-	pageIndex, pageSize int32, userId string,
+	ctx context.Context, pageIndex, pageSize int32, userId string,
 ) (total, pageCount int32, exams []model.Exam, err error) {
 	defer func() {
 		mw.logger.Log(
@@ -56,11 +58,11 @@ func (mw loggingMiddleware) FindExams(
 			"userId", userId,
 			"err", err)
 	}()
-	return mw.next.FindExams(pageIndex, pageSize, userId)
+	return mw.next.FindExams(ctx, pageIndex, pageSize, userId)
 }
 
 func (mw loggingMiddleware) DeleteExam(
-	examId, userId string,
+	ctx context.Context, examId, userId string,
 ) (err error) {
 	defer func() {
 		mw.logger.Log(
@@ -69,11 +71,11 @@ func (mw loggingMiddleware) DeleteExam(
 			"userId", userId,
 			"err", err)
 	}()
-	return mw.next.DeleteExam(examId, userId)
+	return mw.next.DeleteExam(ctx, examId, userId)
 }
 
 func (mw loggingMiddleware) CreateQuestion(
-	examId, ask string, answers []string, userId string,
+	ctx context.Context, examId, ask string, answers []string, userId string,
 ) (questionId string, err error) {
 	defer func() {
 		mw.logger.Log(
@@ -84,11 +86,11 @@ func (mw loggingMiddleware) CreateQuestion(
 			"userId", userId,
 			"err", err)
 	}()
-	return mw.next.CreateQuestion(examId, ask, answers, userId)
+	return mw.next.CreateQuestion(ctx, examId, ask, answers, userId)
 }
 
 func (mw loggingMiddleware) UpdateQuestion(
-	questionId, ask string, answers []string, userId string,
+	ctx context.Context, questionId, ask string, answers []string, userId string,
 ) (updatedQuestionId string, err error) {
 	defer func() {
 		mw.logger.Log(
@@ -99,11 +101,11 @@ func (mw loggingMiddleware) UpdateQuestion(
 			"userId", userId,
 			"err", err)
 	}()
-	return mw.next.UpdateQuestion(questionId, ask, answers, userId)
+	return mw.next.UpdateQuestion(ctx, questionId, ask, answers, userId)
 }
 
 func (mw loggingMiddleware) FindQuestions(
-	pageIndex, pageSize int32, examId, userId string,
+	ctx context.Context, pageIndex, pageSize int32, examId, userId string,
 ) (total, pageCount int32, questions []model.Question, err error) {
 	defer func() {
 		mw.logger.Log(
@@ -114,10 +116,12 @@ func (mw loggingMiddleware) FindQuestions(
 			"userId", userId,
 			"err", err)
 	}()
-	return mw.next.FindQuestions(pageIndex, pageSize, examId, userId)
+	return mw.next.FindQuestions(ctx, pageIndex, pageSize, examId, userId)
 }
 
-func (mw loggingMiddleware) DeleteQuestion(questionId, userId string) (err error) {
+func (mw loggingMiddleware) DeleteQuestion(
+	ctx context.Context, questionId, userId string,
+) (err error) {
 	defer func() {
 		mw.logger.Log(
 			"method", "DeleteQuestion",
@@ -125,11 +129,11 @@ func (mw loggingMiddleware) DeleteQuestion(questionId, userId string) (err error
 			"userId", userId,
 			"err", err)
 	}()
-	return mw.next.DeleteQuestion(questionId, userId)
+	return mw.next.DeleteQuestion(ctx, questionId, userId)
 }
 
 func (mw loggingMiddleware) CreateExamRecord(
-	examId string, score int32, wrongQuestionIds []string, userId string,
+	ctx context.Context, examId string, score int32, wrongQuestionIds []string, userId string,
 ) (err error) {
 	defer func() {
 		mw.logger.Log(
@@ -140,11 +144,11 @@ func (mw loggingMiddleware) CreateExamRecord(
 			"userId", userId,
 			"err", err)
 	}()
-	return mw.next.CreateExamRecord(examId, score, wrongQuestionIds, userId)
+	return mw.next.CreateExamRecord(ctx, examId, score, wrongQuestionIds, userId)
 }
 
 func (mw loggingMiddleware) FindExamRecords(
-	pageIndex, pageSize int32, examId, userId string,
+	ctx context.Context, pageIndex, pageSize int32, examId, userId string,
 ) (total, pageCount int32, examRecords []model.ExamRecord, err error) {
 	defer func() {
 		mw.logger.Log(
@@ -155,11 +159,11 @@ func (mw loggingMiddleware) FindExamRecords(
 			"userId", userId,
 			"err", err)
 	}()
-	return mw.next.FindExamRecords(pageIndex, pageSize, examId, userId)
+	return mw.next.FindExamRecords(ctx, pageIndex, pageSize, examId, userId)
 }
 
 func (mw loggingMiddleware) FindExamRecordOverview(
-	examId, userId string, startDate time.Time,
+	ctx context.Context, examId, userId string, startDate time.Time,
 ) (
 	strStartDate string,
 	exam *model.Exam,
@@ -176,11 +180,11 @@ func (mw loggingMiddleware) FindExamRecordOverview(
 			"startDate", startDate,
 			"err", err)
 	}()
-	return mw.next.FindExamRecordOverview(examId, userId, startDate)
+	return mw.next.FindExamRecordOverview(ctx, examId, userId, startDate)
 }
 
 func (mw loggingMiddleware) FindExamInfos(
-	userId string, isPublic bool,
+	ctx context.Context, userId string, isPublic bool,
 ) (examInfos []ExamInfo, err error) {
 	defer func() {
 		mw.logger.Log(
@@ -189,11 +193,11 @@ func (mw loggingMiddleware) FindExamInfos(
 			"isPublic", isPublic,
 			"err", err)
 	}()
-	return mw.next.FindExamInfos(userId, isPublic)
+	return mw.next.FindExamInfos(ctx, userId, isPublic)
 }
 
 func (mw loggingMiddleware) FindRandomQuestions(
-	examId, userId string, size int32,
+	ctx context.Context, examId, userId string, size int32,
 ) (exam *model.Exam, questions []model.Question, err error) {
 	defer func() {
 		mw.logger.Log(
@@ -203,5 +207,5 @@ func (mw loggingMiddleware) FindRandomQuestions(
 			"size", size,
 			"err", err)
 	}()
-	return mw.next.FindRandomQuestions(examId, userId, size)
+	return mw.next.FindRandomQuestions(ctx, examId, userId, size)
 }

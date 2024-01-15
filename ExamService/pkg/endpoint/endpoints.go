@@ -4,8 +4,12 @@ import (
 	"context"
 	"time"
 
+	"github.com/go-kit/kit/circuitbreaker"
 	"github.com/go-kit/kit/endpoint"
+	"github.com/go-kit/kit/ratelimit"
 	"github.com/go-kit/log"
+	"github.com/sony/gobreaker"
+	"golang.org/x/time/rate"
 
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/model"
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/service"
@@ -31,83 +35,252 @@ type Endpoints struct {
 }
 
 func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints {
-	createExamEndpoint := makeCreateExamEndpoint(examService)
-	createExamEndpoint = LoggingMiddleware(
-		log.With(logger, "method", "CreateExam"))(createExamEndpoint)
-	createExamEndpoint = RecoverMiddleware(
-		log.With(logger, "method", "CreateExam"))(createExamEndpoint)
+	var createExamEndpoint endpoint.Endpoint
+	{
+		createExamEndpoint = makeCreateExamEndpoint(examService)
+		createExamEndpoint = ratelimit.NewErroringLimiter(
+			rate.NewLimiter(rate.Every(time.Second), 1),
+		)(
+			createExamEndpoint,
+		)
+		createExamEndpoint = circuitbreaker.Gobreaker(
+			gobreaker.NewCircuitBreaker(gobreaker.Settings{}),
+		)(
+			createExamEndpoint,
+		)
+		createExamEndpoint = LoggingMiddleware(
+			log.With(logger, "method", "CreateExam"))(createExamEndpoint)
+		createExamEndpoint = RecoverMiddleware(
+			log.With(logger, "method", "CreateExam"))(createExamEndpoint)
+	}
 
-	updateExamEndpoint := makeUpdateExamEndpoint(examService)
-	updateExamEndpoint = LoggingMiddleware(
-		log.With(logger, "method", "UpdateExam"))(updateExamEndpoint)
-	updateExamEndpoint = RecoverMiddleware(
-		log.With(logger, "method", "UpdateExam"))(updateExamEndpoint)
+	var updateExamEndpoint endpoint.Endpoint
+	{
+		updateExamEndpoint = makeUpdateExamEndpoint(examService)
+		updateExamEndpoint = ratelimit.NewErroringLimiter(
+			rate.NewLimiter(rate.Every(time.Second), 1),
+		)(
+			updateExamEndpoint,
+		)
+		updateExamEndpoint = circuitbreaker.Gobreaker(
+			gobreaker.NewCircuitBreaker(gobreaker.Settings{}),
+		)(
+			updateExamEndpoint,
+		)
+		updateExamEndpoint = LoggingMiddleware(
+			log.With(logger, "method", "UpdateExam"))(updateExamEndpoint)
+		updateExamEndpoint = RecoverMiddleware(
+			log.With(logger, "method", "UpdateExam"))(updateExamEndpoint)
+	}
 
-	findExamsEndpoint := makeFindExamsEndpoint(examService)
-	findExamsEndpoint = LoggingMiddleware(
-		log.With(logger, "method", "FindExams"))(findExamsEndpoint)
-	findExamsEndpoint = RecoverMiddleware(
-		log.With(logger, "method", "FindExams"))(findExamsEndpoint)
+	var findExamsEndpoint endpoint.Endpoint
+	{
+		findExamsEndpoint = makeFindExamsEndpoint(examService)
+		findExamsEndpoint = ratelimit.NewErroringLimiter(
+			rate.NewLimiter(rate.Every(time.Second), 1),
+		)(
+			findExamsEndpoint,
+		)
+		findExamsEndpoint = circuitbreaker.Gobreaker(
+			gobreaker.NewCircuitBreaker(gobreaker.Settings{}),
+		)(
+			findExamsEndpoint,
+		)
+		findExamsEndpoint = LoggingMiddleware(
+			log.With(logger, "method", "FindExams"))(findExamsEndpoint)
+		findExamsEndpoint = RecoverMiddleware(
+			log.With(logger, "method", "FindExams"))(findExamsEndpoint)
+	}
 
-	deleteExamEndpoint := makeDeleteExamEndpoint(examService)
-	deleteExamEndpoint = LoggingMiddleware(
-		log.With(logger, "method", "DeleteExam"))(deleteExamEndpoint)
-	deleteExamEndpoint = RecoverMiddleware(
-		log.With(logger, "method", "DeleteExam"))(deleteExamEndpoint)
+	var deleteExamEndpoint endpoint.Endpoint
+	{
+		deleteExamEndpoint = makeDeleteExamEndpoint(examService)
+		deleteExamEndpoint = ratelimit.NewErroringLimiter(
+			rate.NewLimiter(rate.Every(time.Second), 1),
+		)(
+			deleteExamEndpoint,
+		)
+		deleteExamEndpoint = circuitbreaker.Gobreaker(
+			gobreaker.NewCircuitBreaker(gobreaker.Settings{}),
+		)(
+			deleteExamEndpoint,
+		)
+		deleteExamEndpoint = LoggingMiddleware(
+			log.With(logger, "method", "DeleteExam"))(deleteExamEndpoint)
+		deleteExamEndpoint = RecoverMiddleware(
+			log.With(logger, "method", "DeleteExam"))(deleteExamEndpoint)
+	}
 
-	createQuestionEndpoint := makeCreateQuestionEndpoint(examService)
-	createQuestionEndpoint = LoggingMiddleware(
-		log.With(logger, "method", "CreateQuestion"))(createQuestionEndpoint)
-	createQuestionEndpoint = RecoverMiddleware(
-		log.With(logger, "method", "CreateQuestion"))(createQuestionEndpoint)
+	var createQuestionEndpoint endpoint.Endpoint
+	{
+		createQuestionEndpoint = makeCreateQuestionEndpoint(examService)
+		createQuestionEndpoint = ratelimit.NewErroringLimiter(
+			rate.NewLimiter(rate.Every(time.Second), 1),
+		)(
+			createQuestionEndpoint,
+		)
+		createQuestionEndpoint = circuitbreaker.Gobreaker(
+			gobreaker.NewCircuitBreaker(gobreaker.Settings{}),
+		)(
+			createQuestionEndpoint,
+		)
+		createQuestionEndpoint = LoggingMiddleware(
+			log.With(logger, "method", "CreateQuestion"))(createQuestionEndpoint)
+		createQuestionEndpoint = RecoverMiddleware(
+			log.With(logger, "method", "CreateQuestion"))(createQuestionEndpoint)
+	}
 
-	updateQuestionEndpoint := makeUpdateQuestionEndpoint(examService)
-	updateQuestionEndpoint = LoggingMiddleware(
-		log.With(logger, "method", "UpdateQuestion"))(updateQuestionEndpoint)
-	updateQuestionEndpoint = RecoverMiddleware(
-		log.With(logger, "method", "UpdateQuestion"))(updateQuestionEndpoint)
+	var updateQuestionEndpoint endpoint.Endpoint
+	{
+		updateQuestionEndpoint = makeUpdateQuestionEndpoint(examService)
+		updateQuestionEndpoint = ratelimit.NewErroringLimiter(
+			rate.NewLimiter(rate.Every(time.Second), 1),
+		)(
+			updateQuestionEndpoint,
+		)
+		updateQuestionEndpoint = circuitbreaker.Gobreaker(
+			gobreaker.NewCircuitBreaker(gobreaker.Settings{}),
+		)(
+			updateQuestionEndpoint,
+		)
+		updateQuestionEndpoint = LoggingMiddleware(
+			log.With(logger, "method", "UpdateQuestion"))(updateQuestionEndpoint)
+		updateQuestionEndpoint = RecoverMiddleware(
+			log.With(logger, "method", "UpdateQuestion"))(updateQuestionEndpoint)
+	}
 
-	findQuestionsEndpoint := makeFindQuestionsEndpoint(examService)
-	findQuestionsEndpoint = LoggingMiddleware(
-		log.With(logger, "method", "FindQuestions"))(findQuestionsEndpoint)
-	findQuestionsEndpoint = RecoverMiddleware(
-		log.With(logger, "method", "FindQuestions"))(findQuestionsEndpoint)
+	var findQuestionsEndpoint endpoint.Endpoint
+	{
+		findQuestionsEndpoint = makeFindQuestionsEndpoint(examService)
+		findQuestionsEndpoint = ratelimit.NewErroringLimiter(
+			rate.NewLimiter(rate.Every(time.Second), 1),
+		)(
+			findQuestionsEndpoint,
+		)
+		findQuestionsEndpoint = circuitbreaker.Gobreaker(
+			gobreaker.NewCircuitBreaker(gobreaker.Settings{}),
+		)(
+			findQuestionsEndpoint,
+		)
+		findQuestionsEndpoint = LoggingMiddleware(
+			log.With(logger, "method", "FindQuestions"))(findQuestionsEndpoint)
+		findQuestionsEndpoint = RecoverMiddleware(
+			log.With(logger, "method", "FindQuestions"))(findQuestionsEndpoint)
+	}
 
-	deleteQuestionEndpoint := makeDeleteQuestionEndpoint(examService)
-	deleteQuestionEndpoint = LoggingMiddleware(
-		log.With(logger, "method", "DeleteQuestion"))(deleteQuestionEndpoint)
-	deleteQuestionEndpoint = RecoverMiddleware(
-		log.With(logger, "method", "DeleteQuestion"))(deleteQuestionEndpoint)
+	var deleteQuestionEndpoint endpoint.Endpoint
+	{
+		deleteQuestionEndpoint = makeDeleteQuestionEndpoint(examService)
+		deleteQuestionEndpoint = ratelimit.NewErroringLimiter(
+			rate.NewLimiter(rate.Every(time.Second), 1),
+		)(
+			deleteQuestionEndpoint,
+		)
+		deleteQuestionEndpoint = circuitbreaker.Gobreaker(
+			gobreaker.NewCircuitBreaker(gobreaker.Settings{}),
+		)(
+			deleteQuestionEndpoint,
+		)
+		deleteQuestionEndpoint = LoggingMiddleware(
+			log.With(logger, "method", "DeleteQuestion"))(deleteQuestionEndpoint)
+		deleteQuestionEndpoint = RecoverMiddleware(
+			log.With(logger, "method", "DeleteQuestion"))(deleteQuestionEndpoint)
+	}
 
-	findRandomQuestionsEndpoint := makeFindRandomQuestionsEndpoint(examService)
-	findRandomQuestionsEndpoint = LoggingMiddleware(
-		log.With(logger, "method", "FindRandomQuestions"))(findRandomQuestionsEndpoint)
-	findRandomQuestionsEndpoint = RecoverMiddleware(
-		log.With(logger, "method", "FindRandomQuestions"))(findRandomQuestionsEndpoint)
+	var findRandomQuestionsEndpoint endpoint.Endpoint
+	{
+		findRandomQuestionsEndpoint = makeFindRandomQuestionsEndpoint(examService)
+		findRandomQuestionsEndpoint = ratelimit.NewErroringLimiter(
+			rate.NewLimiter(rate.Every(time.Second), 1),
+		)(
+			findRandomQuestionsEndpoint,
+		)
+		findRandomQuestionsEndpoint = circuitbreaker.Gobreaker(
+			gobreaker.NewCircuitBreaker(gobreaker.Settings{}),
+		)(
+			findRandomQuestionsEndpoint,
+		)
+		findRandomQuestionsEndpoint = LoggingMiddleware(
+			log.With(logger, "method", "FindRandomQuestions"))(findRandomQuestionsEndpoint)
+		findRandomQuestionsEndpoint = RecoverMiddleware(
+			log.With(logger, "method", "FindRandomQuestions"))(findRandomQuestionsEndpoint)
+	}
 
-	createExamRecordEndpoint := makeCreateExamRecordEndpoint(examService)
-	createExamRecordEndpoint = LoggingMiddleware(
-		log.With(logger, "method", "CreateExamRecord"))(createExamRecordEndpoint)
-	createExamRecordEndpoint = RecoverMiddleware(
-		log.With(logger, "method", "CreateExamRecord"))(createExamRecordEndpoint)
+	var createExamRecordEndpoint endpoint.Endpoint
+	{
+		createExamRecordEndpoint = makeCreateExamRecordEndpoint(examService)
+		createExamRecordEndpoint = ratelimit.NewErroringLimiter(
+			rate.NewLimiter(rate.Every(time.Second), 1),
+		)(
+			createExamRecordEndpoint,
+		)
+		createExamRecordEndpoint = circuitbreaker.Gobreaker(
+			gobreaker.NewCircuitBreaker(gobreaker.Settings{}),
+		)(
+			createExamRecordEndpoint,
+		)
+		createExamRecordEndpoint = LoggingMiddleware(
+			log.With(logger, "method", "CreateExamRecord"))(createExamRecordEndpoint)
+		createExamRecordEndpoint = RecoverMiddleware(
+			log.With(logger, "method", "CreateExamRecord"))(createExamRecordEndpoint)
+	}
 
-	findExamRecordsEndpoint := makeFindExamRecordsEndpoint(examService)
-	findExamRecordsEndpoint = LoggingMiddleware(
-		log.With(logger, "method", "FindExamRecords"))(findExamRecordsEndpoint)
-	findExamRecordsEndpoint = RecoverMiddleware(
-		log.With(logger, "method", "FindExamRecords"))(findExamRecordsEndpoint)
+	var findExamRecordsEndpoint endpoint.Endpoint
+	{
+		findExamRecordsEndpoint = makeFindExamRecordsEndpoint(examService)
+		findExamRecordsEndpoint = ratelimit.NewErroringLimiter(
+			rate.NewLimiter(rate.Every(time.Second), 1),
+		)(
+			findExamRecordsEndpoint,
+		)
+		findExamRecordsEndpoint = circuitbreaker.Gobreaker(
+			gobreaker.NewCircuitBreaker(gobreaker.Settings{}),
+		)(
+			findExamRecordsEndpoint,
+		)
+		findExamRecordsEndpoint = LoggingMiddleware(
+			log.With(logger, "method", "FindExamRecords"))(findExamRecordsEndpoint)
+		findExamRecordsEndpoint = RecoverMiddleware(
+			log.With(logger, "method", "FindExamRecords"))(findExamRecordsEndpoint)
+	}
 
-	findExamRecordOverviewEndpoint := makeFindExamRecordOverviewEndpoint(examService)
-	findExamRecordOverviewEndpoint = LoggingMiddleware(
-		log.With(logger, "method", "FindExamRecordOverview"))(findExamRecordOverviewEndpoint)
-	findExamRecordOverviewEndpoint = RecoverMiddleware(
-		log.With(logger, "method", "FindExamRecordOverview"))(findExamRecordOverviewEndpoint)
+	var findExamRecordOverviewEndpoint endpoint.Endpoint
+	{
+		findExamRecordOverviewEndpoint = makeFindExamRecordOverviewEndpoint(examService)
+		findExamRecordOverviewEndpoint = ratelimit.NewErroringLimiter(
+			rate.NewLimiter(rate.Every(time.Second), 1),
+		)(
+			findExamRecordOverviewEndpoint,
+		)
+		findExamRecordOverviewEndpoint = circuitbreaker.Gobreaker(
+			gobreaker.NewCircuitBreaker(gobreaker.Settings{}),
+		)(
+			findExamRecordOverviewEndpoint,
+		)
+		findExamRecordOverviewEndpoint = LoggingMiddleware(
+			log.With(logger, "method", "FindExamRecordOverview"))(findExamRecordOverviewEndpoint)
+		findExamRecordOverviewEndpoint = RecoverMiddleware(
+			log.With(logger, "method", "FindExamRecordOverview"))(findExamRecordOverviewEndpoint)
+	}
 
-	findExamInfosEndpoint := makeFindExamInfosEndpoint(examService)
-	findExamInfosEndpoint = LoggingMiddleware(
-		log.With(logger, "method", "FindExamInfos"))(findExamInfosEndpoint)
-	findExamInfosEndpoint = RecoverMiddleware(
-		log.With(logger, "method", "FindExamInfos"))(findExamInfosEndpoint)
+	var findExamInfosEndpoint endpoint.Endpoint
+	{
+		findExamInfosEndpoint = makeFindExamInfosEndpoint(examService)
+		findExamInfosEndpoint = ratelimit.NewErroringLimiter(
+			rate.NewLimiter(rate.Every(time.Second), 1),
+		)(
+			findExamInfosEndpoint,
+		)
+		findExamInfosEndpoint = circuitbreaker.Gobreaker(
+			gobreaker.NewCircuitBreaker(gobreaker.Settings{}),
+		)(
+			findExamInfosEndpoint,
+		)
+		findExamInfosEndpoint = LoggingMiddleware(
+			log.With(logger, "method", "FindExamInfos"))(findExamInfosEndpoint)
+		findExamInfosEndpoint = RecoverMiddleware(
+			log.With(logger, "method", "FindExamInfos"))(findExamInfosEndpoint)
+	}
 
 	return Endpoints{
 		CreateExam: createExamEndpoint,
@@ -141,10 +314,10 @@ type CreateExamResponse struct {
 }
 
 func makeCreateExamEndpoint(examService service.ExamService) endpoint.Endpoint {
-	return func(_ context.Context, request interface{}) (interface{}, error) {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateExamRequest)
 		examId, err := examService.CreateExam(
-			req.Topic, req.Description, req.IsPublic, req.UserId)
+			ctx, req.Topic, req.Description, req.IsPublic, req.UserId)
 		if err != nil {
 			return nil, err
 		}
@@ -165,10 +338,10 @@ type UpdateExamResponse struct {
 }
 
 func makeUpdateExamEndpoint(examService service.ExamService) endpoint.Endpoint {
-	return func(_ context.Context, request interface{}) (interface{}, error) {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(UpdateExamRequest)
 		examId, err := examService.UpdateExam(
-			req.ExamId, req.Topic, req.Description, req.IsPublic, req.UserId)
+			ctx, req.ExamId, req.Topic, req.Description, req.IsPublic, req.UserId)
 		if err != nil {
 			return nil, err
 		}
@@ -189,9 +362,10 @@ type FindExamsResponse struct {
 }
 
 func makeFindExamsEndpoint(examService service.ExamService) endpoint.Endpoint {
-	return func(_ context.Context, request interface{}) (interface{}, error) {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(FindExamsRequest)
 		total, pageCount, exams, err := examService.FindExams(
+			ctx,
 			req.PageIndex,
 			req.PageSize,
 			req.UserId,
@@ -215,9 +389,9 @@ type DeleteExamRequest struct {
 type DeleteExamResponse struct{}
 
 func makeDeleteExamEndpoint(examService service.ExamService) endpoint.Endpoint {
-	return func(_ context.Context, request interface{}) (interface{}, error) {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(DeleteExamRequest)
-		err := examService.DeleteExam(req.ExamId, req.UserId)
+		err := examService.DeleteExam(ctx, req.ExamId, req.UserId)
 		if err != nil {
 			return nil, err
 		}
@@ -237,10 +411,10 @@ type CreateQuestionResponse struct {
 }
 
 func makeCreateQuestionEndpoint(examService service.ExamService) endpoint.Endpoint {
-	return func(_ context.Context, request interface{}) (interface{}, error) {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateQuestionRequest)
 		questionId, err := examService.CreateQuestion(
-			req.ExamId, req.Ask, req.Answers, req.UserId)
+			ctx, req.ExamId, req.Ask, req.Answers, req.UserId)
 		if err != nil {
 			return nil, err
 		}
@@ -260,10 +434,10 @@ type UpdateQuestionResponse struct {
 }
 
 func makeUpdateQuestionEndpoint(examService service.ExamService) endpoint.Endpoint {
-	return func(_ context.Context, request interface{}) (interface{}, error) {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(UpdateQuestionRequest)
 		questionId, err := examService.UpdateQuestion(
-			req.QuestionId, req.Ask, req.Answers, req.UserId)
+			ctx, req.QuestionId, req.Ask, req.Answers, req.UserId)
 		if err != nil {
 			return nil, err
 		}
@@ -285,9 +459,10 @@ type FindQuestionsResponse struct {
 }
 
 func makeFindQuestionsEndpoint(examService service.ExamService) endpoint.Endpoint {
-	return func(_ context.Context, request interface{}) (interface{}, error) {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(FindQuestionsRequest)
 		total, pageCount, quesitons, err := examService.FindQuestions(
+			ctx,
 			req.PageIndex,
 			req.PageSize,
 			req.ExamId,
@@ -312,10 +487,10 @@ type DeleteQuestionRequest struct {
 type DeleteQuestionResponse struct{}
 
 func makeDeleteQuestionEndpoint(examService service.ExamService) endpoint.Endpoint {
-	return func(_ context.Context, request interface{}) (interface{}, error) {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(DeleteQuestionRequest)
 		err := examService.DeleteQuestion(
-			req.QuestionId, req.UserId)
+			ctx, req.QuestionId, req.UserId)
 		if err != nil {
 			return nil, err
 		}
@@ -333,10 +508,10 @@ type CreateExamRecordRequest struct {
 type CreateExamRecordResponse struct{}
 
 func makeCreateExamRecordEndpoint(examService service.ExamService) endpoint.Endpoint {
-	return func(_ context.Context, request interface{}) (interface{}, error) {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateExamRecordRequest)
 		err := examService.CreateExamRecord(
-			req.ExamId, req.Score, req.WrongQuestionIds, req.UserId)
+			ctx, req.ExamId, req.Score, req.WrongQuestionIds, req.UserId)
 		if err != nil {
 			return nil, err
 		}
@@ -358,9 +533,10 @@ type FindExamRecordsResponse struct {
 }
 
 func makeFindExamRecordsEndpoint(examService service.ExamService) endpoint.Endpoint {
-	return func(_ context.Context, request interface{}) (interface{}, error) {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(FindExamRecordsRequest)
 		total, pageCount, examRecords, err := examService.FindExamRecords(
+			ctx,
 			req.PageIndex,
 			req.PageSize,
 			req.ExamId,
@@ -392,9 +568,10 @@ type FindExamRecordOverviewResponse struct {
 }
 
 func makeFindExamRecordOverviewEndpoint(examService service.ExamService) endpoint.Endpoint {
-	return func(_ context.Context, request interface{}) (interface{}, error) {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(FindExamRecordOverviewRequest)
 		startDate, exam, quesitons, answerWrongs, examRecords, err := examService.FindExamRecordOverview(
+			ctx,
 			req.ExamId,
 			req.UserId,
 			req.StartDate,
@@ -422,9 +599,10 @@ type FindExamInfosResponse struct {
 }
 
 func makeFindExamInfosEndpoint(examService service.ExamService) endpoint.Endpoint {
-	return func(_ context.Context, request interface{}) (interface{}, error) {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(FindExamInfosRequest)
 		examInfos, err := examService.FindExamInfos(
+			ctx,
 			req.UserId,
 			req.IsPublic,
 		)
@@ -449,9 +627,10 @@ type FindRandomQuestionsResponse struct {
 }
 
 func makeFindRandomQuestionsEndpoint(examService service.ExamService) endpoint.Endpoint {
-	return func(_ context.Context, request interface{}) (interface{}, error) {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(FindRandomQuestionsRequest)
 		exam, quesitons, err := examService.FindRandomQuestions(
+			ctx,
 			req.ExamId,
 			req.UserId,
 			req.Size,

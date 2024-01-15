@@ -6,10 +6,12 @@ require (
 	github.com/go-kit/kit v0.13.0
 	github.com/go-kit/log v0.2.1
 	github.com/joho/godotenv v1.5.1
+	github.com/sony/gobreaker v0.4.1
 	github.com/stretchr/testify v1.8.4
 	github.com/testcontainers/testcontainers-go v0.26.0
 	github.com/testcontainers/testcontainers-go/modules/mongodb v0.26.0
 	go.mongodb.org/mongo-driver v1.13.1
+	golang.org/x/time v0.3.0
 	google.golang.org/grpc v1.60.1
 	google.golang.org/protobuf v1.31.0
 )
@@ -19,6 +21,7 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Microsoft/hcsshim v0.11.1 // indirect
+	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/containerd/containerd v1.7.7 // indirect
 	github.com/containerd/log v0.1.0 // indirect
@@ -51,6 +54,8 @@ require (
 	github.com/shirou/gopsutil/v3 v3.23.9 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
+	github.com/smartystreets/goconvey v1.8.1 // indirect
+	github.com/streadway/handy v0.0.0-20200128134331-0f66f006fb2e // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
