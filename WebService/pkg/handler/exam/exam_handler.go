@@ -1,7 +1,6 @@
 package exam
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -450,7 +449,7 @@ func (handler examHandler) FindExamInfosWhenNotSignIn(c echo.Context) error {
 	databaseRepository := handler.databaseRepository
 
 	// Get admin userId
-	adminUser, err := databaseRepository.GetAdminUser(context.TODO())
+	adminUser, err := databaseRepository.GetAdminUser(c.Request().Context())
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONInternalServerError(c)
@@ -479,7 +478,7 @@ func (handler examHandler) FindExamInfosWhenSignIn(c echo.Context) error {
 	databaseRepository := handler.databaseRepository
 
 	// Get admin userId
-	adminUser, err := databaseRepository.GetAdminUser(context.TODO())
+	adminUser, err := databaseRepository.GetAdminUser(c.Request().Context())
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONInternalServerError(c)

@@ -1,7 +1,6 @@
 package exam
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -512,7 +511,7 @@ func (s *MyTestSuite) TestFindExamInfosWhenNotSignIn() {
 	adminUserId := adminUserObjectId.Hex()
 
 	s.mockDatabaseRepository.EXPECT().
-		GetAdminUser(context.TODO()).
+		GetAdminUser(mock.Anything).
 		Return(&model.User{
 			Id:       adminUserObjectId,
 			Username: "TestAdmin",
@@ -561,7 +560,7 @@ func (s *MyTestSuite) TestFindExamInfosWhenSignIn() {
 	adminUserId := adminUserObjectId.Hex()
 
 	s.mockDatabaseRepository.EXPECT().
-		GetAdminUser(context.TODO()).
+		GetAdminUser(mock.Anything).
 		Return(&model.User{
 			Id:       adminUserObjectId,
 			Username: "TestAdmin",

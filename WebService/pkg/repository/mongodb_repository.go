@@ -29,9 +29,9 @@ func NewMongoDBRepository(database string) *MongoDBRepository {
 	}
 }
 
-func (repo *MongoDBRepository) ConnectDB(uri string) error {
+func (repo *MongoDBRepository) ConnectDB(ctx context.Context, uri string) error {
 	newClient, err := mongo.Connect(
-		context.TODO(),
+		ctx,
 		options.Client().ApplyURI(uri).SetTimeout(10*time.Second),
 	)
 	if err != nil {
@@ -52,8 +52,8 @@ func (repo *MongoDBRepository) ConnectDB(uri string) error {
 	return nil
 }
 
-func (repo *MongoDBRepository) DisconnectDB() error {
-	if err := repo.client.Disconnect(context.TODO()); err != nil {
+func (repo *MongoDBRepository) DisconnectDB(ctx context.Context) error {
+	if err := repo.client.Disconnect(ctx); err != nil {
 		return fmt.Errorf("DisconnectDB failed! error: %w", err)
 	}
 
@@ -152,6 +152,7 @@ func (repo *MongoDBRepository) GetAdminUser(
 }
 
 func (repo *MongoDBRepository) WithTransaction(
+	ctx context.Context,
 	transactoinFunc transactionFunc,
 ) (interface{}, error) {
 	// start-session
@@ -165,13 +166,13 @@ func (repo *MongoDBRepository) WithTransaction(
 	}
 
 	// Defers ending the session after the transaction is committed or ended
-	defer session.EndSession(context.TODO())
+	defer session.EndSession(ctx)
 
 	// Handle data within a transaction
 	result, err := session.WithTransaction(
-		context.TODO(),
-		func(ctx mongo.SessionContext) (interface{}, error) {
-			return transactoinFunc(ctx)
+		ctx,
+		func(sctx mongo.SessionContext) (interface{}, error) {
+			return transactoinFunc(sctx)
 		},
 		txnOptions,
 	)

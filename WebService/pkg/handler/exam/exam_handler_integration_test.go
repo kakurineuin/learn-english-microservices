@@ -70,7 +70,7 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 
 	// 連線到資料庫
 	databaseRepository := repository.NewMongoDBRepository(databaseName)
-	err = databaseRepository.ConnectDB(mongoDBURI)
+	err = databaseRepository.ConnectDB(ctx, mongoDBURI)
 	if err != nil {
 		s.FailNow(err.Error())
 	}
@@ -84,7 +84,7 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 
 	// 用來建立測試資料的 client
 	client, err := mongo.Connect(
-		context.TODO(),
+		ctx,
 		options.Client().ApplyURI(mongoDBURI).SetTimeout(10*time.Second),
 	)
 	if err != nil {
@@ -100,7 +100,7 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 
 	// 新增測試資料
 	now := time.Now()
-	result, err := s.userCollection.InsertOne(context.TODO(), model.User{
+	result, err := s.userCollection.InsertOne(ctx, model.User{
 		Username:  "test-admin",
 		Password:  "test123",
 		Role:      "admin",
@@ -115,7 +115,7 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 
 	username := "user01"
 	role := "user"
-	result, err = s.userCollection.InsertOne(context.TODO(), model.User{
+	result, err = s.userCollection.InsertOne(ctx, model.User{
 		Username:  username,
 		Password:  "test123",
 		Role:      role,
@@ -147,12 +147,13 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 // run once, after test suite methods
 func (s *MyIntegrationTestSuite) TearDownSuite() {
 	log.Println("TearDownSuite()")
+	ctx := context.Background()
 
-	if err := s.client.Disconnect(context.TODO()); err != nil {
+	if err := s.client.Disconnect(ctx); err != nil {
 		log.Printf("DisconnectDB error: %v", err)
 	}
 
-	if err := s.examHandler.databaseRepository.DisconnectDB(); err != nil {
+	if err := s.examHandler.databaseRepository.DisconnectDB(ctx); err != nil {
 		log.Printf("DisconnectDB error: %v", err)
 	}
 
@@ -162,7 +163,7 @@ func (s *MyIntegrationTestSuite) TearDownSuite() {
 	}
 
 	// 終止 container
-	if err := s.compose.Down(context.Background(), tc.RemoveOrphans(true), tc.RemoveImagesLocal); err != nil {
+	if err := s.compose.Down(ctx, tc.RemoveOrphans(true), tc.RemoveImagesLocal); err != nil {
 		log.Printf("compose.Down() error: %v", err)
 	}
 }
@@ -227,7 +228,7 @@ func (s *MyIntegrationTestSuite) TestFindExams() {
 
 func (s *MyIntegrationTestSuite) TestUpdateExam() {
 	// Setup
-	ctx := context.TODO()
+	ctx := context.Background()
 	now := time.Now()
 	result, err := s.examCollection.InsertOne(ctx, model.Exam{
 		Topic:       "topic01",
@@ -263,7 +264,7 @@ func (s *MyIntegrationTestSuite) TestUpdateExam() {
 
 func (s *MyIntegrationTestSuite) TestFindQuestions() {
 	// Setup
-	ctx := context.TODO()
+	ctx := context.Background()
 	now := time.Now()
 	result, err := s.examCollection.InsertOne(ctx, model.Exam{
 		Topic:       "topic01",
@@ -315,7 +316,7 @@ func (s *MyIntegrationTestSuite) TestFindQuestions() {
 
 func (s *MyIntegrationTestSuite) TestCreateQuestion() {
 	// Setup
-	ctx := context.TODO()
+	ctx := context.Background()
 	now := time.Now()
 	result, err := s.examCollection.InsertOne(ctx, model.Exam{
 		Topic:       "topic01",
@@ -351,7 +352,7 @@ func (s *MyIntegrationTestSuite) TestCreateQuestion() {
 
 func (s *MyIntegrationTestSuite) TestFindRandomQuestions() {
 	// Setup
-	ctx := context.TODO()
+	ctx := context.Background()
 	now := time.Now()
 	result, err := s.examCollection.InsertOne(ctx, model.Exam{
 		Topic:       "topic01",
@@ -400,7 +401,7 @@ func (s *MyIntegrationTestSuite) TestFindRandomQuestions() {
 
 func (s *MyIntegrationTestSuite) TestFindExamRecordOverview() {
 	// Setup
-	ctx := context.TODO()
+	ctx := context.Background()
 	now := time.Now()
 	result, err := s.examCollection.InsertOne(ctx, model.Exam{
 		Topic:       "topic01",
@@ -477,7 +478,7 @@ func (s *MyIntegrationTestSuite) TestFindExamRecordOverview() {
 
 func (s *MyIntegrationTestSuite) TestFindExamRecords() {
 	// Setup
-	ctx := context.TODO()
+	ctx := context.Background()
 	now := time.Now()
 	result, err := s.examCollection.InsertOne(ctx, model.Exam{
 		Topic:       "topic01",
@@ -557,7 +558,7 @@ func (s *MyIntegrationTestSuite) TestFindExamRecords() {
 
 func (s *MyIntegrationTestSuite) TestFindExamInfosWhenNotSignIn() {
 	// Setup
-	ctx := context.TODO()
+	ctx := context.Background()
 	now := time.Now()
 	result, err := s.examCollection.InsertOne(ctx, model.Exam{
 		Topic:       "topic01",
@@ -632,7 +633,7 @@ func (s *MyIntegrationTestSuite) TestFindExamInfosWhenNotSignIn() {
 
 func (s *MyIntegrationTestSuite) TestFindExamInfosWhenSignIn() {
 	// Setup
-	ctx := context.TODO()
+	ctx := context.Background()
 	now := time.Now()
 	result, err := s.examCollection.InsertOne(ctx, model.Exam{
 		Topic:       "topic01",

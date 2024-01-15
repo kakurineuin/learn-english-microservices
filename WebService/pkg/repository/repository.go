@@ -10,11 +10,11 @@ type transactionFunc func(ctx context.Context) (interface{}, error)
 
 //go:generate mockery --name DatabaseRepository
 type DatabaseRepository interface {
-	ConnectDB(uri string) error
-	DisconnectDB() error
+	ConnectDB(ctx context.Context, uri string) error
+	DisconnectDB(ctx context.Context) error
 
 	// Transaction
-	WithTransaction(transactoinFunc transactionFunc) (interface{}, error)
+	WithTransaction(ctx context.Context, transactoinFunc transactionFunc) (interface{}, error)
 
 	// Exam
 	CreateUser(ctx context.Context, user model.User) (userId string, err error)

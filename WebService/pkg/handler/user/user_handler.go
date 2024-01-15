@@ -1,7 +1,6 @@
 package user
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -49,7 +48,7 @@ func (handler userHandler) CreateUser(c echo.Context) error {
 	password := requestBody.Password
 
 	// 檢查使用者名稱是否已被註冊
-	findUser, err := databaseRepository.GetUserByUsername(context.TODO(), username)
+	findUser, err := databaseRepository.GetUserByUsername(c.Request().Context(), username)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONInternalServerError(c)
@@ -73,7 +72,7 @@ func (handler userHandler) CreateUser(c echo.Context) error {
 		Password: encryptedPassword,
 		Role:     "user",
 	}
-	userId, err := databaseRepository.CreateUser(context.TODO(), user)
+	userId, err := databaseRepository.CreateUser(c.Request().Context(), user)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONInternalServerError(c)
@@ -110,7 +109,7 @@ func (handler userHandler) Login(c echo.Context) error {
 	password := requestBody.Password
 
 	// Check user by MongoDB
-	user, err := databaseRepository.GetUserByUsername(context.TODO(), username)
+	user, err := databaseRepository.GetUserByUsername(c.Request().Context(), username)
 	if err != nil {
 		c.Logger().Error(fmt.Errorf(errorMessage, err))
 		return util.SendJSONInternalServerError(c)

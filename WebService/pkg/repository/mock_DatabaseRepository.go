@@ -22,17 +22,17 @@ func (_m *MockDatabaseRepository) EXPECT() *MockDatabaseRepository_Expecter {
 	return &MockDatabaseRepository_Expecter{mock: &_m.Mock}
 }
 
-// ConnectDB provides a mock function with given fields: uri
-func (_m *MockDatabaseRepository) ConnectDB(uri string) error {
-	ret := _m.Called(uri)
+// ConnectDB provides a mock function with given fields: ctx, uri
+func (_m *MockDatabaseRepository) ConnectDB(ctx context.Context, uri string) error {
+	ret := _m.Called(ctx, uri)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ConnectDB")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string) error); ok {
-		r0 = rf(uri)
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, uri)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -46,14 +46,15 @@ type MockDatabaseRepository_ConnectDB_Call struct {
 }
 
 // ConnectDB is a helper method to define mock.On call
+//   - ctx context.Context
 //   - uri string
-func (_e *MockDatabaseRepository_Expecter) ConnectDB(uri interface{}) *MockDatabaseRepository_ConnectDB_Call {
-	return &MockDatabaseRepository_ConnectDB_Call{Call: _e.mock.On("ConnectDB", uri)}
+func (_e *MockDatabaseRepository_Expecter) ConnectDB(ctx interface{}, uri interface{}) *MockDatabaseRepository_ConnectDB_Call {
+	return &MockDatabaseRepository_ConnectDB_Call{Call: _e.mock.On("ConnectDB", ctx, uri)}
 }
 
-func (_c *MockDatabaseRepository_ConnectDB_Call) Run(run func(uri string)) *MockDatabaseRepository_ConnectDB_Call {
+func (_c *MockDatabaseRepository_ConnectDB_Call) Run(run func(ctx context.Context, uri string)) *MockDatabaseRepository_ConnectDB_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(string))
+		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
@@ -63,7 +64,7 @@ func (_c *MockDatabaseRepository_ConnectDB_Call) Return(_a0 error) *MockDatabase
 	return _c
 }
 
-func (_c *MockDatabaseRepository_ConnectDB_Call) RunAndReturn(run func(string) error) *MockDatabaseRepository_ConnectDB_Call {
+func (_c *MockDatabaseRepository_ConnectDB_Call) RunAndReturn(run func(context.Context, string) error) *MockDatabaseRepository_ConnectDB_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -125,17 +126,17 @@ func (_c *MockDatabaseRepository_CreateUser_Call) RunAndReturn(run func(context.
 	return _c
 }
 
-// DisconnectDB provides a mock function with given fields:
-func (_m *MockDatabaseRepository) DisconnectDB() error {
-	ret := _m.Called()
+// DisconnectDB provides a mock function with given fields: ctx
+func (_m *MockDatabaseRepository) DisconnectDB(ctx context.Context) error {
+	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DisconnectDB")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func() error); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = rf(ctx)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -149,13 +150,14 @@ type MockDatabaseRepository_DisconnectDB_Call struct {
 }
 
 // DisconnectDB is a helper method to define mock.On call
-func (_e *MockDatabaseRepository_Expecter) DisconnectDB() *MockDatabaseRepository_DisconnectDB_Call {
-	return &MockDatabaseRepository_DisconnectDB_Call{Call: _e.mock.On("DisconnectDB")}
+//   - ctx context.Context
+func (_e *MockDatabaseRepository_Expecter) DisconnectDB(ctx interface{}) *MockDatabaseRepository_DisconnectDB_Call {
+	return &MockDatabaseRepository_DisconnectDB_Call{Call: _e.mock.On("DisconnectDB", ctx)}
 }
 
-func (_c *MockDatabaseRepository_DisconnectDB_Call) Run(run func()) *MockDatabaseRepository_DisconnectDB_Call {
+func (_c *MockDatabaseRepository_DisconnectDB_Call) Run(run func(ctx context.Context)) *MockDatabaseRepository_DisconnectDB_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run()
+		run(args[0].(context.Context))
 	})
 	return _c
 }
@@ -165,7 +167,7 @@ func (_c *MockDatabaseRepository_DisconnectDB_Call) Return(_a0 error) *MockDatab
 	return _c
 }
 
-func (_c *MockDatabaseRepository_DisconnectDB_Call) RunAndReturn(run func() error) *MockDatabaseRepository_DisconnectDB_Call {
+func (_c *MockDatabaseRepository_DisconnectDB_Call) RunAndReturn(run func(context.Context) error) *MockDatabaseRepository_DisconnectDB_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -346,9 +348,9 @@ func (_c *MockDatabaseRepository_GetUserByUsername_Call) RunAndReturn(run func(c
 	return _c
 }
 
-// WithTransaction provides a mock function with given fields: transactoinFunc
-func (_m *MockDatabaseRepository) WithTransaction(transactoinFunc transactionFunc) (interface{}, error) {
-	ret := _m.Called(transactoinFunc)
+// WithTransaction provides a mock function with given fields: ctx, transactoinFunc
+func (_m *MockDatabaseRepository) WithTransaction(ctx context.Context, transactoinFunc transactionFunc) (interface{}, error) {
+	ret := _m.Called(ctx, transactoinFunc)
 
 	if len(ret) == 0 {
 		panic("no return value specified for WithTransaction")
@@ -356,19 +358,19 @@ func (_m *MockDatabaseRepository) WithTransaction(transactoinFunc transactionFun
 
 	var r0 interface{}
 	var r1 error
-	if rf, ok := ret.Get(0).(func(transactionFunc) (interface{}, error)); ok {
-		return rf(transactoinFunc)
+	if rf, ok := ret.Get(0).(func(context.Context, transactionFunc) (interface{}, error)); ok {
+		return rf(ctx, transactoinFunc)
 	}
-	if rf, ok := ret.Get(0).(func(transactionFunc) interface{}); ok {
-		r0 = rf(transactoinFunc)
+	if rf, ok := ret.Get(0).(func(context.Context, transactionFunc) interface{}); ok {
+		r0 = rf(ctx, transactoinFunc)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(interface{})
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(transactionFunc) error); ok {
-		r1 = rf(transactoinFunc)
+	if rf, ok := ret.Get(1).(func(context.Context, transactionFunc) error); ok {
+		r1 = rf(ctx, transactoinFunc)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -382,14 +384,15 @@ type MockDatabaseRepository_WithTransaction_Call struct {
 }
 
 // WithTransaction is a helper method to define mock.On call
+//   - ctx context.Context
 //   - transactoinFunc transactionFunc
-func (_e *MockDatabaseRepository_Expecter) WithTransaction(transactoinFunc interface{}) *MockDatabaseRepository_WithTransaction_Call {
-	return &MockDatabaseRepository_WithTransaction_Call{Call: _e.mock.On("WithTransaction", transactoinFunc)}
+func (_e *MockDatabaseRepository_Expecter) WithTransaction(ctx interface{}, transactoinFunc interface{}) *MockDatabaseRepository_WithTransaction_Call {
+	return &MockDatabaseRepository_WithTransaction_Call{Call: _e.mock.On("WithTransaction", ctx, transactoinFunc)}
 }
 
-func (_c *MockDatabaseRepository_WithTransaction_Call) Run(run func(transactoinFunc transactionFunc)) *MockDatabaseRepository_WithTransaction_Call {
+func (_c *MockDatabaseRepository_WithTransaction_Call) Run(run func(ctx context.Context, transactoinFunc transactionFunc)) *MockDatabaseRepository_WithTransaction_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(transactionFunc))
+		run(args[0].(context.Context), args[1].(transactionFunc))
 	})
 	return _c
 }
@@ -399,7 +402,7 @@ func (_c *MockDatabaseRepository_WithTransaction_Call) Return(_a0 interface{}, _
 	return _c
 }
 
-func (_c *MockDatabaseRepository_WithTransaction_Call) RunAndReturn(run func(transactionFunc) (interface{}, error)) *MockDatabaseRepository_WithTransaction_Call {
+func (_c *MockDatabaseRepository_WithTransaction_Call) RunAndReturn(run func(context.Context, transactionFunc) (interface{}, error)) *MockDatabaseRepository_WithTransaction_Call {
 	_c.Call.Return(run)
 	return _c
 }

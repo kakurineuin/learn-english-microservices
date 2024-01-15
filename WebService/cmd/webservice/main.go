@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"os"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
@@ -24,16 +26,18 @@ func main() {
 	// 讀取環境變數
 	loadEnv()
 
+	ctx := context.Background()
+
 	// 連線到資料庫
 	databaseRepository := repository.NewMongoDBRepository(config.EnvDatabaseName())
-	err := databaseRepository.ConnectDB(config.EnvMongoDBURI())
+	err := databaseRepository.ConnectDB(ctx, config.EnvMongoDBURI())
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// 程式結束時，結束資料庫連線
 	defer func() {
-		if err := databaseRepository.DisconnectDB(); err != nil {
+		if err := databaseRepository.DisconnectDB(ctx); err != nil {
 			log.Fatal(err)
 		}
 	}()
@@ -76,6 +80,14 @@ func main() {
 	e.Logger.SetLevel(log.INFO)
 
 	// Middleware
+	e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
+		Skipper:      middleware.DefaultSkipper,
+		ErrorMessage: "操作逾時",
+		OnTimeoutRouteErrorHandler: func(err error, c echo.Context) {
+			log.Errorf("The operation has timed out, path: %s", c.Path())
+		},
+		Timeout: 30 * time.Second,
+	}))
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 

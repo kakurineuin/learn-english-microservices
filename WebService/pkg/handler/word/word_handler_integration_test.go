@@ -77,7 +77,7 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 
 	// 用來建立測試資料的 client
 	client, err := mongo.Connect(
-		context.TODO(),
+		ctx,
 		options.Client().ApplyURI(mongoDBURI).SetTimeout(10*time.Second),
 	)
 	if err != nil {
@@ -92,7 +92,7 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 
 	// 新增測試資料
 	now := time.Now()
-	result, err := s.userCollection.InsertOne(context.TODO(), model.User{
+	result, err := s.userCollection.InsertOne(ctx, model.User{
 		Username:  "test-admin",
 		Password:  "test123",
 		Role:      "admin",
@@ -107,7 +107,7 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 
 	username := "user01"
 	role := "user"
-	result, err = s.userCollection.InsertOne(context.TODO(), model.User{
+	result, err = s.userCollection.InsertOne(ctx, model.User{
 		Username:  username,
 		Password:  "test123",
 		Role:      role,
@@ -138,8 +138,9 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 // run once, after test suite methods
 func (s *MyIntegrationTestSuite) TearDownSuite() {
 	log.Println("TearDownSuite()")
+	ctx := context.Background()
 
-	if err := s.client.Disconnect(context.TODO()); err != nil {
+	if err := s.client.Disconnect(ctx); err != nil {
 		log.Printf("DisconnectDB error: %v", err)
 	}
 
@@ -149,7 +150,7 @@ func (s *MyIntegrationTestSuite) TearDownSuite() {
 	}
 
 	// 終止 container
-	if err := s.compose.Down(context.Background(), tc.RemoveOrphans(true), tc.RemoveImagesLocal); err != nil {
+	if err := s.compose.Down(ctx, tc.RemoveOrphans(true), tc.RemoveImagesLocal); err != nil {
 		log.Printf("compose.Down() error: %v", err)
 	}
 }
@@ -176,7 +177,7 @@ func (s *MyIntegrationTestSuite) AfterTest(suiteName, testName string) {
 
 func (s *MyIntegrationTestSuite) TestFindWordMeanings() {
 	// Setup
-	ctx := context.TODO()
+	ctx := context.Background()
 	now := time.Now()
 	size := 10
 	word := "test"
@@ -255,7 +256,7 @@ func (s *MyIntegrationTestSuite) TestCreateFavoriteWordMeaning() {
 
 func (s *MyIntegrationTestSuite) TestDeleteFavoriteWordMeaning() {
 	// Setup
-	ctx := context.TODO()
+	ctx := context.Background()
 	now := time.Now()
 	result, err := s.favoriteWordMeaningCollection.InsertOne(ctx, model.FavoriteWordMeaning{
 		UserId:        s.userId,
@@ -284,7 +285,7 @@ func (s *MyIntegrationTestSuite) TestDeleteFavoriteWordMeaning() {
 
 func (s *MyIntegrationTestSuite) TestFindFavoriteWordMeanings() {
 	// Setup
-	ctx := context.TODO()
+	ctx := context.Background()
 	now := time.Now()
 	documents := []interface{}{}
 
@@ -319,7 +320,7 @@ func (s *MyIntegrationTestSuite) TestFindFavoriteWordMeanings() {
 
 func (s *MyIntegrationTestSuite) TestFindRandomFavoriteWordMeanings() {
 	// Setup
-	ctx := context.TODO()
+	ctx := context.Background()
 	now := time.Now()
 	documents := []interface{}{}
 
