@@ -3,6 +3,7 @@ package transport
 import (
 	"context"
 	"errors"
+	"time"
 
 	gt "github.com/go-kit/kit/transport/grpc"
 	"github.com/go-kit/log"
@@ -11,6 +12,8 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/endpoint"
 	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/model"
 )
+
+const TIMEOUT = 20 * time.Second
 
 type GRPCServer struct {
 	findWordByDictionary           gt.Handler
@@ -57,6 +60,8 @@ func (s GRPCServer) FindWordByDictionary(
 	ctx context.Context,
 	req *pb.FindWordByDictionaryRequest,
 ) (*pb.FindWordByDictionaryResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.findWordByDictionary.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
@@ -98,6 +103,8 @@ func (s GRPCServer) CreateFavoriteWordMeaning(
 	ctx context.Context,
 	req *pb.CreateFavoriteWordMeaningRequest,
 ) (*pb.CreateFavoriteWordMeaningResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.createFavoriteWordMeaning.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
@@ -139,6 +146,8 @@ func (s GRPCServer) DeleteFavoriteWordMeaning(
 	ctx context.Context,
 	req *pb.DeleteFavoriteWordMeaningRequest,
 ) (*pb.DeleteFavoriteWordMeaningResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.deleteFavoriteWordMeaning.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
@@ -178,6 +187,8 @@ func (s GRPCServer) FindFavoriteWordMeanings(
 	ctx context.Context,
 	req *pb.FindFavoriteWordMeaningsRequest,
 ) (*pb.FindFavoriteWordMeaningsResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.findFavoriteWordMeanings.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
@@ -223,6 +234,8 @@ func (s GRPCServer) FindRandomFavoriteWordMeanings(
 	ctx context.Context,
 	req *pb.FindRandomFavoriteWordMeaningsRequest,
 ) (*pb.FindRandomFavoriteWordMeaningsResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.findRandomFavoriteWordMeanings.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err

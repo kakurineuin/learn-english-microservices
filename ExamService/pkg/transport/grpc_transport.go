@@ -3,6 +3,7 @@ package transport
 import (
 	"context"
 	"errors"
+	"time"
 
 	gt "github.com/go-kit/kit/transport/grpc"
 	"github.com/go-kit/log"
@@ -12,6 +13,8 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/endpoint"
 	"github.com/kakurineuin/learn-english-microservices/exam-service/pkg/model"
 )
+
+const TIMEOUT = 20 * time.Second
 
 type GRPCServer struct {
 	logger log.Logger
@@ -120,6 +123,8 @@ func (s GRPCServer) CreateExam(
 	ctx context.Context,
 	req *pb.CreateExamRequest,
 ) (*pb.CreateExamResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.createExam.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
@@ -157,6 +162,8 @@ func (s GRPCServer) UpdateExam(
 	ctx context.Context,
 	req *pb.UpdateExamRequest,
 ) (*pb.UpdateExamResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.updateExam.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
@@ -195,6 +202,8 @@ func (s GRPCServer) FindExams(
 	ctx context.Context,
 	req *pb.FindExamsRequest,
 ) (*pb.FindExamsResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.findExams.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
@@ -239,6 +248,8 @@ func (s GRPCServer) DeleteExam(
 	ctx context.Context,
 	req *pb.DeleteExamRequest,
 ) (*pb.DeleteExamResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.deleteExam.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
@@ -272,6 +283,8 @@ func (s GRPCServer) CreateQuestion(
 	ctx context.Context,
 	req *pb.CreateQuestionRequest,
 ) (*pb.CreateQuestionResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.createQuestion.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
@@ -309,6 +322,8 @@ func (s GRPCServer) UpdateQuestion(
 	ctx context.Context,
 	req *pb.UpdateQuestionRequest,
 ) (*pb.UpdateQuestionResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.updateQuestion.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
@@ -346,6 +361,8 @@ func (s GRPCServer) FindQuestions(
 	ctx context.Context,
 	req *pb.FindQuestionsRequest,
 ) (*pb.FindQuestionsResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.findQuestions.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
@@ -391,6 +408,8 @@ func (s GRPCServer) DeleteQuestion(
 	ctx context.Context,
 	req *pb.DeleteQuestionRequest,
 ) (*pb.DeleteQuestionResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.deleteQuestion.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
@@ -424,6 +443,8 @@ func (s GRPCServer) FindRandomQuestions(
 	ctx context.Context,
 	req *pb.FindRandomQuestionsRequest,
 ) (*pb.FindRandomQuestionsResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.findRandomQuestions.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
@@ -471,6 +492,8 @@ func (s GRPCServer) CreateExamRecord(
 	ctx context.Context,
 	req *pb.CreateExamRecordRequest,
 ) (*pb.CreateExamRecordResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.createExamRecord.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
@@ -506,6 +529,8 @@ func (s GRPCServer) FindExamRecords(
 	ctx context.Context,
 	req *pb.FindExamRecordsRequest,
 ) (*pb.FindExamRecordsResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.findExamRecords.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
@@ -551,6 +576,8 @@ func (s GRPCServer) FindExamRecordOverview(
 	ctx context.Context,
 	req *pb.FindExamRecordOverviewRequest,
 ) (*pb.FindExamRecordOverviewResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.findExamRecordOverview.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
@@ -616,6 +643,8 @@ func (s GRPCServer) FindExamInfos(
 	ctx context.Context,
 	req *pb.FindExamInfosRequest,
 ) (*pb.FindExamInfosResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, TIMEOUT)
+	defer cancel()
 	_, resp, err := s.findExamInfos.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
