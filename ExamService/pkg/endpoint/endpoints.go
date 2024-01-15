@@ -35,11 +35,13 @@ type Endpoints struct {
 }
 
 func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints {
+	limitCount := 30
+
 	var createExamEndpoint endpoint.Endpoint
 	{
 		createExamEndpoint = makeCreateExamEndpoint(examService)
 		createExamEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			createExamEndpoint,
 		)
@@ -58,7 +60,7 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	{
 		updateExamEndpoint = makeUpdateExamEndpoint(examService)
 		updateExamEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			updateExamEndpoint,
 		)
@@ -77,7 +79,7 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	{
 		findExamsEndpoint = makeFindExamsEndpoint(examService)
 		findExamsEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			findExamsEndpoint,
 		)
@@ -96,7 +98,7 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	{
 		deleteExamEndpoint = makeDeleteExamEndpoint(examService)
 		deleteExamEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			deleteExamEndpoint,
 		)
@@ -115,7 +117,7 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	{
 		createQuestionEndpoint = makeCreateQuestionEndpoint(examService)
 		createQuestionEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			createQuestionEndpoint,
 		)
@@ -134,7 +136,7 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	{
 		updateQuestionEndpoint = makeUpdateQuestionEndpoint(examService)
 		updateQuestionEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			updateQuestionEndpoint,
 		)
@@ -153,7 +155,7 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	{
 		findQuestionsEndpoint = makeFindQuestionsEndpoint(examService)
 		findQuestionsEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			findQuestionsEndpoint,
 		)
@@ -172,7 +174,7 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	{
 		deleteQuestionEndpoint = makeDeleteQuestionEndpoint(examService)
 		deleteQuestionEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			deleteQuestionEndpoint,
 		)
@@ -191,7 +193,7 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	{
 		findRandomQuestionsEndpoint = makeFindRandomQuestionsEndpoint(examService)
 		findRandomQuestionsEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			findRandomQuestionsEndpoint,
 		)
@@ -210,7 +212,7 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	{
 		createExamRecordEndpoint = makeCreateExamRecordEndpoint(examService)
 		createExamRecordEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			createExamRecordEndpoint,
 		)
@@ -229,7 +231,7 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	{
 		findExamRecordsEndpoint = makeFindExamRecordsEndpoint(examService)
 		findExamRecordsEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			findExamRecordsEndpoint,
 		)
@@ -248,7 +250,7 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	{
 		findExamRecordOverviewEndpoint = makeFindExamRecordOverviewEndpoint(examService)
 		findExamRecordOverviewEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			findExamRecordOverviewEndpoint,
 		)
@@ -267,7 +269,7 @@ func MakeEndpoints(examService service.ExamService, logger log.Logger) Endpoints
 	{
 		findExamInfosEndpoint = makeFindExamInfosEndpoint(examService)
 		findExamInfosEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			findExamInfosEndpoint,
 		)

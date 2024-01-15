@@ -25,11 +25,13 @@ type Endpoints struct {
 
 // MakeAddEndpoint struct holds the endpoint response definition
 func MakeEndpoints(wordService service.WordService, logger log.Logger) Endpoints {
+	limitCount := 30
+
 	var findWordByDictionaryEndpoint endpoint.Endpoint
 	{
 		findWordByDictionaryEndpoint = makeFindWordByDictionaryEndpoint(wordService)
 		findWordByDictionaryEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			findWordByDictionaryEndpoint,
 		)
@@ -48,7 +50,7 @@ func MakeEndpoints(wordService service.WordService, logger log.Logger) Endpoints
 	{
 		createFavoriteWordMeaningEndpoint = makeCreateFavoriteWordMeaningEndpoint(wordService)
 		createFavoriteWordMeaningEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			createFavoriteWordMeaningEndpoint,
 		)
@@ -81,7 +83,7 @@ func MakeEndpoints(wordService service.WordService, logger log.Logger) Endpoints
 	{
 		deleteFavoriteWordMeaningEndpoint = makeDeleteFavoriteWordMeaningEndpoint(wordService)
 		deleteFavoriteWordMeaningEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			deleteFavoriteWordMeaningEndpoint,
 		)
@@ -114,7 +116,7 @@ func MakeEndpoints(wordService service.WordService, logger log.Logger) Endpoints
 	{
 		findFavoriteWordMeaningsEndpoint = makeFindFavoriteWordMeaningsEndpoint(wordService)
 		findFavoriteWordMeaningsEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			findFavoriteWordMeaningsEndpoint,
 		)
@@ -149,7 +151,7 @@ func MakeEndpoints(wordService service.WordService, logger log.Logger) Endpoints
 			wordService,
 		)
 		findRandomFavoriteWordMeaningsEndpoint = ratelimit.NewErroringLimiter(
-			rate.NewLimiter(rate.Every(time.Second), 1),
+			rate.NewLimiter(rate.Every(time.Second), limitCount),
 		)(
 			findRandomFavoriteWordMeaningsEndpoint,
 		)
