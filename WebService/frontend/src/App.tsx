@@ -19,6 +19,8 @@ import ExamRecordOverview from './routes/ExamRecordOverview';
 
 axios.defaults.baseURL = `${import.meta.env.VITE_BACKEND_URL}/api`;
 axios.defaults.withCredentials = true;
+axios.defaults.xsrfCookieName = 'XSRF-TOKEN';
+axios.defaults.xsrfHeaderName = 'X-XSRF-TOKEN';
 
 // JWT
 axios.interceptors.request.use(

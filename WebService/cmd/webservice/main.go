@@ -88,6 +88,11 @@ func main() {
 		},
 		Timeout: 30 * time.Second,
 	}))
+	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+		CookieName:  "XSRF-TOKEN",
+		TokenLookup: "header:X-XSRF-TOKEN",
+	}))
+	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(30)))
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
