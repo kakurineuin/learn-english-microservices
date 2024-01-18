@@ -11,6 +11,6 @@ services:
     environment:
       MONGODB_URI: mongodb://mongodb:27017
       DATABASE_NAME: Test_LearnEnglish
-      SERVER_ADDRESS: :8091
+      WORD_SERVICE_SERVER_ADDRESS: :8091
     ports:
       - 8091:8091

@@ -17,7 +17,7 @@ import QuestionManager from './routes/QuestionManager';
 import StartExam from './routes/StartExam';
 import ExamRecordOverview from './routes/ExamRecordOverview';
 
-axios.defaults.baseURL = `${import.meta.env.VITE_BACKEND_URL}/api`;
+axios.defaults.baseURL = `${window.location.origin}/api`;
 axios.defaults.withCredentials = true;
 axios.defaults.xsrfCookieName = 'XSRF-TOKEN';
 axios.defaults.xsrfHeaderName = 'X-XSRF-TOKEN';

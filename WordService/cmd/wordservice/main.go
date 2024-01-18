@@ -45,7 +45,7 @@ func main() {
 		}
 	}()
 
-	listener, err := net.Listen("tcp", config.EnvServerAddress())
+	listener, err := net.Listen("tcp", config.EnvWordServiceServerAddress())
 	if err != nil {
 		errorLogger.Log("msg", "net listen fail", "err", err)
 		os.Exit(1)
@@ -58,7 +58,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 	pb.RegisterWordServiceServer(grpcServer, myGrpcServer)
 	reflection.Register(grpcServer)
-	level.Info(logger).Log("msg", "Starting gRPC server at "+config.EnvServerAddress())
+	level.Info(logger).Log("msg", "Starting gRPC server at "+config.EnvWordServiceServerAddress())
 	err = grpcServer.Serve(listener)
 
 	if err != nil {

@@ -101,8 +101,8 @@ func main() {
 
 	setupAPIHandlers(e, userHandler, examHandler, wordHandler)
 
-	e.Logger.Info("Echo starts to listin at " + config.EnvServerAddress())
-	e.Logger.Fatal(e.Start(config.EnvServerAddress()))
+	e.Logger.Info("Echo starts to listin at " + config.EnvWebServiceServerAddress())
+	e.Logger.Fatal(e.Start(config.EnvWebServiceServerAddress()))
 }
 
 func setupAPIHandlers(
