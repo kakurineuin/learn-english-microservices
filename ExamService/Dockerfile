@@ -4,5 +4,5 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . ./
 RUN cd ./cmd/examservice && CGO_ENABLED=0 GOOS=linux go build -o /exam-service
-EXPOSE 8090 27017
+EXPOSE 8090
 CMD ["/exam-service"]

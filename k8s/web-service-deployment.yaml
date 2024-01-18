@@ -23,7 +23,7 @@ spec:
               memory: "64Mi"
               cpu: "250m"
           ports:
-            - containerPort: 1323
+            - containerPort: 8080
           env:
             - name: JWT_SECRET_KEY
               valueFrom:
@@ -35,7 +35,7 @@ spec:
             - name: DATABASE_NAME
               value: Test_LearnEnglishMicroservices
             - name: WEB_SERVICE_SERVER_ADDRESS
-              value: :1323
+              value: :8080
             - name: EXAM_SERVICE_SERVER_ADDRESS
               value: exam-service-cluster-ip-service:8090
             - name: WORD_SERVICE_SERVER_ADDRESS

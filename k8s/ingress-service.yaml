@@ -15,4 +15,4 @@ spec:
               service:
                 name: web-service-cluster-ip-service
                 port:
-                  number: 1323
+                  number: 8080

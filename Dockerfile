@@ -25,5 +25,5 @@ COPY ./WebService ./
 RUN apk add --update npm
 RUN cd ./frontend && npm install && npm run build
 RUN cd ./cmd/webservice && CGO_ENABLED=0 GOOS=linux go build -o /web-service
-EXPOSE 1323
+EXPOSE 8080
 CMD ["sh", "-c", "/exam-service & /word-service & /web-service"]
