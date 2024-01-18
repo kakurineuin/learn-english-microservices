@@ -25,4 +25,12 @@ build:
 deploy:
   kubectl:
     remoteManifests:
-      - ./k8s/*
+      - ./k8s/mongo-service-deployment.yaml
+      - ./k8s/mongo-service-cluster-ip-service.yaml
+      - ./k8s/exam-service-deployment.yaml
+      - ./k8s/exam-service-cluster-ip-service.yaml
+      - ./k8s/word-service-deployment.yaml
+      - ./k8s/word-service-cluster-ip-service.yaml
+      - ./k8s/web-service-deployment.yaml
+      - ./k8s/web-service-cluster-ip-service.yaml
+      - ./k8s/ingress-service.yaml

@@ -15,6 +15,13 @@ spec:
       containers:
         - name: web-service
           image: mises/web-service
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "64Mi"
+              cpu: "250m"
           ports:
             - containerPort: 1323
           env:
@@ -24,10 +31,7 @@ spec:
                   name: learn-english-secret
                   key: JWT_SECRET_KEY
             - name: MONGODB_URI
-              valueFrom:
-                secretKeyRef:
-                  name: learn-english-secret
-                  key: MONGODB_URI
+              value: mongodb://mongo-service-cluster-ip-service:27017
             - name: DATABASE_NAME
               value: Test_LearnEnglishMicroservices
             - name: SERVER_ADDRESS

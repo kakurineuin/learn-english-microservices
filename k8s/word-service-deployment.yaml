@@ -15,14 +15,18 @@ spec:
       containers:
         - name: word-service
           image: mises/word-service
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "64Mi"
+              cpu: "250m"
           ports:
             - containerPort: 8091
           env:
             - name: MONGODB_URI
-              valueFrom:
-                secretKeyRef:
-                  name: learn-english-secret
-                  key: MONGODB_URI
+              value: mongodb://mongo-service-cluster-ip-service:27017
             - name: DATABASE_NAME
               value: Test_LearnEnglishMicroservices
             - name: SERVER_ADDRESS

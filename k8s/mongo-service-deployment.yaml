@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: mongo-service
+  template:
+    metadata:
+      labels:
+        component: mongo-service
+    spec:
+      containers:
+        - name: mongo-service
+          image: mongo:6
+          ports:
+            - containerPort: 27017
