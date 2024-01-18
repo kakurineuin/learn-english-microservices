@@ -455,9 +455,15 @@ func (handler examHandler) FindExamInfosWhenNotSignIn(c echo.Context) error {
 		return util.SendJSONInternalServerError(c)
 	}
 
-	adminUserId := adminUser.Id.Hex()
+	// 若尚未建立 admin user
+	if adminUser == nil {
+		return util.SendJSONResponse(c, &pb.FindExamInfosResponse{
+			ExamInfos: []*pb.ExamInfo{},
+		})
+	}
+
 	microserviceResponse, err := handler.examService.FindExamInfos(
-		adminUserId,
+		adminUser.Id.Hex(),
 		true,
 	)
 	if err != nil {
@@ -484,18 +490,21 @@ func (handler examHandler) FindExamInfosWhenSignIn(c echo.Context) error {
 		return util.SendJSONInternalServerError(c)
 	}
 
-	adminUserId := adminUser.Id.Hex()
-	microserviceResponse, err := handler.examService.FindExamInfos(
-		adminUserId,
-		true,
-	)
-	if err != nil {
-		c.Logger().Error(fmt.Errorf(errorMessage, err))
-		return util.SendJSONInternalServerError(c)
-	}
-
 	// 系統管理員公開的測驗
-	adminUserPBPublicExamInfos := microserviceResponse.ExamInfos
+	adminUserPBPublicExamInfos := []*pb.ExamInfo{}
+
+	if adminUser != nil {
+		microserviceResponse, err := handler.examService.FindExamInfos(
+			adminUser.Id.Hex(),
+			true,
+		)
+		if err != nil {
+			c.Logger().Error(fmt.Errorf(errorMessage, err))
+			return util.SendJSONInternalServerError(c)
+		}
+
+		adminUserPBPublicExamInfos = microserviceResponse.ExamInfos
+	}
 
 	response := &pb.FindExamInfosResponse{}
 	response.ExamInfos = append(response.ExamInfos, adminUserPBPublicExamInfos...)
@@ -504,8 +513,8 @@ func (handler examHandler) FindExamInfosWhenSignIn(c echo.Context) error {
 	userId := utilGetJWTClaims(c).UserId
 
 	// 若登入者不是系統管理員
-	if userId != adminUserId {
-		microserviceResponse, err = handler.examService.FindExamInfos(
+	if adminUser != nil && userId != adminUser.Id.Hex() {
+		microserviceResponse, err := handler.examService.FindExamInfos(
 			userId,
 			true,
 		)
@@ -519,7 +528,7 @@ func (handler examHandler) FindExamInfosWhenSignIn(c echo.Context) error {
 		response.ExamInfos = append(response.ExamInfos, userPBPublicExamInfos...)
 	}
 
-	microserviceResponse, err = handler.examService.FindExamInfos(
+	microserviceResponse, err := handler.examService.FindExamInfos(
 		userId,
 		false,
 	)
