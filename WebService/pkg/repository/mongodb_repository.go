@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	USER_COLLECTION = "users"
+	USER_COLLECTION         = "users"
+	USER_HISTORY_COLLECTION = "userhistories"
 )
 
 type MongoDBRepository struct {
@@ -149,6 +150,120 @@ func (repo *MongoDBRepository) GetAdminUser(
 	}
 
 	return &result, nil
+}
+
+func (repo *MongoDBRepository) FindUserHistoryResponsesOrderByUpdatedAt(
+	ctx context.Context, pageIndex, pageSize int32,
+) (userHistoryResponses []UserHistoryResponse, err error) {
+	sortStage := bson.D{{"$sort", bson.D{{"updatedAt", -1}}}}
+	skipStage := bson.D{{"$skip", pageIndex * pageSize}}
+	limitStage := bson.D{{"$limit", pageSize}}
+
+	// 在 addFields 階段判斷 userId 是否為空字串
+	addUserObjectIdStage := bson.D{{
+		"$addFields", bson.D{
+			{"userObjectId", bson.D{
+				{"$cond", bson.A{
+					bson.D{
+						{"$eq", bson.A{"$userId", ""}},
+					},
+					nil,
+					bson.D{
+						{"$toObjectId", "$userId"},
+					},
+				}},
+			}},
+		},
+	}}
+
+	lookupStage := bson.D{{
+		"$lookup", bson.D{
+			{"from", "users"},
+			{"localField", "userObjectId"},
+			{"foreignField", "_id"},
+			{"as", "user"},
+		},
+	}}
+	unwindStage := bson.D{
+		{"$unwind", bson.D{
+			{"path", "$user"},
+			{"preserveNullAndEmptyArrays", true},
+		}},
+	}
+	addFieldsStage := bson.D{{
+		"$addFields", bson.D{
+			{
+				"_id", bson.D{{"$toString", "$_id"}},
+			},
+			{
+				"username", "$user.username",
+			},
+			{
+				"role", "$user.role",
+			},
+		},
+	}}
+	projectStage := bson.D{{"$project", bson.D{{"userObjectId", 0}, {"user", 0}}}}
+
+	collection := repo.getCollection(USER_HISTORY_COLLECTION)
+
+	// pass the pipeline to the Aggregate() method
+	cursor, err := collection.Aggregate(
+		ctx,
+		mongo.Pipeline{
+			sortStage,
+			skipStage,
+			limitStage,
+			addUserObjectIdStage,
+			lookupStage,
+			unwindStage,
+			addFieldsStage,
+			projectStage,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = cursor.All(ctx, &userHistoryResponses); err != nil {
+		return nil, err
+	}
+
+	// Empty slice 轉成前端 JSON 是空陣列
+	// Nil slice 轉成前端 JSON 是 null
+	// 方便前端不用判斷 null，所以使用 empty slice
+	if userHistoryResponses == nil {
+		userHistoryResponses = []UserHistoryResponse{}
+	}
+
+	return userHistoryResponses, nil
+}
+
+func (repo *MongoDBRepository) CountUserHistories(ctx context.Context) (count int32, err error) {
+	collection := repo.getCollection(USER_HISTORY_COLLECTION)
+	filter := bson.D{{}}
+	result, err := collection.CountDocuments(ctx, filter)
+	if err != nil {
+		return 0, err
+	}
+
+	return int32(result), nil
+}
+
+func (repo *MongoDBRepository) CreateUserHistory(
+	ctx context.Context, userHistory model.UserHistory,
+) (userHistoryId string, err error) {
+	now := time.Now()
+	userHistory.CreatedAt = now
+	userHistory.UpdatedAt = now
+
+	collection := repo.getCollection(USER_HISTORY_COLLECTION)
+	result, err := collection.InsertOne(ctx, userHistory)
+	if err != nil {
+		return "", err
+	}
+
+	return result.InsertedID.(primitive.ObjectID).Hex(), nil
 }
 
 func (repo *MongoDBRepository) WithTransaction(

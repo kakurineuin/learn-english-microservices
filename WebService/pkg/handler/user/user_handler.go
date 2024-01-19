@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -12,11 +13,16 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/util"
 )
 
-var utilGetJWTToken = util.GetJWTToken
+// For mock at test
+var (
+	utilGetJWTToken  = util.GetJWTToken
+	utilGetJWTClaims = util.GetJWTClaims
+)
 
 type UserHandler interface {
 	CreateUser(c echo.Context) error
 	Login(c echo.Context) error
+	FindUserHistories(c echo.Context) error
 }
 
 type userHandler struct {
@@ -139,5 +145,50 @@ func (handler userHandler) Login(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, echo.Map{
 		"token": token,
+	})
+}
+
+func (handler userHandler) FindUserHistories(c echo.Context) error {
+	errorMessage := "FindUserHistories failed! error: %w"
+
+	var (
+		pageIndex int32 = 0
+		pageSize  int32 = 0
+	)
+
+	err := echo.QueryParamsBinder(c).
+		Int32("pageIndex", &pageIndex).
+		Int32("pageSize", &pageSize).
+		BindError() // returns first binding error
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONBadRequest(c)
+	}
+
+	databaseRepository := handler.databaseRepository
+	userHistoryResponses, err := databaseRepository.FindUserHistoryResponsesOrderByUpdatedAt(
+		c.Request().Context(),
+		pageIndex,
+		pageSize,
+	)
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONInternalServerError(c)
+	}
+
+	// Total
+	total, err := databaseRepository.CountUserHistories(c.Request().Context())
+	if err != nil {
+		c.Logger().Error(fmt.Errorf(errorMessage, err))
+		return util.SendJSONInternalServerError(c)
+	}
+
+	// PageCount
+	pageCount := int32(math.Ceil(float64(total) / float64(pageSize)))
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"total":         total,
+		"pageCount":     pageCount,
+		"userHistories": userHistoryResponses,
 	})
 }

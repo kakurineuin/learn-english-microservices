@@ -69,6 +69,62 @@ func (_c *MockDatabaseRepository_ConnectDB_Call) RunAndReturn(run func(context.C
 	return _c
 }
 
+// CountUserHistories provides a mock function with given fields: ctx
+func (_m *MockDatabaseRepository) CountUserHistories(ctx context.Context) (int32, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountUserHistories")
+	}
+
+	var r0 int32
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) (int32, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) int32); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Get(0).(int32)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockDatabaseRepository_CountUserHistories_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountUserHistories'
+type MockDatabaseRepository_CountUserHistories_Call struct {
+	*mock.Call
+}
+
+// CountUserHistories is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockDatabaseRepository_Expecter) CountUserHistories(ctx interface{}) *MockDatabaseRepository_CountUserHistories_Call {
+	return &MockDatabaseRepository_CountUserHistories_Call{Call: _e.mock.On("CountUserHistories", ctx)}
+}
+
+func (_c *MockDatabaseRepository_CountUserHistories_Call) Run(run func(ctx context.Context)) *MockDatabaseRepository_CountUserHistories_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context))
+	})
+	return _c
+}
+
+func (_c *MockDatabaseRepository_CountUserHistories_Call) Return(count int32, err error) *MockDatabaseRepository_CountUserHistories_Call {
+	_c.Call.Return(count, err)
+	return _c
+}
+
+func (_c *MockDatabaseRepository_CountUserHistories_Call) RunAndReturn(run func(context.Context) (int32, error)) *MockDatabaseRepository_CountUserHistories_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateUser provides a mock function with given fields: ctx, user
 func (_m *MockDatabaseRepository) CreateUser(ctx context.Context, user model.User) (string, error) {
 	ret := _m.Called(ctx, user)
@@ -126,6 +182,63 @@ func (_c *MockDatabaseRepository_CreateUser_Call) RunAndReturn(run func(context.
 	return _c
 }
 
+// CreateUserHistory provides a mock function with given fields: ctx, userHistory
+func (_m *MockDatabaseRepository) CreateUserHistory(ctx context.Context, userHistory model.UserHistory) (string, error) {
+	ret := _m.Called(ctx, userHistory)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateUserHistory")
+	}
+
+	var r0 string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, model.UserHistory) (string, error)); ok {
+		return rf(ctx, userHistory)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, model.UserHistory) string); ok {
+		r0 = rf(ctx, userHistory)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, model.UserHistory) error); ok {
+		r1 = rf(ctx, userHistory)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockDatabaseRepository_CreateUserHistory_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateUserHistory'
+type MockDatabaseRepository_CreateUserHistory_Call struct {
+	*mock.Call
+}
+
+// CreateUserHistory is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userHistory model.UserHistory
+func (_e *MockDatabaseRepository_Expecter) CreateUserHistory(ctx interface{}, userHistory interface{}) *MockDatabaseRepository_CreateUserHistory_Call {
+	return &MockDatabaseRepository_CreateUserHistory_Call{Call: _e.mock.On("CreateUserHistory", ctx, userHistory)}
+}
+
+func (_c *MockDatabaseRepository_CreateUserHistory_Call) Run(run func(ctx context.Context, userHistory model.UserHistory)) *MockDatabaseRepository_CreateUserHistory_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(model.UserHistory))
+	})
+	return _c
+}
+
+func (_c *MockDatabaseRepository_CreateUserHistory_Call) Return(userHistoryId string, err error) *MockDatabaseRepository_CreateUserHistory_Call {
+	_c.Call.Return(userHistoryId, err)
+	return _c
+}
+
+func (_c *MockDatabaseRepository_CreateUserHistory_Call) RunAndReturn(run func(context.Context, model.UserHistory) (string, error)) *MockDatabaseRepository_CreateUserHistory_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DisconnectDB provides a mock function with given fields: ctx
 func (_m *MockDatabaseRepository) DisconnectDB(ctx context.Context) error {
 	ret := _m.Called(ctx)
@@ -168,6 +281,66 @@ func (_c *MockDatabaseRepository_DisconnectDB_Call) Return(_a0 error) *MockDatab
 }
 
 func (_c *MockDatabaseRepository_DisconnectDB_Call) RunAndReturn(run func(context.Context) error) *MockDatabaseRepository_DisconnectDB_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FindUserHistoryResponsesOrderByUpdatedAt provides a mock function with given fields: ctx, pageIndex, pageSize
+func (_m *MockDatabaseRepository) FindUserHistoryResponsesOrderByUpdatedAt(ctx context.Context, pageIndex int32, pageSize int32) ([]UserHistoryResponse, error) {
+	ret := _m.Called(ctx, pageIndex, pageSize)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindUserHistoryResponsesOrderByUpdatedAt")
+	}
+
+	var r0 []UserHistoryResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int32, int32) ([]UserHistoryResponse, error)); ok {
+		return rf(ctx, pageIndex, pageSize)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int32, int32) []UserHistoryResponse); ok {
+		r0 = rf(ctx, pageIndex, pageSize)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]UserHistoryResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int32, int32) error); ok {
+		r1 = rf(ctx, pageIndex, pageSize)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockDatabaseRepository_FindUserHistoryResponsesOrderByUpdatedAt_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindUserHistoryResponsesOrderByUpdatedAt'
+type MockDatabaseRepository_FindUserHistoryResponsesOrderByUpdatedAt_Call struct {
+	*mock.Call
+}
+
+// FindUserHistoryResponsesOrderByUpdatedAt is a helper method to define mock.On call
+//   - ctx context.Context
+//   - pageIndex int32
+//   - pageSize int32
+func (_e *MockDatabaseRepository_Expecter) FindUserHistoryResponsesOrderByUpdatedAt(ctx interface{}, pageIndex interface{}, pageSize interface{}) *MockDatabaseRepository_FindUserHistoryResponsesOrderByUpdatedAt_Call {
+	return &MockDatabaseRepository_FindUserHistoryResponsesOrderByUpdatedAt_Call{Call: _e.mock.On("FindUserHistoryResponsesOrderByUpdatedAt", ctx, pageIndex, pageSize)}
+}
+
+func (_c *MockDatabaseRepository_FindUserHistoryResponsesOrderByUpdatedAt_Call) Run(run func(ctx context.Context, pageIndex int32, pageSize int32)) *MockDatabaseRepository_FindUserHistoryResponsesOrderByUpdatedAt_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int32), args[2].(int32))
+	})
+	return _c
+}
+
+func (_c *MockDatabaseRepository_FindUserHistoryResponsesOrderByUpdatedAt_Call) Return(userHistoryResponses []UserHistoryResponse, err error) *MockDatabaseRepository_FindUserHistoryResponsesOrderByUpdatedAt_Call {
+	_c.Call.Return(userHistoryResponses, err)
+	return _c
+}
+
+func (_c *MockDatabaseRepository_FindUserHistoryResponsesOrderByUpdatedAt_Call) RunAndReturn(run func(context.Context, int32, int32) ([]UserHistoryResponse, error)) *MockDatabaseRepository_FindUserHistoryResponsesOrderByUpdatedAt_Call {
 	_c.Call.Return(run)
 	return _c
 }

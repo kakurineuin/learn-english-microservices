@@ -16,6 +16,7 @@ import ExamManager from './routes/ExamManager';
 import QuestionManager from './routes/QuestionManager';
 import StartExam from './routes/StartExam';
 import ExamRecordOverview from './routes/ExamRecordOverview';
+import UserHistoryManager from './routes/UserHistoryManager';
 
 axios.defaults.baseURL = `${window.location.origin}/api`;
 axios.defaults.withCredentials = true;
@@ -82,6 +83,10 @@ function App() {
         {
           path: '/restricted/word/card',
           element: <WordCard />,
+        },
+        {
+          path: '/restricted/user/history',
+          element: <UserHistoryManager />,
         },
       ],
     },

@@ -4,12 +4,15 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/model"
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/repository"
@@ -122,4 +125,56 @@ func (s *MyTestSuite) TestLogin() {
 	s.Nil(err)
 	s.Equal(http.StatusOK, rec.Code)
 	s.JSONEq(`{"token": "`+TOKEN+`"}`, rec.Body.String())
+}
+
+func (s *MyTestSuite) TestFindUserHistories() {
+	// Setup
+	e := echo.New()
+	q := make(url.Values)
+	q.Set("pageIndex", "0")
+	q.Set("pageSize", "10")
+	req := httptest.NewRequest(http.MethodGet, "/?"+q.Encode(), nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	id := primitive.NewObjectID().Hex()
+	userId := primitive.NewObjectID().Hex()
+	username := "guest01"
+	role := "user"
+	method := "GET"
+	path := "/api/test"
+	now := time.Now()
+	s.mockDatabaseRepository.EXPECT().
+		FindUserHistoryResponsesOrderByUpdatedAt(mock.Anything, int32(0), int32(10)).
+		Return([]repository.UserHistoryResponse{
+			{
+				Id:        id,
+				UserId:    userId,
+				Username:  username,
+				Role:      role,
+				Method:    method,
+				Path:      path,
+				CreatedAt: now,
+				UpdatedAt: now,
+			},
+		}, nil)
+	s.mockDatabaseRepository.EXPECT().
+		CountUserHistories(mock.Anything).
+		Return(int32(1), nil)
+
+	// Test
+	err := s.userHandler.FindUserHistories(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.JSONEq(`{"total": 1, "pageCount": 1, "userHistories": [{
+		"_id": "`+id+`",
+		"userId": "`+userId+`",
+		"username": "`+username+`",
+		"role": "`+role+`",
+		"method": "`+method+`",
+		"path": "`+path+`",
+		"createdAt": "`+now.Format(time.RFC3339Nano)+`",
+		"updatedAt": "`+now.Format(time.RFC3339Nano)+`"
+	}]}`, rec.Body.String())
 }

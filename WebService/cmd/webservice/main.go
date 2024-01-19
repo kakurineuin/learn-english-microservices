@@ -18,6 +18,7 @@ import (
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/handler/word"
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/microservice/examservice"
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/microservice/wordservice"
+	mymiddleware "github.com/kakurineuin/learn-english-microservices/web-service/pkg/middleware"
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/repository"
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/util"
 )
@@ -88,11 +89,16 @@ func main() {
 		},
 		Timeout: 30 * time.Second,
 	}))
-	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
-		CookieName:  "XSRF-TOKEN",
-		TokenLookup: "header:X-XSRF-TOKEN",
-	}))
+
+	if config.EnvEnableCSRF() {
+		e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+			CookieName:  "XSRF-TOKEN",
+			TokenLookup: "header:X-XSRF-TOKEN",
+		}))
+	}
+
 	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(30)))
+	e.Use(mymiddleware.UserHistory(databaseRepository))
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
@@ -138,6 +144,7 @@ func setupAPIHandlers(
 	// ExamInfo
 	restrictedApi.GET("/exam/info", examHandler.FindExamInfosWhenSignIn)
 
+	// Exam
 	restrictedApi.GET("/exam", examHandler.FindExams)
 	restrictedApi.POST("/exam", examHandler.CreateExam)
 	restrictedApi.PATCH("/exam", examHandler.UpdateExam)
@@ -151,6 +158,7 @@ func setupAPIHandlers(
 	restrictedApi.GET("/exam/:examId/record/overview", examHandler.FindExamRecordOverview)
 	restrictedApi.GET("/exam/:examId/record", examHandler.FindExamRecords)
 
+	// Word
 	restrictedApi.GET("/word/:word", wordHandler.FindWordMeanings)
 	restrictedApi.POST("/word/favorite", wordHandler.CreateFavoriteWordMeaning)
 	restrictedApi.GET("/word/favorite", wordHandler.FindFavoriteWordMeanings)
@@ -159,6 +167,9 @@ func setupAPIHandlers(
 		wordHandler.DeleteFavoriteWordMeaning,
 	)
 	restrictedApi.GET("/word/card", wordHandler.FindRandomFavoriteWordMeanings)
+
+	// User
+	restrictedApi.GET("/user/history", userHandler.FindUserHistories)
 }
 
 func loadEnv() {

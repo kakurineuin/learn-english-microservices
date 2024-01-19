@@ -9,6 +9,7 @@ import { examManagerReducer } from './slices/examManagerSlice';
 import { questionManagerReducer } from './slices/questionManagerSlice';
 import { askFormReducer } from './slices/askFormSlice';
 import { examRecordManagerReducer } from './slices/examRecordManagerSlice';
+import { userHistoryManagerReducer } from './slices/userHistoryManagerSlice';
 
 // Create the root reducer independently to obtain the RootState type
 const rootReducer = combineReducers({
@@ -18,6 +19,7 @@ const rootReducer = combineReducers({
   questionManager: questionManagerReducer,
   askForm: askFormReducer,
   examRecordManager: examRecordManagerReducer,
+  userHistoryManager: userHistoryManagerReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"testing"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/mongodb"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -21,11 +23,12 @@ const DATABASE = "learnEnglish_test"
 
 type MyTestSuite struct {
 	suite.Suite
-	repo             DatabaseRepository
-	uri              string
-	mongodbContainer *mongodb.MongoDBContainer
-	client           *mongo.Client
-	userCollection   *mongo.Collection
+	repo                  DatabaseRepository
+	uri                   string
+	mongodbContainer      *mongodb.MongoDBContainer
+	client                *mongo.Client
+	userCollection        *mongo.Collection
+	userHistoryCollection *mongo.Collection
 }
 
 func TestMyTestSuite(t *testing.T) {
@@ -68,6 +71,7 @@ func (s *MyTestSuite) SetupSuite() {
 
 	s.client = client
 	s.userCollection = client.Database(DATABASE).Collection("users")
+	s.userHistoryCollection = client.Database(DATABASE).Collection("userhistories")
 }
 
 // run once, after test suite methods
@@ -180,4 +184,89 @@ func (s *MyTestSuite) TestGetAdminUser() {
 	user, err := s.repo.GetAdminUser(ctx)
 	s.Nil(err)
 	s.NotNil(user)
+}
+
+func (s *MyTestSuite) TestFindUserHistoryResponsesOrderByUpdatedAt() {
+	ctx := context.Background()
+
+	_, err := s.userHistoryCollection.DeleteMany(ctx, bson.D{{}})
+	s.Nil(err)
+
+	now := time.Now()
+	size := 10
+
+	for i := 0; i < size; i++ {
+		result, err := s.userCollection.InsertOne(ctx, model.User{
+			Username:  fmt.Sprintf("user%d", i+1),
+			CreatedAt: now,
+			UpdatedAt: now,
+		})
+		s.Nil(err)
+
+		userId := result.InsertedID.(primitive.ObjectID).Hex()
+
+		if i < 5 {
+			userId = ""
+		}
+
+		_, err = s.userHistoryCollection.InsertOne(ctx, model.UserHistory{
+			UserId:    userId,
+			Method:    "GET",
+			Path:      "/api/test",
+			CreatedAt: now,
+			UpdatedAt: now,
+		})
+		s.Nil(err)
+	}
+
+	userHistoryResponses, err := s.repo.FindUserHistoryResponsesOrderByUpdatedAt(
+		ctx,
+		0,
+		10,
+	)
+	s.Nil(err)
+	s.Len(userHistoryResponses, 10)
+}
+
+func (s *MyTestSuite) TestCountUserHistories() {
+	ctx := context.Background()
+	now := time.Now()
+	size := 10
+
+	for i := 0; i < size; i++ {
+		result, err := s.userCollection.InsertOne(ctx, model.User{
+			Username:  fmt.Sprintf("user%d", i+1),
+			CreatedAt: now,
+			UpdatedAt: now,
+		})
+		s.Nil(err)
+
+		userId := result.InsertedID.(primitive.ObjectID).Hex()
+		_, err = s.userHistoryCollection.InsertOne(ctx, model.UserHistory{
+			UserId:    userId,
+			Method:    "GET",
+			Path:      "/api/test",
+			CreatedAt: now,
+			UpdatedAt: now,
+		})
+		s.Nil(err)
+	}
+
+	count, err := s.repo.CountUserHistories(ctx)
+	s.Nil(err)
+	s.EqualValues(size, count)
+}
+
+func (s *MyTestSuite) TestCreateUserHistory() {
+	ctx := context.Background()
+
+	userHistoryId, err := s.repo.CreateUserHistory(
+		ctx, model.UserHistory{
+			UserId: primitive.NewObjectID().Hex(),
+			Method: "GET",
+			Path:   "/api/test",
+		},
+	)
+	s.Nil(err)
+	s.NotEmpty(userHistoryId)
 }

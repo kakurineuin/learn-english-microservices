@@ -33,6 +33,9 @@ function Menus() {
   const WordCardClickHandler = () => {
     navigate('/restricted/word/card');
   };
+  const UserHistoryClickHandler = () => {
+    navigate('/restricted/user/history');
+  };
   const signUpHandler = () => {
     navigate('/signup');
   };
@@ -146,6 +149,17 @@ function Menus() {
         >
           單字卡 {!user && '(請先登入)'}
         </Button>
+
+        {user && user.role === 'admin' && (
+          <Button
+            colorScheme="teal"
+            variant="outline"
+            mr="2"
+            onClick={UserHistoryClickHandler}
+          >
+            使用者歷史紀錄
+          </Button>
+        )}
       </Box>
     </Flex>
   );

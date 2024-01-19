@@ -2,9 +2,21 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/model"
 )
+
+type UserHistoryResponse struct {
+	Id        string    `json:"_id"       bson:"_id,omitempty"`
+	UserId    string    `json:"userId"    bson:"userId"`
+	Username  string    `json:"username"  bson:"username"`
+	Role      string    `json:"role"      bson:"role"`
+	Method    string    `json:"method"    bson:"method"`
+	Path      string    `json:"path"      bson:"path"`
+	CreatedAt time.Time `json:"createdAt" bson:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt" bson:"updatedAt"`
+}
 
 type transactionFunc func(ctx context.Context) (interface{}, error)
 
@@ -21,4 +33,14 @@ type DatabaseRepository interface {
 	GetUserById(ctx context.Context, userId string) (user *model.User, err error)
 	GetUserByUsername(ctx context.Context, username string) (user *model.User, err error)
 	GetAdminUser(ctx context.Context) (user *model.User, err error)
+
+	// UserHistory
+	FindUserHistoryResponsesOrderByUpdatedAt(
+		ctx context.Context, pageIndex, pageSize int32,
+	) (userHistoryResponses []UserHistoryResponse, err error)
+	CountUserHistories(ctx context.Context) (count int32, err error)
+	CreateUserHistory(
+		ctx context.Context,
+		userHistory model.UserHistory,
+	) (userHistoryId string, err error)
 }

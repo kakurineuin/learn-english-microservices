@@ -27,3 +27,12 @@ func EnvExamServiceServerAddress() string {
 func EnvWordServiceServerAddress() string {
 	return os.Getenv("WORD_SERVICE_SERVER_ADDRESS")
 }
+
+func EnvEnableCSRF() bool {
+	if os.Getenv("ENABLE_CSRF") == "false" {
+		return false
+	}
+
+	// 若無此環境變數，預設為 true 去啟用 CSRF 檢查
+	return true
+}
