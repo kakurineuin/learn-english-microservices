@@ -26,14 +26,13 @@ spec:
             - containerPort: 8080
           env:
             - name: JWT_SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: learn-english-secret
-                  key: JWT_SECRET_KEY
+              value: just_for_test_d6cd05c1ee30278e6740bb1badbb706d55aaea4626dcccca354a78ac3906f524
             - name: MONGODB_URI
               value: mongodb://mongo-service-cluster-ip-service:27017
             - name: DATABASE_NAME
               value: Test_LearnEnglishMicroservices
+            - name: ENABLE_TRANSACTION
+              value: "false"
             - name: WEB_SERVICE_SERVER_ADDRESS
               value: :8080
             - name: EXAM_SERVICE_SERVER_ADDRESS

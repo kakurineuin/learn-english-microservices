@@ -29,5 +29,7 @@ spec:
               value: mongodb://mongo-service-cluster-ip-service:27017
             - name: DATABASE_NAME
               value: Test_LearnEnglishMicroservices
+            - name: ENABLE_TRANSACTION
+              value: "false"
             - name: EXAM_SERVICE_SERVER_ADDRESS
               value: :8090
