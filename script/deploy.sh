@@ -17,6 +17,6 @@ echo "Successfully Installed Flyctl"
 sh -c "flyctl deploy"
 
 # get app Information
-sh -c "flyctl info"
+sh -c "flyctl status"
 
 exit 0
