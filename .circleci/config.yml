@@ -23,7 +23,7 @@ workflows:
             ExamService/.* run-build-exam-service-job true
             WordService/.* run-build-word-service-job true
             WebService/.* run-build-web-service-job true
-          base-revision: develop
+          base-revision: main
           # this is the path of the configuration we should trigger once
           # path filtering and pipeline parameter value updates are
           # complete. In this case, we are using the parent dynamic

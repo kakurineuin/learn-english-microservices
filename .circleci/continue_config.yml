@@ -100,6 +100,16 @@ jobs:
           command: gotestsum --junitfile junit.xml
       - store_test_results:
           path: junit.xml
+  deploy:
+    docker:
+      - image: alpine:3.19
+    steps:
+      - checkout
+      - run:
+          name: Deploy Application to Fly
+          command: |
+            chmod +x script/deploy.sh
+            ./script/deploy.sh
 
 # here we specify our workflows, most of which are conditionally
 # executed based upon pipeline parameter values. Each workflow calls a
@@ -111,20 +121,39 @@ workflows:
     when: << pipeline.parameters.run-build-exam-service-job >>
     jobs:
       - test-exam-service
+      - test-web-service
+      - deploy:
+          requires:
+            # the test job must pass, before starting the deploy job
+            - test-exam-service
+            - test-web-service
+          filters:
+            branches:
+              # deploy only on branch main
+              only: main
   word-service:
     when: << pipeline.parameters.run-build-word-service-job >>
     jobs:
       - test-word-service
+      - test-web-service
+      - deploy:
+          requires:
+            # the test job must pass, before starting the deploy job
+            - test-word-service
+            - test-web-service
+          filters:
+            branches:
+              # deploy only on branch main
+              only: main
   web-service:
     when: << pipeline.parameters.run-build-web-service-job >>
     jobs:
       - test-web-service
-  run-integration-tests:
-    when:
-      or:
-        [
-          << pipeline.parameters.run-build-exam-service-job >>,
-          << pipeline.parameters.run-build-word-service-job >>,
-        ]
-    jobs:
-      - test-web-service
+      - deploy:
+          requires:
+            # the test job must pass, before starting the deploy job
+            - test-web-service
+          filters:
+            branches:
+              # deploy only on branch main
+              only: main
