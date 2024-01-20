@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: word-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: word-service
+  template:
+    metadata:
+      labels:
+        component: word-service
+    spec:
+      containers:
+        - name: word-service
+          image: mises/word-service
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "64Mi"
+              cpu: "250m"
+          ports:
+            - containerPort: 8091
+          env:
+            - name: MONGODB_URI
+              value: mongodb://mongo-service-cluster-ip-service:27017
+            - name: DATABASE_NAME
+              value: Test_LearnEnglishMicroservices
+            - name: WORD_SERVICE_SERVER_ADDRESS
+              value: :8091

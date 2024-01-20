@@ -1,0 +1,16 @@
+# For word_handler_integration_test.go
+services:
+  mongodb:
+    image: mongo:6
+    ports:
+      # 這裡改用 27018 map 27017，避免同時跑 exam 和 word 兩隻整合測試時，兩個 mongo 搶佔同一個 port 的問題
+      # - 27017:27017
+      - 27018:27017
+  word-service:
+    image: mises/word-service:test
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017
+      DATABASE_NAME: Test_LearnEnglish
+      WORD_SERVICE_SERVER_ADDRESS: :8091
+    ports:
+      - 8091:8091

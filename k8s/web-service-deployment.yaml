@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: web-service
+  template:
+    metadata:
+      labels:
+        component: web-service
+    spec:
+      containers:
+        - name: web-service
+          image: mises/web-service
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "64Mi"
+              cpu: "250m"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: learn-english-secret
+                  key: JWT_SECRET_KEY
+            - name: MONGODB_URI
+              value: mongodb://mongo-service-cluster-ip-service:27017
+            - name: DATABASE_NAME
+              value: Test_LearnEnglishMicroservices
+            - name: WEB_SERVICE_SERVER_ADDRESS
+              value: :8080
+            - name: EXAM_SERVICE_SERVER_ADDRESS
+              value: exam-service-cluster-ip-service:8090
+            - name: WORD_SERVICE_SERVER_ADDRESS
+              value: word-service-cluster-ip-service:8091

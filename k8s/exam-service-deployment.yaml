@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exam-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: exam-service
+  template:
+    metadata:
+      labels:
+        component: exam-service
+    spec:
+      containers:
+        - name: exam-service
+          image: mises/exam-service
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "64Mi"
+              cpu: "250m"
+          ports:
+            - containerPort: 8090
+          env:
+            - name: MONGODB_URI
+              value: mongodb://mongo-service-cluster-ip-service:27017
+            - name: DATABASE_NAME
+              value: Test_LearnEnglishMicroservices
+            - name: EXAM_SERVICE_SERVER_ADDRESS
+              value: :8090

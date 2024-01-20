@@ -1,0 +1,159 @@
+version: 2.1
+
+orbs:
+  go: circleci/go@1.10.0
+
+# the default pipeline parameters, which will be updated according to
+# the results of the path-filtering orb
+parameters:
+  run-build-exam-service-job:
+    type: boolean
+    default: false
+  run-build-word-service-job:
+    type: boolean
+    default: false
+  run-build-web-service-job:
+    type: boolean
+    default: false
+
+jobs:
+  test-exam-service:
+    # Install go modules and run tests
+    machine:
+      image: ubuntu-2204:2023.10.1
+    working_directory: ~/project/ExamService
+    steps:
+      - checkout:
+          path: ~/project
+      - run: sudo apt install golang gotestsum
+      - restore_cache:
+          key: go-mod-{{ checksum "go.sum" }}
+      - run:
+          name: Download Go modules
+          command: go mod download
+      - run:
+          name: Print go mod help instructions
+          command: "echo \"go mod download will fail if you have private repositories \nOne way to fix this for private go modules that are hosted in github:\n  1. Add a GITHUB_TOKEN and GITHUB_USER to an org context. Please refer to https://circleci.com/docs/contexts/ for more informaiton on how to use contexts.\n  2. Add a .circleci/config.yml to your repository or use this config.yml as a starting template\n  3. Configure the jobs to use the newly created context which includes GITHUB_TOKEN and GITHUB_USER  \n  4. Before downloading the modules you will need to add a step to execute \\\"go env -w GOPRIVATE=github.com/<OrgNameHere>\\\". \n\tThis allows go mod to install private repos under OrgNameHere.\n  5. You will also need to run \\\"git config --global url.\\\"https://$GITHUB_USER:$GITHUB_TOKEN@github.com/<OrgNameHere>/\\\".insteadOf \\\"https://github.com/<OrgNameHere>/\\\"\\\"\n  6. Finally include the \\\"go mod download\\\" it should be able to fetch your private libraries now. \nFor gitlab private go modules, follow the same instructions as above but include your GITLAB_TOKEN and GITLAB_USER.\nThen use gitlab.com instead of github.com in steps 4 and 5.\nSee https://go.dev/ref/mod#private-modules for more details.\""
+          when: on_fail
+      - save_cache:
+          key: go-mod-{{ checksum "go.sum" }}
+          paths:
+            - /home/circleci/go/pkg/mod
+      - run:
+          name: Run tests
+          command: gotestsum --junitfile junit.xml
+      - store_test_results:
+          path: junit.xml
+  test-word-service:
+    # Install go modules and run tests
+    machine:
+      image: ubuntu-2204:2023.10.1
+    working_directory: ~/project/WordService
+    steps:
+      - checkout:
+          path: ~/project
+      - run: sudo apt install golang gotestsum
+      - restore_cache:
+          key: go-mod-{{ checksum "go.sum" }}
+      - run:
+          name: Download Go modules
+          command: go mod download
+      - run:
+          name: Print go mod help instructions
+          command: "echo \"go mod download will fail if you have private repositories \nOne way to fix this for private go modules that are hosted in github:\n  1. Add a GITHUB_TOKEN and GITHUB_USER to an org context. Please refer to https://circleci.com/docs/contexts/ for more informaiton on how to use contexts.\n  2. Add a .circleci/config.yml to your repository or use this config.yml as a starting template\n  3. Configure the jobs to use the newly created context which includes GITHUB_TOKEN and GITHUB_USER  \n  4. Before downloading the modules you will need to add a step to execute \\\"go env -w GOPRIVATE=github.com/<OrgNameHere>\\\". \n\tThis allows go mod to install private repos under OrgNameHere.\n  5. You will also need to run \\\"git config --global url.\\\"https://$GITHUB_USER:$GITHUB_TOKEN@github.com/<OrgNameHere>/\\\".insteadOf \\\"https://github.com/<OrgNameHere>/\\\"\\\"\n  6. Finally include the \\\"go mod download\\\" it should be able to fetch your private libraries now. \nFor gitlab private go modules, follow the same instructions as above but include your GITLAB_TOKEN and GITLAB_USER.\nThen use gitlab.com instead of github.com in steps 4 and 5.\nSee https://go.dev/ref/mod#private-modules for more details.\""
+          when: on_fail
+      - save_cache:
+          key: go-mod-{{ checksum "go.sum" }}
+          paths:
+            - /home/circleci/go/pkg/mod
+      - run:
+          name: Run tests
+          command: gotestsum --junitfile junit.xml
+      - store_test_results:
+          path: junit.xml
+  test-web-service:
+    # Install go modules and run tests
+    machine:
+      image: ubuntu-2204:2023.10.1
+    working_directory: ~/project/WebService
+    steps:
+      - checkout:
+          path: ~/project
+      - run: docker build ../ExamService -t mises/exam-service:test
+      - run: docker build ../WordService -t mises/word-service:test
+      - run: sudo apt install golang gotestsum
+      - restore_cache:
+          key: go-mod-{{ checksum "go.sum" }}
+      - run:
+          name: Download Go modules
+          command: go mod download
+      - run:
+          name: Print go mod help instructions
+          command: "echo \"go mod download will fail if you have private repositories \nOne way to fix this for private go modules that are hosted in github:\n  1. Add a GITHUB_TOKEN and GITHUB_USER to an org context. Please refer to https://circleci.com/docs/contexts/ for more informaiton on how to use contexts.\n  2. Add a .circleci/config.yml to your repository or use this config.yml as a starting template\n  3. Configure the jobs to use the newly created context which includes GITHUB_TOKEN and GITHUB_USER  \n  4. Before downloading the modules you will need to add a step to execute \\\"go env -w GOPRIVATE=github.com/<OrgNameHere>\\\". \n\tThis allows go mod to install private repos under OrgNameHere.\n  5. You will also need to run \\\"git config --global url.\\\"https://$GITHUB_USER:$GITHUB_TOKEN@github.com/<OrgNameHere>/\\\".insteadOf \\\"https://github.com/<OrgNameHere>/\\\"\\\"\n  6. Finally include the \\\"go mod download\\\" it should be able to fetch your private libraries now. \nFor gitlab private go modules, follow the same instructions as above but include your GITLAB_TOKEN and GITLAB_USER.\nThen use gitlab.com instead of github.com in steps 4 and 5.\nSee https://go.dev/ref/mod#private-modules for more details.\""
+          when: on_fail
+      - save_cache:
+          key: go-mod-{{ checksum "go.sum" }}
+          paths:
+            - /home/circleci/go/pkg/mod
+      - run:
+          name: Run tests
+          command: gotestsum --junitfile junit.xml
+      - store_test_results:
+          path: junit.xml
+  deploy:
+    docker:
+      - image: alpine:3.19
+    steps:
+      - checkout
+      - run:
+          name: Deploy Application to Fly
+          command: |
+            chmod +x script/deploy.sh
+            ./script/deploy.sh
+
+# here we specify our workflows, most of which are conditionally
+# executed based upon pipeline parameter values. Each workflow calls a
+# specific job defined above, in the jobs section.
+workflows:
+  # when pipeline parameter, run-build-exam-service-job is true, the
+  # test-exam-service job is triggered.
+  exam-service:
+    when: << pipeline.parameters.run-build-exam-service-job >>
+    jobs:
+      - test-exam-service
+      - test-web-service
+      - deploy:
+          requires:
+            # the test job must pass, before starting the deploy job
+            - test-exam-service
+            - test-web-service
+          filters:
+            branches:
+              # deploy only on branch main
+              only: main
+  word-service:
+    when: << pipeline.parameters.run-build-word-service-job >>
+    jobs:
+      - test-word-service
+      - test-web-service
+      - deploy:
+          requires:
+            # the test job must pass, before starting the deploy job
+            - test-word-service
+            - test-web-service
+          filters:
+            branches:
+              # deploy only on branch main
+              only: main
+  web-service:
+    when: << pipeline.parameters.run-build-web-service-job >>
+    jobs:
+      - test-web-service
+      - deploy:
+          requires:
+            # the test job must pass, before starting the deploy job
+            - test-web-service
+          filters:
+            branches:
+              # deploy only on branch main
+              only: main

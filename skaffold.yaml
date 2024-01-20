@@ -1,0 +1,36 @@
+apiVersion: skaffold/v4beta8
+kind: Config
+build:
+  local:
+    push: false
+  artifacts:
+    - image: mises/exam-service
+      context: ExamService
+      docker:
+        dockerfile: Dockerfile
+    - image: mises/word-service
+      context: WordService
+      docker:
+        dockerfile: Dockerfile
+    - image: mises/web-service
+      context: WebService
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "frontend/dist/index.html"
+            dest: .
+          - src: "frontend/assets/*.*"
+            dest: .
+deploy:
+  kubectl:
+    remoteManifests:
+      - ./k8s/mongo-service-deployment.yaml
+      - ./k8s/mongo-service-cluster-ip-service.yaml
+      - ./k8s/exam-service-deployment.yaml
+      - ./k8s/exam-service-cluster-ip-service.yaml
+      - ./k8s/word-service-deployment.yaml
+      - ./k8s/word-service-cluster-ip-service.yaml
+      - ./k8s/web-service-deployment.yaml
+      - ./k8s/web-service-cluster-ip-service.yaml
+      - ./k8s/ingress-service.yaml

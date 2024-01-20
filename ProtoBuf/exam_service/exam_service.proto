@@ -1,0 +1,208 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "./;pb";
+
+message Exam {
+  string id = 1 [ json_name = "_id" ];
+  string topic = 2;
+  string description = 3;
+  repeated string tags = 4;
+  bool is_public = 5;
+  string user_id = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message CreateExamRequest {
+  string topic = 1;
+  string description = 2;
+  bool is_public = 3;
+  string user_id = 4;
+}
+
+message CreateExamResponse { string exam_id = 1; }
+
+message UpdateExamRequest {
+  string exam_id = 1;
+  string topic = 2;
+  string description = 3;
+  bool is_public = 4;
+  string user_id = 5;
+}
+
+message UpdateExamResponse { string exam_id = 1; }
+
+message FindExamsRequest {
+  int32 page_index = 1;
+  int32 page_size = 2;
+  string user_id = 3;
+}
+
+message FindExamsResponse {
+  int32 total = 1;
+  int32 page_count = 2;
+  repeated Exam exams = 3;
+}
+
+message DeleteExamRequest {
+  string exam_id = 1;
+  string user_id = 2;
+}
+
+message DeleteExamResponse {}
+
+message Question {
+  string id = 1 [ json_name = "_id" ];
+  string exam_id = 2;
+  string ask = 3;
+  repeated string answers = 4;
+  string user_id = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message CreateQuestionRequest {
+  string exam_id = 1;
+  string ask = 2;
+  repeated string answers = 3;
+  string user_id = 4;
+}
+
+message CreateQuestionResponse { string question_id = 1; }
+
+message UpdateQuestionRequest {
+  string question_id = 1;
+  string ask = 2;
+  repeated string answers = 3;
+  string user_id = 4;
+}
+
+message UpdateQuestionResponse { string question_id = 1; }
+
+message FindQuestionsRequest {
+  int32 page_index = 1;
+  int32 page_size = 2;
+  string exam_id = 3;
+  string user_id = 4;
+}
+
+message FindQuestionsResponse {
+  int32 total = 1;
+  int32 page_count = 2;
+  repeated Question questions = 3;
+}
+
+message DeleteQuestionRequest {
+  string question_id = 1;
+  string user_id = 2;
+}
+
+message DeleteQuestionResponse {}
+
+message FindRandomQuestionsRequest {
+  string exam_id = 1;
+  string user_id = 2;
+  int32 size = 3;
+}
+
+message FindRandomQuestionsResponse {
+  Exam exam = 1;
+  repeated Question questions = 2;
+}
+
+message ExamRecord {
+  string id = 1 [ json_name = "_id" ];
+  string exam_id = 2;
+  int32 score = 3;
+  string user_id = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message CreateExamRecordRequest {
+  string exam_id = 1;
+  int32 score = 2;
+  repeated string wrong_question_ids = 3;
+  string user_id = 4;
+}
+
+message CreateExamRecordResponse {}
+
+message FindExamRecordsRequest {
+  int32 page_index = 1;
+  int32 page_size = 2;
+  string exam_id = 3;
+  string user_id = 4;
+}
+
+message FindExamRecordsResponse {
+  int32 total = 1;
+  int32 page_count = 2;
+  repeated ExamRecord exam_records = 3;
+}
+
+message AnswerWrong {
+  string id = 1 [ json_name = "_id" ];
+  string exam_id = 2;
+  string question_id = 3;
+  int32 times = 4;
+  string user_id = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message FindExamRecordOverviewRequest {
+  string exam_id = 1;
+  string user_id = 2;
+  google.protobuf.Timestamp start_date = 3;
+}
+
+message FindExamRecordOverviewResponse {
+  string start_date = 1;
+  Exam exam = 2;
+  repeated Question questions = 3;
+  repeated AnswerWrong answer_wrongs = 4;
+  repeated ExamRecord exam_records = 5;
+}
+
+message ExamInfo {
+  string exam_id = 1;
+  string topic = 2;
+  string description = 3;
+  bool is_public = 4;
+  int32 question_count = 5;
+  int32 record_count = 6;
+}
+
+message FindExamInfosRequest {
+  string user_id = 1;
+  bool is_public = 2;
+}
+
+message FindExamInfosResponse { repeated ExamInfo exam_infos = 1; }
+
+service ExamService {
+  rpc CreateExam(CreateExamRequest) returns (CreateExamResponse);
+  rpc UpdateExam(UpdateExamRequest) returns (UpdateExamResponse);
+  rpc FindExams(FindExamsRequest) returns (FindExamsResponse);
+  rpc DeleteExam(DeleteExamRequest) returns (DeleteExamResponse);
+
+  rpc CreateQuestion(CreateQuestionRequest) returns (CreateQuestionResponse);
+  rpc UpdateQuestion(UpdateQuestionRequest) returns (UpdateQuestionResponse);
+  rpc FindQuestions(FindQuestionsRequest) returns (FindQuestionsResponse);
+  rpc DeleteQuestion(DeleteQuestionRequest) returns (DeleteQuestionResponse);
+  rpc FindRandomQuestions(FindRandomQuestionsRequest)
+      returns (FindRandomQuestionsResponse);
+
+  rpc CreateExamRecord(CreateExamRecordRequest)
+      returns (CreateExamRecordResponse);
+  rpc FindExamRecords(FindExamRecordsRequest) returns (FindExamRecordsResponse);
+  rpc FindExamRecordOverview(FindExamRecordOverviewRequest)
+      returns (FindExamRecordOverviewResponse);
+
+  rpc FindExamInfos(FindExamInfosRequest) returns (FindExamInfosResponse);
+}
