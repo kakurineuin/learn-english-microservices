@@ -104,6 +104,7 @@ jobs:
     docker:
       - image: alpine:3.19
     steps:
+      - setup_remote_docker
       - checkout
       - run:
           name: Deploy Application to Fly
