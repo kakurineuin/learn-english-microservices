@@ -19,8 +19,6 @@ workflows:
             branches:
               only:
                 - main
-            tags:
-              only: /^v.*/
           name: check-updated-files
           # 3-column, whitespace-delimited mapping. One mapping per
           # line:
