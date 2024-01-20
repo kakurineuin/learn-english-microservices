@@ -4,6 +4,11 @@ import (
 	"os"
 )
 
+func EnvEnableTransaction() bool {
+	// 預設啟用 MongoDB 交易功能
+	return os.Getenv("ENABLE_TRANSACTION") != "false"
+}
+
 func EnvMongoDBURI() string {
 	return os.Getenv("MONGODB_URI")
 }

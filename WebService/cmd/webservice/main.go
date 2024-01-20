@@ -173,7 +173,7 @@ func setupAPIHandlers(
 }
 
 func loadEnv() {
-	env := os.Getenv("WEB_SERVICE_ENV")
+	env := os.Getenv("SERVICE_ENV")
 	if "" == env {
 		env = "development"
 	}

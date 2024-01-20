@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 
+	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/config"
 	"github.com/kakurineuin/learn-english-microservices/word-service/pkg/model"
 )
 
@@ -336,28 +337,33 @@ func (repo *MongoDBRepository) WithTransaction(
 	ctx context.Context,
 	transactoinFunc transactionFunc,
 ) (interface{}, error) {
-	// start-session
-	wc := writeconcern.Majority()
-	txnOptions := options.Transaction().SetWriteConcern(wc)
+	if config.EnvEnableTransaction() {
 
-	// Starts a session on the client
-	session, err := repo.client.StartSession()
-	if err != nil {
-		return nil, fmt.Errorf("Start session failed! error: %w", err)
+		// start-session
+		wc := writeconcern.Majority()
+		txnOptions := options.Transaction().SetWriteConcern(wc)
+
+		// Starts a session on the client
+		session, err := repo.client.StartSession()
+		if err != nil {
+			return nil, fmt.Errorf("Start session failed! error: %w", err)
+		}
+
+		// Defers ending the session after the transaction is committed or ended
+		defer session.EndSession(ctx)
+
+		// Handle data within a transaction
+		result, err := session.WithTransaction(
+			ctx,
+			func(sctx mongo.SessionContext) (interface{}, error) {
+				return transactoinFunc(sctx)
+			},
+			txnOptions,
+		)
+		return result, err
+	} else {
+		return transactoinFunc(ctx)
 	}
-
-	// Defers ending the session after the transaction is committed or ended
-	defer session.EndSession(ctx)
-
-	// Handle data within a transaction
-	result, err := session.WithTransaction(
-		ctx,
-		func(sctx mongo.SessionContext) (interface{}, error) {
-			return transactoinFunc(sctx)
-		},
-		txnOptions,
-	)
-	return result, err
 }
 
 func (repo *MongoDBRepository) getCollection(collectionName string) *mongo.Collection {

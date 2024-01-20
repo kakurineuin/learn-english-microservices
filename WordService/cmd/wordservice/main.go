@@ -67,7 +67,7 @@ func main() {
 }
 
 func loadEnv() {
-	env := os.Getenv("WORD_SERVICE_ENV")
+	env := os.Getenv("SERVICE_ENV")
 	if "" == env {
 		env = "development"
 	}
