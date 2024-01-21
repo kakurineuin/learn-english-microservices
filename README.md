@@ -23,24 +23,40 @@
   - 處理使用者註冊、登入。
   - 使用 gRPC 呼叫 ExamService、WordService。
 
+最初的想法是想以 K8S 的架構佈署在 Google Kubernetes Engine (GKE)，
+但是感覺收費會很高，所以放棄這個選項。
+改用 fly.io，在 fly.io 的 VM 裡面啟動這三個服務(不同的 port)，彼此使用 gRPC 通訊。
+
+## 使用的服務
+
 資料庫：MongoDB\
 CI：CircleCI\
 雲端主機：fly.io\
 網址：https://learn-english-microservices.fly.dev
 
+## 網站使用說明
+
 - 網站佈署在 fly.io，
   為了節省資源，設定了閒置時自動關閉的功能，
   所以第一次瀏覽或閒置一會後再瀏覽時，
   需要等個 4~5 秒。
-- 最初的想法是想以 K8S 的架構佈署在 Google Kubernetes Engine (GKE)，但是感覺收費會很高，所以放棄這個選項。
-  改用 fly.io，在 fly.io 的 VM 裡面啟動這三個服務(不同的 port)，彼此使用 gRPC 通訊。
 - 登入才能使用每個功能。
 - 註冊只需要帳號和密碼，不需要提供 Email。
 - 若不想特地註冊一個帳號，可以使用以下帳號登入。
   - Username: guest01
   - Password: 12345678
-- 點擊網頁中標題旁邊的小圓形驚嘆號，會出現功能說明。
+- 每個功能的標題旁都會有小圓形驚嘆號，點擊它會出現功能說明。
   ![Alt text](image/home.png?raw=true "Home")
+- 單字卡的操作方式
+  - 滑鼠操作
+    - 點擊卡片即可翻面
+    - 點擊 \[下一張\] 移到下一張卡片
+    - 點擊 \[上一張\] 移到上一張卡片
+  - 鍵盤操作
+    - 按 S 鍵即可翻面
+    - 按 D 鍵移到下一張卡片
+    - 按 A 鍵移到上一張卡片
+      ![Alt text](image/word-card.png?raw=true "Word Card")
 
 ## 目錄與檔案說明
 
