@@ -32,15 +32,15 @@ CI：CircleCI\
   為了節省資源，設定了閒置時自動關閉的功能，
   所以第一次瀏覽或閒置一會後再瀏覽時，
   需要等個 4~5 秒。
+- 最初的想法是想以 K8S 的架構佈署在 Google Kubernetes Engine (GKE)，但是感覺收費會很高，所以放棄這個選項。
+  改用 fly.io，在 fly.io 的 VM 裡面啟動這三個服務(不同的 port)，彼此使用 gRPC 通訊。
 - 登入才能使用每個功能。
 - 註冊只需要帳號和密碼，不需要提供 Email。
 - 若不想特地註冊一個帳號，可以使用以下帳號登入。
   - Username: guest01
   - Password: 12345678
 - 點擊網頁中標題旁邊的小圓形驚嘆號，會出現功能說明。
-  - TODO: 補上截圖
-- 最初的想法是想以 K8S 的架構佈署在 Google Kubernetes Engine (GKE)，但是感覺收費會很高，所以放棄這個選項。
-  改用 fly.io 佈署，在 fly.io 的 VM 裡面啟動這三個服務(不同的 port)，彼此使用 gRPC 通訊。
+  ![Alt text](image/home.png?raw=true "Home")
 
 ## 目錄與檔案說明
 
