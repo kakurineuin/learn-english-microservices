@@ -46,7 +46,9 @@ CI：CircleCI\
   - Username: guest01
   - Password: 12345678
 - 每個功能的標題旁都會有小圓形驚嘆號，點擊它會出現功能說明。
-  ![Alt text](image/home.png?raw=true "Home")
+
+![Alt text](image/home.png?raw=true "Home")
+
 - 單字卡的操作方式
   - 滑鼠操作
     - 點擊卡片即可翻面
@@ -56,7 +58,8 @@ CI：CircleCI\
     - 按 S 鍵即可翻面
     - 按 D 鍵移到下一張卡片
     - 按 A 鍵移到上一張卡片
-      ![Alt text](image/word-card.png?raw=true "Word Card")
+
+![Alt text](image/word-card.png?raw=true "Word Card")
 
 ## 目錄與檔案說明
 
