@@ -22,6 +22,7 @@ import (
 
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/microservice/wordservice"
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/model"
+	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/repository"
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/util"
 )
 
@@ -130,8 +131,16 @@ func (s *MyIntegrationTestSuite) SetupSuite() {
 		}
 	}
 
+	// Redis
+	cacheRepository := repository.NewRedisRepository()
+	err = cacheRepository.ConnectDB("redis://127.0.0.1:6379")
+	if err != nil {
+		s.FailNow(err.Error())
+	}
+
 	s.wordHandler = wordHandler{
-		wordService: wordService,
+		wordService:     wordService,
+		cacheRepository: cacheRepository,
 	}
 }
 
@@ -287,19 +296,23 @@ func (s *MyIntegrationTestSuite) TestFindFavoriteWordMeanings() {
 	// Setup
 	ctx := context.Background()
 	now := time.Now()
-	documents := []interface{}{}
 
-	for i := 0; i < 10; i++ {
-		documents = append(documents, model.FavoriteWordMeaning{
+	for i := 0; i < 20; i++ {
+		result, err := s.wordMeaningCollection.InsertOne(ctx, model.WordMeaning{
+			Word: "test",
+		})
+		s.Nil(err)
+
+		objectId := result.InsertedID.(primitive.ObjectID)
+
+		_, err = s.favoriteWordMeaningCollection.InsertOne(ctx, model.FavoriteWordMeaning{
 			UserId:        s.userId,
-			WordMeaningId: primitive.NewObjectID(),
+			WordMeaningId: objectId,
 			CreatedAt:     now,
 			UpdatedAt:     now,
 		})
+		s.Nil(err)
 	}
-
-	_, err := s.favoriteWordMeaningCollection.InsertMany(ctx, documents)
-	s.Nil(err)
 
 	e := echo.New()
 	q := make(url.Values)
@@ -312,7 +325,7 @@ func (s *MyIntegrationTestSuite) TestFindFavoriteWordMeanings() {
 	c := e.NewContext(req, rec)
 
 	// Test
-	err = s.wordHandler.FindFavoriteWordMeanings(c)
+	err := s.wordHandler.FindFavoriteWordMeanings(c)
 	s.Nil(err)
 	s.Equal(http.StatusOK, rec.Code)
 	s.NotEmpty(rec.Body.String())
@@ -322,19 +335,23 @@ func (s *MyIntegrationTestSuite) TestFindRandomFavoriteWordMeanings() {
 	// Setup
 	ctx := context.Background()
 	now := time.Now()
-	documents := []interface{}{}
 
-	for i := 0; i < 10; i++ {
-		documents = append(documents, model.FavoriteWordMeaning{
+	for i := 0; i < 20; i++ {
+		result, err := s.wordMeaningCollection.InsertOne(ctx, model.WordMeaning{
+			Word: "test",
+		})
+		s.Nil(err)
+
+		objectId := result.InsertedID.(primitive.ObjectID)
+
+		_, err = s.favoriteWordMeaningCollection.InsertOne(ctx, model.FavoriteWordMeaning{
 			UserId:        s.userId,
-			WordMeaningId: primitive.NewObjectID(),
+			WordMeaningId: objectId,
 			CreatedAt:     now,
 			UpdatedAt:     now,
 		})
+		s.Nil(err)
 	}
-
-	_, err := s.favoriteWordMeaningCollection.InsertMany(ctx, documents)
-	s.Nil(err)
 
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -343,8 +360,11 @@ func (s *MyIntegrationTestSuite) TestFindRandomFavoriteWordMeanings() {
 	c := e.NewContext(req, rec)
 
 	// Test
-	err = s.wordHandler.FindRandomFavoriteWordMeanings(c)
-	s.Nil(err)
-	s.Equal(http.StatusOK, rec.Code)
-	s.NotEmpty(rec.Body.String())
+	// 為了測試 cache，所以跑 2 次
+	for i := 0; i < 2; i++ {
+		err := s.wordHandler.FindRandomFavoriteWordMeanings(c)
+		s.Nil(err)
+		s.Equal(http.StatusOK, rec.Code)
+		s.NotEmpty(rec.Body.String())
+	}
 }

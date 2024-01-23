@@ -1,5 +1,9 @@
 # For word_handler_integration_test.go
 services:
+  redis:
+    image: redis:7
+    ports:
+      - 6379:6379
   mongodb:
     image: mongo:6
     ports:

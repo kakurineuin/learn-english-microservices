@@ -41,3 +41,7 @@ func EnvEnableCSRF() bool {
 	// 若無此環境變數，預設為 true 去啟用 CSRF 檢查
 	return true
 }
+
+func EnvRedisURI() string {
+	return os.Getenv("REDIS_URI")
+}

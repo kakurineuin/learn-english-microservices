@@ -43,6 +43,20 @@ func main() {
 		}
 	}()
 
+	// 連線到 Redis
+	cacheRepository := repository.NewRedisRepository()
+	err = cacheRepository.ConnectDB(config.EnvRedisURI())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// 程式結束時，結束 Redis 連線
+	defer func() {
+		if err := cacheRepository.DisconnectDB(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
 	// 微服務
 	// ExamService
 	examService := examservice.New(config.EnvExamServiceServerAddress())
@@ -75,7 +89,7 @@ func main() {
 	// Handlers
 	userHandler := user.NewHandler(databaseRepository)
 	examHandler := exam.NewHandler(examService, databaseRepository)
-	wordHandler := word.NewHandler(wordService)
+	wordHandler := word.NewHandler(wordService, cacheRepository)
 
 	e := echo.New()
 	e.Logger.SetLevel(log.INFO)

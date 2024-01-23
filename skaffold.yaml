@@ -25,6 +25,8 @@ build:
 deploy:
   kubectl:
     remoteManifests:
+      - ./k8s/redis-service-deployment.yaml
+      - ./k8s/redis-service-cluster-ip-service.yaml
       - ./k8s/mongo-service-deployment.yaml
       - ./k8s/mongo-service-cluster-ip-service.yaml
       - ./k8s/exam-service-deployment.yaml
