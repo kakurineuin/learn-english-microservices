@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/kakurineuin/learn-english-microservices/web-service/pb"
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/model"
 )
 
@@ -43,4 +44,19 @@ type DatabaseRepository interface {
 		ctx context.Context,
 		userHistory model.UserHistory,
 	) (userHistoryId string, err error)
+}
+
+//go:generate mockery --name CacheRepository
+type CacheRepository interface {
+	ConnectDB(uri string) error
+	DisconnectDB() error
+
+	// WordMeaning
+	CreateWordMeanings(
+		ctx context.Context,
+		key string,
+		wordMeanings []*pb.WordMeaning,
+		expiration time.Duration,
+	) error
+	FindWordMeanings(ctx context.Context, key string) (wordMeanings []*pb.WordMeaning, err error)
 }

@@ -39,3 +39,5 @@ spec:
               value: exam-service-cluster-ip-service:8090
             - name: WORD_SERVICE_SERVER_ADDRESS
               value: word-service-cluster-ip-service:8091
+            - name: REDIS_URI
+              value: redis://redis-service-cluster-ip-service:6379

@@ -1,6 +1,7 @@
 package word
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -10,17 +11,20 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/kakurineuin/learn-english-microservices/web-service/pb"
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/microservice/wordservice"
+	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/repository"
 	"github.com/kakurineuin/learn-english-microservices/web-service/pkg/util"
 )
 
 type MyTestSuite struct {
 	suite.Suite
-	wordHandler     wordHandler
-	mockWordService *wordservice.MockWordService
+	wordHandler         wordHandler
+	mockWordService     *wordservice.MockWordService
+	mockCacheRepository *repository.MockCacheRepository
 }
 
 func TestMyTestSuite(t *testing.T) {
@@ -42,7 +46,8 @@ func (s *MyTestSuite) SetupSuite() {
 	}
 
 	s.wordHandler = wordHandler{
-		wordService: nil,
+		wordService:     nil,
+		cacheRepository: nil,
 	}
 }
 
@@ -59,6 +64,10 @@ func (s *MyTestSuite) SetupTest() {
 	mockWordService := wordservice.NewMockWordService(s.T())
 	s.wordHandler.wordService = mockWordService
 	s.mockWordService = mockWordService
+
+	mockCacheRepository := repository.NewMockCacheRepository(s.T())
+	s.wordHandler.cacheRepository = mockCacheRepository
+	s.mockCacheRepository = mockCacheRepository
 }
 
 // run after each test
@@ -175,7 +184,7 @@ func (s *MyTestSuite) TestFindFavoriteWordMeanings() {
 	s.JSONEq(`{"total": 0, "pageCount": 0, "favoriteWordMeanings": []}`, rec.Body.String())
 }
 
-func (s *MyTestSuite) TestFindRandomFavoriteWordMeanings() {
+func (s *MyTestSuite) TestFindRandomFavoriteWordMeanings_WhenCacheHasData() {
 	// Setup
 	e := echo.New()
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -183,15 +192,43 @@ func (s *MyTestSuite) TestFindRandomFavoriteWordMeanings() {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
-	s.mockWordService.EXPECT().
-		FindRandomFavoriteWordMeanings("user01", int32(10)).
-		Return(&pb.FindRandomFavoriteWordMeaningsResponse{
-			FavoriteWordMeanings: []*pb.WordMeaning{},
+	key := fmt.Sprintf("FindRandomFavoriteWordMeanings:%s", "user01")
+	s.mockCacheRepository.EXPECT().
+		FindWordMeanings(mock.Anything, key).
+		Return([]*pb.WordMeaning{
+			{}, {},
 		}, nil)
 
 	// Test
 	err := s.wordHandler.FindRandomFavoriteWordMeanings(c)
 	s.Nil(err)
 	s.Equal(http.StatusOK, rec.Code)
-	s.JSONEq(`{"favoriteWordMeanings": []}`, rec.Body.String())
+	s.NotEmpty(rec.Body.String())
+}
+
+func (s *MyTestSuite) TestFindRandomFavoriteWordMeanings_WhenCacheHasNoData() {
+	// Setup
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	key := fmt.Sprintf("FindRandomFavoriteWordMeanings:%s", "user01")
+	s.mockCacheRepository.EXPECT().
+		FindWordMeanings(mock.Anything, key).
+		Return(nil, nil)
+	s.mockWordService.EXPECT().
+		FindRandomFavoriteWordMeanings("user01", int32(20)).
+		Return(&pb.FindRandomFavoriteWordMeaningsResponse{
+			FavoriteWordMeanings: []*pb.WordMeaning{
+				{},
+			},
+		}, nil)
+
+	// Test
+	err := s.wordHandler.FindRandomFavoriteWordMeanings(c)
+	s.Nil(err)
+	s.Equal(http.StatusOK, rec.Code)
+	s.NotEmpty(rec.Body.String())
 }

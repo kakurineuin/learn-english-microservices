@@ -1,4 +1,7 @@
 FROM golang:alpine3.19
+
+# Redis
+RUN apk add --update redis
 WORKDIR /app
 
 # ExamService
@@ -26,4 +29,4 @@ RUN apk add --update npm
 RUN cd ./frontend && npm install && npm run build
 RUN cd ./cmd/webservice && CGO_ENABLED=0 GOOS=linux go build -o /web-service
 EXPOSE 8080
-CMD ["sh", "-c", "/exam-service & /word-service & sleep 5; /web-service"]
+CMD ["sh", "-c", "redis-server & /exam-service & /word-service & sleep 5; /web-service"]
