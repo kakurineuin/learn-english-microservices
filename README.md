@@ -21,15 +21,24 @@
     - 前端使用 React、Redux、TypeScript
     - 後端使用 Golang、Echo(Golang 的 Web Framework)。
   - 處理使用者註冊、登入。
+  - 單字卡功能使用 Redis 對 WordService 的回應結果作 cache
   - 使用 gRPC 呼叫 ExamService、WordService。
 
 最初的想法是想以 K8S 的架構佈署在 Google Kubernetes Engine (GKE)，
 但是感覺收費會很高，所以放棄這個選項。
 改用 fly.io，在 fly.io 的 VM 裡面啟動這三個服務(不同的 port)，彼此使用 gRPC 通訊。
 
+### K8S 的架構圖
+
+![Alt text](image/%E7%B6%B2%E7%AB%99%E6%9C%8D%E5%8B%99%E6%9E%B6%E6%A7%8B_K8S.png?raw=true "網站服務架構_K8S.png")
+
+### Fly.IO 的架構圖
+
+![Alt text](image/%E7%B6%B2%E7%AB%99%E6%9C%8D%E5%8B%99%E6%9E%B6%E6%A7%8B_FlyIO.png?raw=true "網站服務架構_FlyIO.png")
+
 ## 使用的服務
 
-資料庫：MongoDB\
+資料庫：MongoDB, Redis\
 CI：CircleCI\
 雲端主機：fly.io\
 網址：https://learn-english-microservices.fly.dev
