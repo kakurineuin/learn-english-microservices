@@ -11,7 +11,7 @@ function PageHeading({ title, children }: Props) {
   return (
     <Center my="3">
       <Heading>{title}</Heading>
-      {children && <InfoDialog>{children}</InfoDialog>}
+      {children && <InfoDialog ml="3">{children}</InfoDialog>}
     </Center>
   );
 }

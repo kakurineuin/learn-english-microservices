@@ -10,25 +10,31 @@ import {
   ModalBody,
   ModalFooter,
 } from '@chakra-ui/react';
-import { InfoOutlineIcon } from '@chakra-ui/icons';
 
 type Props = {
   children: ReactNode;
+  ml: string | number;
 };
 
-function InfoDialog({ children }: Props) {
+function InfoDialog({ children, ml }: Props) {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
     <>
-      <Button onClick={onOpen} colorScheme="blue" variant="ghost" size="sm">
-        <InfoOutlineIcon boxSize="6" />
+      <Button
+        onClick={onOpen}
+        colorScheme="blue"
+        variant="outline"
+        size="sm"
+        ml={ml}
+      >
+        功能說明
       </Button>
 
       <Modal size="4xl" isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>說明</ModalHeader>
+          <ModalHeader>功能說明</ModalHeader>
           <ModalCloseButton />
           <ModalBody>{children}</ModalBody>
           <ModalFooter>

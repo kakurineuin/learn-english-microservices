@@ -202,7 +202,7 @@ function FavoriteWordMeaningManager() {
                     } catch (err) {
                       const errorMessage = axios.isAxiosError(err)
                         ? (err as AxiosError<{ message: string }, any>)
-                            .response!.data.message
+                          .response!.data.message
                         : '系統發生錯誤！';
                       toast({
                         title: '刪除最愛的單字解釋失敗。',
@@ -283,7 +283,7 @@ function FavoriteWordMeaningManager() {
     <Container maxW="container.xl" mt="3">
       <PageHeading title="最愛的單字解釋">
         <ShowText fontSize="lg">
-          此頁列出最愛的單字解釋，資料來自朗文線上字典(https://www.ldoceonline.com/)
+          此頁列出在[查詢單字]功能中點擊[Favorite]按鍵加入最愛的單字解釋，資料來自朗文線上字典(https://www.ldoceonline.com/)
         </ShowText>
         <UnorderedList>
           <ListItem>
