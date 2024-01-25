@@ -13,9 +13,21 @@ function ExamManager() {
           <ListItem>
             <ShowText fontSize="lg">
               新增測驗 -
-              輸入名稱(Topic)、描述(Descripton)與是否公開給其他人使用(Public)後，點擊[新增]
+              輸入名稱(Topic)、描述(Descripton)後，點擊[新增]，即可增加自己的測驗
             </ShowText>
           </ListItem>
+          <UnorderedList>
+            <ListItem>
+              <ShowText fontSize="lg">
+                新增的測驗沒有題目，可在列表中點擊該測驗的[題目]按鍵，前往題目管理功能去新增題目
+              </ShowText>
+            </ListItem>
+            <ListItem>
+              <ShowText fontSize="lg">
+                擁有題目的測驗，才會在首頁顯示出來
+              </ShowText>
+            </ListItem>
+          </UnorderedList>
           <ListItem>
             <ShowText fontSize="lg">
               修改測驗 - 點擊[修改]會顯示對話框，修改內容後點擊[Confirm]

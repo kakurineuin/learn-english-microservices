@@ -154,6 +154,10 @@ function WordForm() {
         </FormControl>
       </form>
 
+      <ShowText mt="3">
+        若您一時不知道要查什麼單字，也許可以查詢 charm 這個單字看看
+      </ShowText>
+
       {wordFamilyBox}
 
       {wordMeanings.map(
