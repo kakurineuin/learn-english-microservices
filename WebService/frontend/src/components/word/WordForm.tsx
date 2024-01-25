@@ -149,7 +149,11 @@ function WordForm() {
             {errors.word?.message}
           </FormErrorMessage>
           <FormHelperText>
-            輸入英文單字後，點擊 [Search] 或按下<Kbd ml="1">enter</Kbd>
+            輸入英文單字後，點擊 [Search] 或按下
+            <Kbd ml="1" mr="1">
+              enter
+            </Kbd>
+            即可查詢該單字的解釋
           </FormHelperText>
         </FormControl>
       </form>
