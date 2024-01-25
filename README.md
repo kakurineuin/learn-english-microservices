@@ -54,7 +54,7 @@ CI：CircleCI\
 - 若不想特地註冊一個帳號，可以使用以下帳號登入。
   - Username: guest01
   - Password: 12345678
-- 每個功能的標題旁都會有小圓形驚嘆號，點擊它會出現功能說明。
+- 每個功能的標題旁都會有\[功能說明\]按鍵，點擊它會出現功能說明。
 
 ![Alt text](image/home.png?raw=true "Home")
 
