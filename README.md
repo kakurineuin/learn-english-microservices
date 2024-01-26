@@ -76,12 +76,69 @@ CI：CircleCI\
   - CircleCI config 的目錄
 - ExamService
   - 提供測驗功能的微服務的目錄
+  - cmd/examservice
+    - 放置 main.go
+  - pb
+    - 放置 gRPC ProtoBuf 檔案
+  - pkg
+    - config
+      - 讀取環境變數的 package
+    - endpoint
+      - 實作 Go Kit Endpoint 的 package
+    - model
+      - 代表資料庫的資料結構的 package
+    - repository
+      - 存取資料庫的 package
+    - service
+      - 實作 Go Kit Service 的 package
+    - transport
+      - 實作 Go Kit Transport 的 package
 - ProtoBuf
   - gRPC .proto 的目錄
 - WebService
   - 運行網站的微服務的目錄
+  - cmd/webservice
+    - 放置 main.go
+  - frontend
+    - 放置前端程式碼
+  - pb
+    - 放置 gRPC ProtoBuf 檔案
+  - pkg
+    - config
+      - 讀取環境變數的 package
+    - handler
+      - 實作 Echo Handler 的 package
+    - microservice
+      - 呼叫微服務的 package
+    - middleware
+      - 實作 Echo middleware 的 package
+    - model
+      - 代表資料庫的資料結構的 package
+    - repository
+      - 存取資料庫的 package
+    - util
+      - 工具函式的 package
 - WordService
   - 提供單字查詢與單字卡複習的微服務的目錄
+  - cmd/wordservice
+    - 放置 main.go
+  - pb
+    - 放置 gRPC ProtoBuf 檔案
+  - pkg
+    - config
+      - 讀取環境變數的 package
+    - crawler
+      - 抓取網站資料的 package
+    - endpoint
+      - 實作 Go Kit Endpoint 的 package
+    - model
+      - 代表資料庫的資料結構的 package
+    - repository
+      - 存取資料庫的 package
+    - service
+      - 實作 Go Kit Service 的 package
+    - transport
+      - 實作 Go Kit Transport 的 package
 - k8s
   - minikube 運行 k8s 的配置檔的目錄
 - script
