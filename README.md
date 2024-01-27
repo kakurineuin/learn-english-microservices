@@ -30,11 +30,11 @@
 
 ### K8S 的架構圖
 
-![Alt text](image/architecture_K8S.png?raw=true "architecture_K8S.png")
+![Alt text](./image/architecture_K8S.png?raw=true "architecture_K8S.png")
 
 ### Fly.IO 的架構圖
 
-![Alt text](image/architecture_FlyIO.png?raw=true "architecture_FlyIO.png")
+![Alt text](./image/architecture_FlyIO.png?raw=true "architecture_FlyIO.png")
 
 ## 使用的服務
 
@@ -56,7 +56,7 @@ CI：CircleCI\
   - Password: 12345678
 - 每個功能的標題旁都會有\[功能說明\]按鍵，點擊它會出現功能說明。
 
-![Alt text](image/home.png?raw=true "Home")
+![Alt text](./image/home.png?raw=true "Home")
 
 - 單字卡的操作方式
   - 滑鼠操作
@@ -68,7 +68,7 @@ CI：CircleCI\
     - 按 D 鍵移到下一張卡片
     - 按 A 鍵移到上一張卡片
 
-![Alt text](image/word-card.png?raw=true "Word Card")
+![Alt text](./image/word-card.png?raw=true "Word Card")
 
 ## 目錄與檔案說明
 
