@@ -30,11 +30,11 @@
 
 ### K8S 的架構圖
 
-![Alt text](./image/architecture_K8S.png?raw=true "architecture_K8S.png")
+![architecture_K8S](https://github.com/kakurineuin/learn-english-microservices/assets/5369431/94ddbb13-8d46-49f0-812c-12593bb2d426)
 
 ### Fly.IO 的架構圖
 
-![Alt text](./image/architecture_FlyIO.png?raw=true "architecture_FlyIO.png")
+![architecture_FlyIO](https://github.com/kakurineuin/learn-english-microservices/assets/5369431/64039329-2c3d-40bf-a137-9b7b5ddb90be)
 
 ## 使用的服務
 
@@ -56,7 +56,7 @@ CI：CircleCI\
   - Password: 12345678
 - 每個功能的標題旁都會有\[功能說明\]按鍵，點擊它會出現功能說明。
 
-![Alt text](./image/home.png?raw=true "Home")
+![home](https://github.com/kakurineuin/learn-english-microservices/assets/5369431/17f05c0a-bae1-41cf-b3e4-9f9df36b72a7)
 
 - 單字卡的操作方式
   - 滑鼠操作
@@ -68,7 +68,7 @@ CI：CircleCI\
     - 按 D 鍵移到下一張卡片
     - 按 A 鍵移到上一張卡片
 
-![Alt text](./image/word-card.png?raw=true "Word Card")
+![word-card](https://github.com/kakurineuin/learn-english-microservices/assets/5369431/18dbd8d9-287e-4132-9f76-01499f6360fe)
 
 ## 目錄與檔案說明
 
