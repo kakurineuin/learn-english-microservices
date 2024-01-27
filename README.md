@@ -30,11 +30,11 @@
 
 ### K8S 的架構圖
 
-![Alt text](image/%E7%B6%B2%E7%AB%99%E6%9C%8D%E5%8B%99%E6%9E%B6%E6%A7%8B_K8S.png?raw=true "網站服務架構_K8S.png")
+![Alt text](image/architecture_K8S.png?raw=true "architecture_K8S.png")
 
 ### Fly.IO 的架構圖
 
-![Alt text](image/%E7%B6%B2%E7%AB%99%E6%9C%8D%E5%8B%99%E6%9E%B6%E6%A7%8B_FlyIO.png?raw=true "網站服務架構_FlyIO.png")
+![Alt text](image/architecture_FlyIO.png?raw=true "architecture_FlyIO.png")
 
 ## 使用的服務
 
